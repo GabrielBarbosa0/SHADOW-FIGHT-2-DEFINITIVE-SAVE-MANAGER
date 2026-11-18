@@ -55,7 +55,9 @@ Esta interface é o protótipo funcional do futuro aplicativo nativo para Window
 
 ## Protótipo do modo multiplayer
 
-O APK possui um PVP local oculto com dois jogadores e arenas próprias. A primeira build de pesquisa expõe esse modo em um pacote separado, `com.sf2.de.lan`, sem substituir o aplicativo original. A próxima etapa transforma a entrada do jogador 2 em comandos recebidos pela rede local.
+O APK possui um PVP local oculto com dois jogadores e arenas próprias. O protótipo 5 já expõe esse modo e foi validado no MuMu Player 15 com dois lutadores na mesma arena, sem falha fatal. A próxima etapa transforma a entrada do jogador 2 em comandos recebidos pela rede local.
+
+A Definitive Edition valida internamente o pacote `com.sf2.de` e a versão `2.41.9`. Por isso, a build de pesquisa não pode coexistir com o jogo original no mesmo Android: qualquer teste em aparelho real exige backup prévio do save e do APK. Os originais do projeto nunca são usados como destino de patch ou build.
 
 O processo, as regras de backup e as limitações da build atual estão em [`docs/LAN-MODE-DEVELOPMENT.md`](docs/LAN-MODE-DEVELOPMENT.md). O APK de teste fica somente em `dist/` e não é publicado no GitHub.
 
