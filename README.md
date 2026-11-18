@@ -53,6 +53,12 @@ O aplicativo usa somente Python 3 e Tkinter. Os saves gerados ficam em `generate
 
 Esta interface é o protótipo funcional do futuro aplicativo nativo para Windows. A migração planejada para C#, WinUI 3, executável autocontido e instalador está documentada em [`docs/CSHARP-APP-ROADMAP.md`](docs/CSHARP-APP-ROADMAP.md).
 
+## Protótipo do modo multiplayer
+
+O APK possui um PVP local oculto com dois jogadores e arenas próprias. A primeira build de pesquisa expõe esse modo em um pacote separado, `com.sf2.de.lan`, sem substituir o aplicativo original. A próxima etapa transforma a entrada do jogador 2 em comandos recebidos pela rede local.
+
+O processo, as regras de backup e as limitações da build atual estão em [`docs/LAN-MODE-DEVELOPMENT.md`](docs/LAN-MODE-DEVELOPMENT.md). O APK de teste fica somente em `dist/` e não é publicado no GitHub.
+
 ## Save ativo: campanha do início com facilidades
 
 O perfil recomendado está em:
@@ -162,6 +168,8 @@ Arquivos `*.apk` e toda a pasta `game/` estão ignorados pelo Git. O APK da Defi
 - `scripts/run-save-manager.ps1`: inicializador da interface gráfica.
 - `tests/`: testes automatizados do gerador de save.
 - `docs/CSHARP-APP-ROADMAP.md`: plano da migração para o aplicativo nativo em C#.
+- `docs/LAN-MODE-DEVELOPMENT.md`: regras de preservação e plano técnico do modo multiplayer em LAN.
+- `scripts/create-lan-modding-workspace.ps1`: cria backups verificados e uma nova cópia de trabalho sem substituir os originais.
 
 As pastas locais `game/`, `backups/` e `generated/` são criadas ou utilizadas durante o uso, mas permanecem fora do Git.
 
