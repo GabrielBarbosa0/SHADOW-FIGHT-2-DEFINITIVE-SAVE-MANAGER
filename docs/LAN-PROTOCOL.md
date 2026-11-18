@@ -2,7 +2,7 @@
 
 ## Marco atual
 
-O protótipo 7 acrescenta uma ponte UDP ao processo Android do jogo. Ela já executa:
+O protótipo 9 acrescenta uma ponte UDP ao processo Android do jogo. Ela já executa:
 
 - configuração de host ou cliente;
 - autenticação por token compartilhado;
@@ -10,11 +10,13 @@ O protótipo 7 acrescenta uma ponte UDP ao processo Android do jogo. Ela já exe
 - heartbeat `PING` / `PONG`;
 - detecção de desconexão;
 - serialização do estado de movimento e botões;
+- validação, ordenação e armazenamento dos pacotes `INPUT` no Android;
+- neutralização automática da entrada quando a conexão expira;
 - status legível fora do processo do jogo.
 
 A ponte Android e a implementação de referência em Python usam o mesmo protocolo. O teste MuMu-to-PC foi concluído com conexão e heartbeat contínuo, sem falha fatal no jogo.
 
-Ainda falta conectar os pacotes `INPUT` recebidos ao objeto `PvpScene.PlayerTwoInput`. Portanto, o protótipo 7 valida o transporte de rede, mas ainda não é uma partida jogável por LAN.
+Ainda falta conectar o snapshot recebido ao objeto `PvpScene.PlayerTwoInput`. Portanto, o protótipo 9 valida a entrega dos comandos ao processo do jogo, mas ainda não é uma partida jogável por LAN.
 
 ## Configuração Android
 
@@ -60,6 +62,17 @@ Para iniciar um cliente de referência:
 ```powershell
 python -m lan_bridge client --peer 192.168.1.50 --token troque-este-token --port 24190 --name Meu-PC
 ```
+
+Para enviar um unico estado assim que a conexao for aceita:
+
+```powershell
+python -m lan_bridge host --token troque-este-token --send-input 0.75 -0.25 0x05
+```
+
+Nesse exemplo, `0x05` pressiona soco e arma de longo alcance. O arquivo
+`sf2lan-status.json` mostra os eixos, botoes, sequencia e horario do ultimo
+comando aceito pelo Android. O receptor ignora sequencias repetidas ou
+atrasadas e volta ao estado neutro quando a sessao e encerrada.
 
 Esse utilitário serve para validar rede, firewall, token e heartbeat sem depender ainda do combate.
 

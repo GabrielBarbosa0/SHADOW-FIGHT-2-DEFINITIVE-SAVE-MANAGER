@@ -30,10 +30,14 @@ public final class LanTransport implements Runnable {
     private static final int TYPE_WELCOME = 2;
     private static final int TYPE_PING = 3;
     private static final int TYPE_PONG = 4;
+    private static final int TYPE_INPUT = 5;
     private static final int TYPE_DISCONNECT = 6;
     private static final int HEADER_SIZE = 36;
+    private static final int INPUT_SIZE = 10;
+    private static final int KNOWN_BUTTONS_MASK = 0x3f;
     private static final int MAX_PAYLOAD = 1024;
     private static final AtomicBoolean STARTED = new AtomicBoolean(false);
+    private static volatile LanInputState remoteInput = LanInputState.NEUTRAL;
 
     private final Context context;
     private final String mode;
@@ -83,6 +87,11 @@ public final class LanTransport implements Runnable {
         }
     }
 
+    /** Ponto estavel para a proxima etapa: o hook nativo consulta este snapshot. */
+    public static LanInputState getRemoteInput() {
+        return remoteInput;
+    }
+
     private void validate() {
         if (!mode.equals("host") && !mode.equals("client")) {
             throw new IllegalArgumentException("mode deve ser host ou client");
@@ -122,6 +131,7 @@ public final class LanTransport implements Runnable {
                 }
                 if (connected && now - lastReceive > 5000) {
                     connected = false;
+                    remoteInput = LanInputState.NEUTRAL;
                     writeStatus("timeout", peer, "heartbeat expirado");
                     if (mode.equals("client")) {
                         peer = new InetSocketAddress(InetAddress.getByName(peerHost), port);
@@ -157,7 +167,7 @@ public final class LanTransport implements Runnable {
         int version = buffer.get() & 0xff;
         int type = buffer.get() & 0xff;
         int payloadSize = buffer.getShort() & 0xffff;
-        buffer.getInt(); // sequence
+        long packetSequence = buffer.getInt() & 0xffffffffL;
         buffer.getLong(); // timestamp
         byte[] receivedDigest = new byte[16];
         buffer.get(receivedDigest);
@@ -189,13 +199,45 @@ public final class LanTransport implements Runnable {
             send(TYPE_PONG, new byte[0], peer);
         } else if (type == TYPE_PONG) {
             writeStatus("connected", peer, "heartbeat");
+        } else if (type == TYPE_INPUT) {
+            handleInput(payload, packetSequence);
         } else if (type == TYPE_DISCONNECT) {
             connected = false;
+            remoteInput = LanInputState.NEUTRAL;
             writeStatus("disconnected", peer, "peer encerrou a sessao");
             if (mode.equals("host")) {
                 peer = null;
             }
         }
+    }
+
+    private void handleInput(byte[] payload, long packetSequence) {
+        if (!connected || payload.length != INPUT_SIZE) {
+            Log.w(TAG, "Pacote INPUT rejeitado: estado ou tamanho invalido.");
+            return;
+        }
+        LanInputState previous = remoteInput;
+        if (previous.sequence >= 0 && !isNewerSequence(packetSequence, previous.sequence)) {
+            return;
+        }
+        ByteBuffer input = ByteBuffer.wrap(payload).order(ByteOrder.BIG_ENDIAN);
+        float horizontal = input.getFloat();
+        float vertical = input.getFloat();
+        int buttons = input.getShort() & 0xffff;
+        if (!Float.isFinite(horizontal) || !Float.isFinite(vertical)
+            || horizontal < -1.0f || horizontal > 1.0f
+            || vertical < -1.0f || vertical > 1.0f
+            || (buttons & ~KNOWN_BUTTONS_MASK) != 0) {
+            Log.w(TAG, "Pacote INPUT rejeitado: valores fora do protocolo.");
+            return;
+        }
+        remoteInput = new LanInputState(horizontal, vertical, buttons, packetSequence, System.currentTimeMillis());
+        writeStatus("connected", peer, "input recebido");
+    }
+
+    private static boolean isNewerSequence(long candidate, long previous) {
+        long difference = (candidate - previous) & 0xffffffffL;
+        return difference != 0 && difference < 0x80000000L;
     }
 
     private void send(int type, byte[] payload, InetSocketAddress destination) throws Exception {
@@ -226,8 +268,12 @@ public final class LanTransport implements Runnable {
             String peerText = address == null ? "" : address.getAddress().getHostAddress() + ":" + address.getPort();
             String json = String.format(
                 Locale.ROOT,
-                "{\"state\":\"%s\",\"mode\":\"%s\",\"peer\":\"%s\",\"detail\":\"%s\",\"updated\":%d}\n",
-                escape(state), escape(mode), escape(peerText), escape(detail), System.currentTimeMillis()
+                "{\"state\":\"%s\",\"mode\":\"%s\",\"peer\":\"%s\",\"detail\":\"%s\","
+                    + "\"input\":{\"horizontal\":%.6f,\"vertical\":%.6f,\"buttons\":%d,\"sequence\":%d,\"receivedAt\":%d},"
+                    + "\"updated\":%d}\n",
+                escape(state), escape(mode), escape(peerText), escape(detail),
+                remoteInput.horizontal, remoteInput.vertical, remoteInput.buttons,
+                remoteInput.sequence, remoteInput.receivedAtMs, System.currentTimeMillis()
             );
             try (FileOutputStream output = new FileOutputStream(status, false)) {
                 output.write(json.getBytes(StandardCharsets.UTF_8));
