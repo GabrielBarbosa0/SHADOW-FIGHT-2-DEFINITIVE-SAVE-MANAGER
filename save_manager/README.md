@@ -23,6 +23,7 @@ O programa usa apenas a biblioteca padrão do Python 3: Tkinter para a interface
 - O XML é gerado primeiro em `generated/users.xml`.
 - O arquivo gerado é relido e validado antes da aplicação.
 - A aplicação exige confirmação explícita na interface.
+- O botão `SALVAR SAVE ATUAL` copia e valida o perfil existente no aparelho sem substituí-lo.
 - Um backup completo da pasta `userdata` é salvo em `backups/` antes de substituir qualquer arquivo.
 - Hashes existentes no Android são renomeados com data e hora, não apagados.
 
@@ -34,6 +35,6 @@ O programa usa apenas a biblioteca padrão do Python 3: Tkinter para a interface
 - equipamento inicial, conjuntos de Lynx, Eremita, Açougueiro, Vespa, Viúva, Shogun ou Titã;
 - presets;
 - detecção de aparelhos ADB;
-- backup e aplicação do save.
+- backup manual do save atual e aplicação com backup automático.
 
 Os conjuntos dos seis chefes principais foram mapeados diretamente dos arquivos internos `stages.xml` e `list.xml` da Definitive Edition. Eles alteram aparência e equipamento, mas preservam a tática controlável do jogador.

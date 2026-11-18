@@ -28,6 +28,7 @@ O projeto inclui um aplicativo desktop para configurar e aplicar saves sem edita
 - usar o equipamento inicial ou os conjuntos de Lynx, Eremita, Açougueiro, Vespa, Viúva, Shogun e Titã;
 - gerar e validar o XML antes da aplicação;
 - detectar aparelhos conectados por ADB;
+- salvar manualmente o save atual do aparelho como backup local;
 - criar backup automático e aplicar o save no Android.
 
 Execute na raiz do projeto:
@@ -48,7 +49,7 @@ Ou diretamente pelo Python:
 python -m save_manager.app
 ```
 
-O aplicativo usa somente Python 3 e Tkinter. Os saves gerados ficam em `generated/` e os backups automáticos em `backups/`; ambas as pastas são locais e ignoradas pelo Git.
+O aplicativo usa somente Python 3 e Tkinter. Os saves gerados ficam em `generated/`; os backups manuais e automáticos ficam em `backups/`. Ambas as pastas são locais e ignoradas pelo Git.
 
 Esta interface é o protótipo funcional do futuro aplicativo nativo para Windows. A migração planejada para C#, WinUI 3, executável autocontido e instalador está documentada em [`docs/CSHARP-APP-ROADMAP.md`](docs/CSHARP-APP-ROADMAP.md).
 

@@ -88,12 +88,25 @@ class AdbClient:
         return result.returncode == 0 and "package:" in result.stdout
 
     def backup(self, serial: str, backup_root: Path) -> Path:
-        stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        if not self.package_installed(serial):
+            raise AdbError(f"O pacote {PACKAGE} não está instalado no aparelho selecionado.")
+
+        stamp = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
         destination = backup_root / f"{serial}-{stamp}"
         destination.mkdir(parents=True, exist_ok=False)
         self.log(f"Criando backup em {destination}")
         self._run(["shell", "am", "force-stop", PACKAGE], serial=serial)
         self._run(["pull", REMOTE_USERDATA, str(destination)], serial=serial, timeout=300)
+
+        saved_userdata = destination / "userdata"
+        if not (saved_userdata / "users.xml").is_file():
+            raise AdbError(
+                "O ADB terminou a cópia, mas users.xml não foi encontrado no backup. "
+                f"Confira o conteúdo de {destination}."
+            )
+        if not (saved_userdata / "users_backup.xml").is_file():
+            self.log("Aviso: users_backup.xml não existe no aparelho; users.xml foi salvo normalmente.")
+        self.log(f"Save atual confirmado em {saved_userdata}")
         return destination
 
     def apply_save(self, serial: str, save_path: Path, backup_root: Path) -> Path:

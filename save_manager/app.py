@@ -195,7 +195,10 @@ class SaveManagerApp(tk.Tk):
         self.refresh_button.pack(side="left")
         ttk.Label(
             device,
-            text="Aplicar cria um backup local antes de substituir users.xml e users_backup.xml.",
+            text=(
+                "SALVAR SAVE ATUAL copia o perfil que está no aparelho. "
+                "APLICAR SAVE também cria um backup automático antes da substituição."
+            ),
             wraplength=410,
             style="Subtitle.TLabel",
         ).grid(row=3, column=0, sticky="w", pady=(10, 0))
@@ -212,10 +215,10 @@ class SaveManagerApp(tk.Tk):
         self.generate_button.pack(side="left")
         self.backup_button = ttk.Button(
             actions,
-            text="FAZER BACKUP",
+            text="SALVAR SAVE ATUAL",
             style="Action.TButton",
             width=18,
-            command=self.backup_device,
+            command=self.save_current_device,
         )
         self.backup_button.pack(side="left", padx=8)
         self.apply_button = ttk.Button(
@@ -326,17 +329,21 @@ class SaveManagerApp(tk.Tk):
             raise ValueError("Selecione um aparelho ADB autorizado.")
         return device
 
-    def backup_device(self) -> None:
+    def save_current_device(self) -> None:
         try:
             device = self._selected_device()
         except ValueError as exc:
             messagebox.showwarning("Aparelho necessário", str(exc), parent=self)
             return
-        self.status_var.set("Criando backup...")
+        self.status_var.set("Salvando o save atual do aparelho...")
 
         def done(path: Path) -> None:
-            self.status_var.set("Backup concluído.")
-            messagebox.showinfo("Backup concluído", f"Backup salvo em:\n{path}", parent=self)
+            self.status_var.set("Save atual salvo com sucesso.")
+            messagebox.showinfo(
+                "Save atual salvo",
+                f"O save atual do aparelho foi copiado para:\n{path}",
+                parent=self,
+            )
 
         self._background(lambda: self.adb.backup(device.serial, BACKUP_ROOT), done)
 
