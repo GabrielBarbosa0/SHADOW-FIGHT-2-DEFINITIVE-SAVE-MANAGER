@@ -157,3 +157,7 @@ Arquivos `*.apk` e toda a pasta `game/` estão ignorados pelo Git. O APK da Defi
 - `docs/CSHARP-APP-ROADMAP.md`: plano da migração para o aplicativo nativo em C#.
 
 As pastas locais `game/`, `backups/` e `generated/` são criadas ou utilizadas durante o uso, mas permanecem fora do Git.
+
+## Licença
+
+O código-fonte e a documentação deste projeto são disponibilizados sob a [MIT License](LICENSE). Shadow Fight 2 e seus elementos pertencem aos respectivos titulares; este é um projeto comunitário não oficial e não distribui o APK do jogo.
