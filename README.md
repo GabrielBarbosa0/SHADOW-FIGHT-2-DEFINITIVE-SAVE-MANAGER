@@ -55,11 +55,11 @@ Esta interface é o protótipo funcional do futuro aplicativo nativo para Window
 
 ## Protótipo do modo multiplayer
 
-O APK possui um PVP local oculto com dois jogadores e arenas próprias. O protótipo 5 já expõe esse modo e foi validado no MuMu Player 15 com dois lutadores na mesma arena, sem falha fatal. A próxima etapa transforma a entrada do jogador 2 em comandos recebidos pela rede local.
+O APK possui um PVP local oculto com dois jogadores e arenas próprias. O protótipo 7 expõe esse modo e já inclui uma ponte UDP dentro do processo Android. A conexão MuMu-to-PC, o token de sala, o handshake e o heartbeat foram validados sem falha fatal. A próxima etapa transforma os pacotes de entrada recebidos em comandos do jogador 2.
 
 A Definitive Edition valida internamente o pacote `com.sf2.de` e a versão `2.41.9`. Por isso, a build de pesquisa não pode coexistir com o jogo original no mesmo Android: qualquer teste em aparelho real exige backup prévio do save e do APK. Os originais do projeto nunca são usados como destino de patch ou build.
 
-O processo, as regras de backup e as limitações da build atual estão em [`docs/LAN-MODE-DEVELOPMENT.md`](docs/LAN-MODE-DEVELOPMENT.md). O APK de teste fica somente em `dist/` e não é publicado no GitHub.
+O processo, as regras de backup e as limitações da build atual estão em [`docs/LAN-MODE-DEVELOPMENT.md`](docs/LAN-MODE-DEVELOPMENT.md). O protocolo e sua configuração estão em [`docs/LAN-PROTOCOL.md`](docs/LAN-PROTOCOL.md). O APK de teste fica somente em `dist/` e não é publicado no GitHub.
 
 ## Save ativo: campanha do início com facilidades
 
@@ -171,7 +171,9 @@ Arquivos `*.apk` e toda a pasta `game/` estão ignorados pelo Git. O APK da Defi
 - `tests/`: testes automatizados do gerador de save.
 - `docs/CSHARP-APP-ROADMAP.md`: plano da migração para o aplicativo nativo em C#.
 - `docs/LAN-MODE-DEVELOPMENT.md`: regras de preservação e plano técnico do modo multiplayer em LAN.
+- `docs/LAN-PROTOCOL.md`: protocolo UDP, configuração host/cliente e diagnóstico da conexão.
 - `scripts/create-lan-modding-workspace.ps1`: cria backups verificados e uma nova cópia de trabalho sem substituir os originais.
+- `scripts/build-lan-transport-apk.ps1`: cria uma build LAN nova, assinada e isolada, a partir do APK original verificado.
 
 As pastas locais `game/`, `backups/` e `generated/` são criadas ou utilizadas durante o uso, mas permanecem fora do Git.
 
