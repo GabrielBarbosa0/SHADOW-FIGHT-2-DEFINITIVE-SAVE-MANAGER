@@ -32,6 +32,12 @@ O projeto inclui um aplicativo desktop para configurar e aplicar saves sem edita
 
 Execute na raiz do projeto:
 
+```text
+INICIAR-GERENCIADOR.bat
+```
+
+Basta dar dois cliques nesse arquivo para abrir o aplicativo. Como alternativa, execute pelo PowerShell:
+
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-save-manager.ps1
 ```
