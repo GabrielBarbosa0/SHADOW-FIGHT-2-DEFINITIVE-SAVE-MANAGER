@@ -78,6 +78,7 @@ public final class LanTransport implements Runnable {
             }
             LanTransport transport = new LanTransport(context, properties);
             transport.validate();
+            LanNativeBridge.start();
             Thread thread = new Thread(transport, "sf2-lan-udp");
             thread.setDaemon(true);
             thread.start();
@@ -132,6 +133,7 @@ public final class LanTransport implements Runnable {
                 if (connected && now - lastReceive > 5000) {
                     connected = false;
                     remoteInput = LanInputState.NEUTRAL;
+                    LanNativeBridge.update(remoteInput);
                     writeStatus("timeout", peer, "heartbeat expirado");
                     if (mode.equals("client")) {
                         peer = new InetSocketAddress(InetAddress.getByName(peerHost), port);
@@ -204,6 +206,7 @@ public final class LanTransport implements Runnable {
         } else if (type == TYPE_DISCONNECT) {
             connected = false;
             remoteInput = LanInputState.NEUTRAL;
+            LanNativeBridge.update(remoteInput);
             writeStatus("disconnected", peer, "peer encerrou a sessao");
             if (mode.equals("host")) {
                 peer = null;
@@ -232,6 +235,7 @@ public final class LanTransport implements Runnable {
             return;
         }
         remoteInput = new LanInputState(horizontal, vertical, buttons, packetSequence, System.currentTimeMillis());
+        LanNativeBridge.update(remoteInput);
         writeStatus("connected", peer, "input recebido");
     }
 
@@ -268,10 +272,10 @@ public final class LanTransport implements Runnable {
             String peerText = address == null ? "" : address.getAddress().getHostAddress() + ":" + address.getPort();
             String json = String.format(
                 Locale.ROOT,
-                "{\"state\":\"%s\",\"mode\":\"%s\",\"peer\":\"%s\",\"detail\":\"%s\","
+                "{\"state\":\"%s\",\"mode\":\"%s\",\"peer\":\"%s\",\"detail\":\"%s\",\"nativeHook\":%s,"
                     + "\"input\":{\"horizontal\":%.6f,\"vertical\":%.6f,\"buttons\":%d,\"sequence\":%d,\"receivedAt\":%d},"
                     + "\"updated\":%d}\n",
-                escape(state), escape(mode), escape(peerText), escape(detail),
+                escape(state), escape(mode), escape(peerText), escape(detail), LanNativeBridge.isInstalled(),
                 remoteInput.horizontal, remoteInput.vertical, remoteInput.buttons,
                 remoteInput.sequence, remoteInput.receivedAtMs, System.currentTimeMillis()
             );

@@ -33,7 +33,9 @@ $buildTools = Join-Path $androidSdk 'build-tools\36.1.0'
 $d8 = Join-Path $buildTools 'd8.bat'
 $zipalign = Join-Path $buildTools 'zipalign.exe'
 $apksigner = Join-Path $buildTools 'apksigner.bat'
-foreach ($required in @($apktool, $keystore, $androidJar, $d8, $zipalign, $apksigner)) {
+$ndkRoot = Join-Path $repoRoot '.tools\android-ndk-r30'
+$ndkClang = Join-Path $ndkRoot 'toolchains\llvm\prebuilt\windows-x86_64\bin\aarch64-linux-android24-clang.cmd'
+foreach ($required in @($apktool, $keystore, $androidJar, $d8, $zipalign, $apksigner, $ndkClang)) {
     if (-not (Test-Path -LiteralPath $required)) {
         throw "Dependencia de build ausente: $required"
     }
@@ -47,6 +49,7 @@ $bridgeDecoded = Join-Path $workPath 'bridge-decoded'
 $bridgeJar = Join-Path $workPath 'sf2-lan-bridge.jar'
 $miniApk = Join-Path $workPath 'sf2-lan-bridge-mini.apk'
 $patchedLibrary = Join-Path $workPath 'libil2cpp.lan.so'
+$nativeOutput = Join-Path $workPath 'libsf2lanhook.so'
 $unsignedApk = Join-Path $workPath 'unsigned.apk'
 $alignedApk = Join-Path $workPath 'aligned.apk'
 New-Item -ItemType Directory -Path $workPath, $javaClasses, $dexOutput, $miniStage | Out-Null
@@ -80,6 +83,16 @@ if ($LASTEXITCODE -ne 0) { throw 'A conversao da ponte para smali falhou.' }
 $smaliTarget = Join-Path $decoded 'smali_classes8'
 New-Item -ItemType Directory -Path $smaliTarget | Out-Null
 Copy-Item -LiteralPath (Join-Path $bridgeDecoded 'smali\com') -Destination $smaliTarget -Recurse
+
+Write-Output 'Compilando o hook ARM64 do GamePad 1...'
+& $ndkClang -std=c11 -O2 -fPIC -shared -D_GNU_SOURCE `
+    '-Wl,--no-undefined' '-Wl,-z,max-page-size=16384' `
+    -o $nativeOutput `
+    (Join-Path $repoRoot 'lan_bridge\android\native\sf2_lan_hook.c') `
+    -llog -ldl
+if ($LASTEXITCODE -ne 0) { throw 'A compilacao do hook ARM64 falhou.' }
+$nativeTarget = Join-Path $decoded 'lib\arm64-v8a\libsf2lanhook.so'
+Copy-Item -LiteralPath $nativeOutput -Destination $nativeTarget
 
 Write-Output 'Adicionando bootstrap e permissoes LAN ao manifesto da copia...'
 $manifestPath = Join-Path $decoded 'AndroidManifest.xml'

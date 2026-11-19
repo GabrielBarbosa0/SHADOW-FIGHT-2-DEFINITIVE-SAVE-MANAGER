@@ -2,7 +2,7 @@
 
 ## Marco atual
 
-O protótipo 9 acrescenta uma ponte UDP ao processo Android do jogo. Ela já executa:
+O protótipo 11 acrescenta uma ponte UDP e um hook ARM64 ao processo Android do jogo. Ele já executa:
 
 - configuração de host ou cliente;
 - autenticação por token compartilhado;
@@ -12,11 +12,12 @@ O protótipo 9 acrescenta uma ponte UDP ao processo Android do jogo. Ela já exe
 - serialização do estado de movimento e botões;
 - validação, ordenação e armazenamento dos pacotes `INPUT` no Android;
 - neutralização automática da entrada quando a conexão expira;
+- aplicação dos eixos e botões ao `GamePad 1` do PVP;
 - status legível fora do processo do jogo.
 
 A ponte Android e a implementação de referência em Python usam o mesmo protocolo. O teste MuMu-to-PC foi concluído com conexão e heartbeat contínuo, sem falha fatal no jogo.
 
-Ainda falta conectar o snapshot recebido ao objeto `PvpScene.PlayerTwoInput`. Portanto, o protótipo 9 valida a entrega dos comandos ao processo do jogo, mas ainda não é uma partida jogável por LAN.
+Movimento e ataque do jogador 2 já funcionam por LAN numa única simulação de combate. Ainda faltam capturar o controle local do segundo Android e sincronizar a luta entre duas simulações; portanto, o protótipo 11 ainda não representa um duelo completo em dois celulares.
 
 ## Configuração Android
 
@@ -48,6 +49,8 @@ Os dois lados precisam usar a mesma porta e o mesmo token. Depois de alterar o a
 O estado atual é gravado em:
 
 `/sdcard/Android/data/com.sf2.de/files/sf2lan-status.json`
+
+O campo `nativeHook` informa se os leitores do `GamePad 1` foram redirecionados com sucesso.
 
 ## Diagnóstico no computador
 
