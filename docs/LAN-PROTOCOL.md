@@ -62,10 +62,6 @@ No segundo aparelho, use a mesma propriedade com `mode=client` e o IP do anfitri
 O overlay criado no prototipo 13 permanece apenas como diagnostico por meio de
 `controller=true` e nao faz parte da interface final.
 
-Existe ainda `diagnosticOpenPvp=true`, desativado por padrão. Essa opção apenas
-reproduz a tentativa de carregar `ModulePvp`; no APK atual ela termina na tela de
-carregamento porque a cena de índice 9 não foi incluída no build Unity.
-
 Exemplo de host:
 
 ```properties

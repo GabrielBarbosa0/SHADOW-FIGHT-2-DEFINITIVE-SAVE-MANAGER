@@ -1,12 +1,9 @@
 #include <jni.h>
 #include <android/log.h>
-#include <dlfcn.h>
 #include <link.h>
 #include <stdatomic.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
 #include <time.h>
@@ -33,39 +30,20 @@
 #define RVA_GET_AXIS_DOWN 0x3138CB8u
 #define RVA_GET_KEY 0x3138E70u
 #define RVA_GET_KEY_UP 0x31393BCu
-#define RVA_DOJO_FIXED_UPDATE 0x3108844u
 #define RVA_GET_AXIS_VALUE 0x313995Cu
 #define RVA_GET_KEY_DOWN 0x313A4ECu
 #define RVA_GET_AXIS 0x313A918u
-#define RVA_BUILD_PVP_XML 0x32E3CD8u
-#define RVA_GET_SCENE_MANAGER 0x351B940u
-#define RVA_LOAD_SCENE 0x35255B4u
-#define PVP_SCENE_ID 9
-
-#define PVP_XML_PATH "/sdcard/Android/data/com.sf2.de/files/sf2lan-pvp.xml"
 
 typedef bool (*BoolInputMethod)(void *, int32_t, int32_t, const void *);
 typedef float (*FloatInputMethod)(void *, int32_t, int32_t, const void *);
-typedef void (*VoidInstanceMethod)(void *, const void *);
-typedef void *(*PvpXmlBuilder)(void *, const void *);
-typedef void *(*GetSceneManager)(const void *);
-typedef void (*LoadScene)(void *, int32_t, void *, void *, bool, const void *);
-
-typedef void *(*Il2CppObjectGetClass)(void *object);
-typedef const void *(*Il2CppClassGetMethodFromName)(void *klass, const char *name, int args_count);
-typedef void *(*Il2CppRuntimeInvoke)(const void *method, void *object, void **params, void **exception);
-typedef const uint16_t *(*Il2CppStringChars)(void *string);
-typedef int32_t (*Il2CppStringLength)(void *string);
 
 static BoolInputMethod original_get_axis_up;
 static BoolInputMethod original_get_axis_down;
 static BoolInputMethod original_get_key;
 static BoolInputMethod original_get_key_up;
-static VoidInstanceMethod original_dojo_fixed_update;
 static FloatInputMethod original_get_axis_value;
 static BoolInputMethod original_get_key_down;
 static BoolInputMethod original_get_axis;
-static PvpXmlBuilder original_build_pvp_xml;
 
 static _Atomic uint32_t horizontal_bits;
 static _Atomic uint32_t vertical_bits;
@@ -82,111 +60,6 @@ static _Atomic uint32_t local_dpad_y_bits;
 static _Atomic uint32_t local_buttons;
 static _Atomic bool hook_installed;
 static _Atomic bool hook_failed;
-static _Atomic uint32_t pvp_xml_dump_count;
-static _Atomic uintptr_t il2cpp_base;
-static _Atomic bool pvp_open_requested;
-
-static void maybe_open_pvp(void) {
-    if (!atomic_exchange_explicit(&pvp_open_requested, false, memory_order_acq_rel)) return;
-    uintptr_t base = atomic_load_explicit(&il2cpp_base, memory_order_acquire);
-    if (!base) {
-        atomic_store_explicit(&pvp_open_requested, true, memory_order_release);
-        return;
-    }
-    GetSceneManager get_manager = (GetSceneManager)(base + RVA_GET_SCENE_MANAGER);
-    LoadScene load_scene = (LoadScene)(base + RVA_LOAD_SCENE);
-    void *manager = get_manager(NULL);
-    if (!manager) {
-        LOGE("Gerenciador de cenas ainda indisponivel; abertura do PVP adiada.");
-        atomic_store_explicit(&pvp_open_requested, true, memory_order_release);
-        return;
-    }
-    LOGI("Solicitando a cena PVP %d pelo carregador interno.", PVP_SCENE_ID);
-    load_scene(manager, PVP_SCENE_ID, NULL, NULL, true, NULL);
-}
-
-static size_t utf16_to_utf8(const uint16_t *source, size_t source_length, char *destination) {
-    size_t output = 0;
-    for (size_t index = 0; index < source_length; index++) {
-        uint32_t codepoint = source[index];
-        if (codepoint >= 0xd800 && codepoint <= 0xdbff && index + 1 < source_length) {
-            uint32_t low = source[index + 1];
-            if (low >= 0xdc00 && low <= 0xdfff) {
-                codepoint = 0x10000 + ((codepoint - 0xd800) << 10) + (low - 0xdc00);
-                index++;
-            }
-        }
-        if (codepoint <= 0x7f) {
-            destination[output++] = (char)codepoint;
-        } else if (codepoint <= 0x7ff) {
-            destination[output++] = (char)(0xc0 | (codepoint >> 6));
-            destination[output++] = (char)(0x80 | (codepoint & 0x3f));
-        } else if (codepoint <= 0xffff) {
-            destination[output++] = (char)(0xe0 | (codepoint >> 12));
-            destination[output++] = (char)(0x80 | ((codepoint >> 6) & 0x3f));
-            destination[output++] = (char)(0x80 | (codepoint & 0x3f));
-        } else {
-            destination[output++] = (char)(0xf0 | (codepoint >> 18));
-            destination[output++] = (char)(0x80 | ((codepoint >> 12) & 0x3f));
-            destination[output++] = (char)(0x80 | ((codepoint >> 6) & 0x3f));
-            destination[output++] = (char)(0x80 | (codepoint & 0x3f));
-        }
-    }
-    destination[output] = '\0';
-    return output;
-}
-
-static void dump_pvp_xml(void *xml_node) {
-    if (!xml_node) return;
-    Il2CppObjectGetClass object_get_class = (Il2CppObjectGetClass)dlsym(RTLD_DEFAULT, "il2cpp_object_get_class");
-    Il2CppClassGetMethodFromName get_method =
-        (Il2CppClassGetMethodFromName)dlsym(RTLD_DEFAULT, "il2cpp_class_get_method_from_name");
-    Il2CppRuntimeInvoke runtime_invoke = (Il2CppRuntimeInvoke)dlsym(RTLD_DEFAULT, "il2cpp_runtime_invoke");
-    Il2CppStringChars string_chars = (Il2CppStringChars)dlsym(RTLD_DEFAULT, "il2cpp_string_chars");
-    Il2CppStringLength string_length = (Il2CppStringLength)dlsym(RTLD_DEFAULT, "il2cpp_string_length");
-    if (!object_get_class || !get_method || !runtime_invoke || !string_chars || !string_length) {
-        LOGE("APIs IL2CPP ausentes para extrair o XML do PVP.");
-        return;
-    }
-
-    void *klass = object_get_class(xml_node);
-    const void *method = klass ? get_method(klass, "get_OuterXml", 0) : NULL;
-    void *exception = NULL;
-    void *text = method ? runtime_invoke(method, xml_node, NULL, &exception) : NULL;
-    if (!text || exception) {
-        LOGE("Nao foi possivel obter XmlNode.OuterXml do PVP.");
-        return;
-    }
-
-    int32_t length = string_length(text);
-    const uint16_t *characters = string_chars(text);
-    if (length < 0 || !characters || (size_t)length > (SIZE_MAX - 1) / 4) return;
-    char *utf8 = malloc((size_t)length * 4 + 1);
-    if (!utf8) return;
-    size_t bytes = utf16_to_utf8(characters, (size_t)length, utf8);
-    FILE *output = fopen(PVP_XML_PATH, "wb");
-    if (output) {
-        fwrite(utf8, 1, bytes, output);
-        fputc('\n', output);
-        fclose(output);
-        uint32_t count = atomic_fetch_add_explicit(&pvp_xml_dump_count, 1, memory_order_relaxed) + 1;
-        LOGI("XML do PVP capturado em %s (%zu bytes, captura %u).", PVP_XML_PATH, bytes, count);
-    } else {
-        LOGE("Nao foi possivel gravar %s.", PVP_XML_PATH);
-    }
-    free(utf8);
-}
-
-static void *hooked_build_pvp_xml(void *self, const void *method) {
-    void *xml_node = original_build_pvp_xml(self, method);
-    dump_pvp_xml(xml_node);
-    return xml_node;
-}
-
-static void hooked_dojo_fixed_update(void *self, const void *method) {
-    original_dojo_fixed_update(self, method);
-    maybe_open_pvp();
-}
 
 static uint32_t float_bits(float value) {
     union { float f; uint32_t u; } converted = { .f = value };
@@ -307,12 +180,9 @@ static float hooked_get_axis_value(void *self, int32_t index, int32_t axis, cons
     if (index != PLAYER_TWO_INDEX) {
         float result = original_get_axis_value(self, index, axis, method);
         if (index == PLAYER_ONE_INDEX) capture_local_axis(axis, result);
-        maybe_open_pvp();
         return result;
     }
-    float result = input_is_fresh() ? remote_axis_value(axis) : 0.0f;
-    maybe_open_pvp();
-    return result;
+    return input_is_fresh() ? remote_axis_value(axis) : 0.0f;
 }
 
 static bool hooked_get_axis(void *self, int32_t index, int32_t axis, const void *method) {
@@ -446,11 +316,9 @@ Java_com_sf2_lan_LanNativeBridge_nativeInstall(JNIEnv *env, jclass type) {
         {RVA_GET_AXIS_DOWN, hooked_get_axis_down, (void **)&original_get_axis_down},
         {RVA_GET_KEY, hooked_get_key, (void **)&original_get_key},
         {RVA_GET_KEY_UP, hooked_get_key_up, (void **)&original_get_key_up},
-        {RVA_DOJO_FIXED_UPDATE, hooked_dojo_fixed_update, (void **)&original_dojo_fixed_update},
         {RVA_GET_AXIS_VALUE, hooked_get_axis_value, (void **)&original_get_axis_value},
         {RVA_GET_KEY_DOWN, hooked_get_key_down, (void **)&original_get_key_down},
         {RVA_GET_AXIS, hooked_get_axis, (void **)&original_get_axis},
-        {RVA_BUILD_PVP_XML, hooked_build_pvp_xml, (void **)&original_build_pvp_xml},
     };
     const size_t count = sizeof(hooks) / sizeof(hooks[0]);
     for (size_t i = 0; i < count; i++) {
@@ -463,18 +331,9 @@ Java_com_sf2_lan_LanNativeBridge_nativeInstall(JNIEnv *env, jclass type) {
         }
     }
     __builtin___clear_cache((char *)hook_page, (char *)(hook_page + count * 64));
-    atomic_store_explicit(&il2cpp_base, location.base, memory_order_release);
     atomic_store_explicit(&hook_installed, true, memory_order_release);
-    LOGI("Sete leitores do GamePad 1 e o gerador XML do PVP redirecionados; base libil2cpp=%p.",
-        (void *)location.base);
+    LOGI("Sete leitores do GamePad 1 redirecionados; base libil2cpp=%p.", (void *)location.base);
     return JNI_TRUE;
-}
-
-JNIEXPORT void JNICALL
-Java_com_sf2_lan_LanNativeBridge_nativeRequestOpenPvp(JNIEnv *env, jclass type) {
-    (void)env;
-    (void)type;
-    atomic_store_explicit(&pvp_open_requested, true, memory_order_release);
 }
 
 JNIEXPORT void JNICALL

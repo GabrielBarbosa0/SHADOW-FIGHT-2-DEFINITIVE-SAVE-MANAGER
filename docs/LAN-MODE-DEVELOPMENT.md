@@ -95,7 +95,7 @@ A build 2.41.9 inclui no IL2CPP `PvpScene`, selecao de dois personagens, selecao
 
 O prototipo 19 localizou o carregador interno de cenas e solicitou diretamente o ID 9 no thread do jogo por meio de `DojoScene.FixedUpdate`. O log confirmou `GoToModule ModulePvp` e `LoaderScene::LoadLevel: scene: ModulePvp`, seguido do erro de cena ausente. O botao circular do dojo apenas alterna a pre-visualizacao do adversario e do saco de treino; ele nao abre a cena PVP. O patch e limitado pelo hash da `libil2cpp.so` e sempre gera outra biblioteca, sem escrever sobre a original.
 
-O codigo de diagnostico permanece desativado por padrao. `diagnosticOpenPvp=true` em `sf2lan.properties` reproduz a tentativa, mas deixa o jogo na tela de carregamento enquanto a cena nao for recuperada de outra distribuicao compativel ou reconstruida.
+O codigo de diagnostico usado nos prototipos 17 a 19 foi removido depois dessa confirmacao. Os resultados permanecem documentados, enquanto o codigo ativo volta a manter apenas a infraestrutura LAN validada no prototipo 15.
 
 ### Validacao no MuMu Player 15
 

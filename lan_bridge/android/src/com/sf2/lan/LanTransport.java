@@ -51,7 +51,6 @@ public final class LanTransport implements Runnable {
     private final byte[] deviceName;
     private final boolean controllerMode;
     private final boolean nativeControls;
-    private final boolean diagnosticOpenPvp;
     private final LanFighterProfile localProfile;
     private volatile LanFighterProfile remoteProfile;
     private boolean localReady;
@@ -79,8 +78,6 @@ public final class LanTransport implements Runnable {
         this.deviceName = properties.getProperty("name", android.os.Build.MODEL).getBytes(StandardCharsets.UTF_8);
         this.controllerMode = Boolean.parseBoolean(properties.getProperty("controller", "false").trim());
         this.nativeControls = Boolean.parseBoolean(properties.getProperty("nativeControls", "false").trim());
-        this.diagnosticOpenPvp = Boolean.parseBoolean(
-            properties.getProperty("diagnosticOpenPvp", "false").trim());
         LanFighterProfile profile = null;
         try {
             profile = LanFighterProfile.read(context);
@@ -111,7 +108,7 @@ public final class LanTransport implements Runnable {
             if (transport.controllerMode) {
                 LanControllerOverlay.start();
             } else {
-                LanNativeBridge.start(transport.diagnosticOpenPvp);
+                LanNativeBridge.start();
             }
             Thread thread = new Thread(transport, "sf2-lan-udp");
             thread.setDaemon(true);
