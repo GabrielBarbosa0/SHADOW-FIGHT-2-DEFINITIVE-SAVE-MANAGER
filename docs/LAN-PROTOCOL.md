@@ -135,8 +135,19 @@ Tipos definidos:
 - `3`: `PING`;
 - `4`: `PONG`;
 - `5`: `INPUT`;
-- `6`: `DISCONNECT`.
+- `6`: `DISCONNECT`;
+- `7`: `PROFILE`;
+- `8`: `READY`.
 
 O payload de `INPUT` possui eixo horizontal `float32`, eixo vertical `float32` e máscara `uint16` de botões. Os bits atuais são soco, chute, arma de longo alcance, magia, habilidade de chefe e pausa.
+
+O payload de `PROFILE` começa com versão `uint8` e nível `uint8`. Em seguida,
+cada texto usa tamanho `uint8` e UTF-8, na ordem: nome, avatar, voz, esqueleto,
+armadura, elmo, arma, arma de longo alcance e magia. Cada texto aceita no máximo
+96 bytes. Recursos, moedas e progresso da campanha nunca fazem parte desse pacote.
+
+`READY` tem payload vazio. Os perfis são retransmitidos até cada lado receber a
+confirmação do outro. `sessionReady` no status só fica verdadeiro quando ambos
+possuem e confirmaram o perfil adversário.
 
 O token impede que salas diferentes aceitem pacotes umas das outras, mas não oferece criptografia. Esta primeira versão deve ser usada apenas em uma rede local confiável.

@@ -32,6 +32,8 @@ public final class LanTransport implements Runnable {
     private static final int TYPE_PONG = 4;
     private static final int TYPE_INPUT = 5;
     private static final int TYPE_DISCONNECT = 6;
+    private static final int TYPE_PROFILE = 7;
+    private static final int TYPE_READY = 8;
     private static final int HEADER_SIZE = 36;
     private static final int INPUT_SIZE = 10;
     private static final int KNOWN_BUTTONS_MASK = 0x3f;
@@ -49,6 +51,10 @@ public final class LanTransport implements Runnable {
     private final byte[] deviceName;
     private final boolean controllerMode;
     private final boolean nativeControls;
+    private final LanFighterProfile localProfile;
+    private volatile LanFighterProfile remoteProfile;
+    private boolean localReady;
+    private boolean remoteReady;
     private DatagramSocket socket;
     private InetSocketAddress peer;
     private int sequence;
@@ -60,6 +66,8 @@ public final class LanTransport implements Runnable {
     private volatile int localButtons;
     private int pendingButtons;
     private long lastInputSend;
+    private long lastProfileSend;
+    private long lastReadySend;
 
     private LanTransport(Context context, Properties properties) {
         this.context = context;
@@ -70,6 +78,13 @@ public final class LanTransport implements Runnable {
         this.deviceName = properties.getProperty("name", android.os.Build.MODEL).getBytes(StandardCharsets.UTF_8);
         this.controllerMode = Boolean.parseBoolean(properties.getProperty("controller", "false").trim());
         this.nativeControls = Boolean.parseBoolean(properties.getProperty("nativeControls", "false").trim());
+        LanFighterProfile profile = null;
+        try {
+            profile = LanFighterProfile.read(context);
+        } catch (Exception error) {
+            Log.w(TAG, "Nao foi possivel ler o perfil local para a sessao LAN.", error);
+        }
+        this.localProfile = profile;
     }
 
     public static void start(Context context) {
@@ -166,6 +181,12 @@ public final class LanTransport implements Runnable {
                 long now = System.currentTimeMillis();
                 if (mode.equals("client") && !connected && now - lastSend >= 1000) {
                     send(TYPE_HELLO, deviceName, peer);
+                } else if (connected && !remoteReady && localProfile != null
+                    && now - lastProfileSend >= 1000) {
+                    sendLocalProfile();
+                } else if (connected && localReady && !remoteReady
+                    && now - lastReadySend >= 1000) {
+                    sendReady();
                 } else if (connected && sendsLocalInput() && peer != null
                     && now - lastInputSend >= INPUT_INTERVAL_MS) {
                     if (nativeControls) {
@@ -179,6 +200,7 @@ public final class LanTransport implements Runnable {
                 }
                 if (connected && now - lastReceive > 5000) {
                     connected = false;
+                    resetSession();
                     remoteInput = LanInputState.NEUTRAL;
                     if (!controllerMode) {
                         LanNativeBridge.update(remoteInput);
@@ -186,6 +208,8 @@ public final class LanTransport implements Runnable {
                     writeStatus("timeout", peer, "heartbeat expirado");
                     if (mode.equals("client")) {
                         peer = new InetSocketAddress(InetAddress.getByName(peerHost), port);
+                    } else {
+                        peer = null;
                     }
                 }
 
@@ -243,9 +267,11 @@ public final class LanTransport implements Runnable {
         if (type == TYPE_HELLO && mode.equals("host")) {
             connected = true;
             send(TYPE_WELCOME, deviceName, peer);
+            sendLocalProfile();
             writeStatus("connected", peer, new String(payload, StandardCharsets.UTF_8));
         } else if (type == TYPE_WELCOME && mode.equals("client")) {
             connected = true;
+            sendLocalProfile();
             writeStatus("connected", peer, new String(payload, StandardCharsets.UTF_8));
         } else if (type == TYPE_PING) {
             send(TYPE_PONG, new byte[0], peer);
@@ -253,8 +279,13 @@ public final class LanTransport implements Runnable {
             writeStatus("connected", peer, "heartbeat");
         } else if (type == TYPE_INPUT) {
             handleInput(payload, packetSequence);
+        } else if (type == TYPE_PROFILE) {
+            handleProfile(payload);
+        } else if (type == TYPE_READY) {
+            handleReady(payload);
         } else if (type == TYPE_DISCONNECT) {
             connected = false;
+            resetSession();
             remoteInput = LanInputState.NEUTRAL;
             if (!controllerMode) {
                 LanNativeBridge.update(remoteInput);
@@ -304,6 +335,48 @@ public final class LanTransport implements Runnable {
             .array();
     }
 
+    private void sendLocalProfile() throws Exception {
+        if (localProfile != null && peer != null) {
+            send(TYPE_PROFILE, localProfile.encode(), peer);
+            lastProfileSend = System.currentTimeMillis();
+        }
+    }
+
+    private void handleProfile(byte[] payload) throws Exception {
+        try {
+            remoteProfile = LanFighterProfile.decode(payload);
+            localReady = true;
+            sendReady();
+            writeStatus("connected", peer, "perfil remoto recebido");
+        } catch (IllegalArgumentException error) {
+            Log.w(TAG, "Perfil remoto rejeitado.", error);
+        }
+    }
+
+    private void sendReady() throws Exception {
+        if (peer != null) {
+            send(TYPE_READY, new byte[0], peer);
+            lastReadySend = System.currentTimeMillis();
+        }
+    }
+
+    private void handleReady(byte[] payload) {
+        if (payload.length != 0) {
+            Log.w(TAG, "READY rejeitado: payload deve ser vazio.");
+            return;
+        }
+        remoteReady = true;
+        writeStatus("connected", peer, localReady ? "sessao pronta" : "peer pronto");
+    }
+
+    private void resetSession() {
+        localReady = false;
+        remoteReady = false;
+        remoteProfile = null;
+        lastProfileSend = 0;
+        lastReadySend = 0;
+    }
+
     private boolean sendsLocalInput() {
         return controllerMode || nativeControls;
     }
@@ -344,12 +417,17 @@ public final class LanTransport implements Runnable {
                 "{\"state\":\"%s\",\"mode\":\"%s\",\"controller\":%s,\"nativeControls\":%s,\"peer\":\"%s\",\"detail\":\"%s\",\"nativeHook\":%s,"
                     + "\"input\":{\"horizontal\":%.6f,\"vertical\":%.6f,\"buttons\":%d,\"sequence\":%d,\"receivedAt\":%d},"
                     + "\"localInput\":{\"horizontal\":%.6f,\"vertical\":%.6f,\"buttons\":%d},"
+                    + "\"localProfile\":%s,\"remoteProfile\":%s,\"localReady\":%s,\"remoteReady\":%s,\"sessionReady\":%s,"
                     + "\"updated\":%d}\n",
                 escape(state), escape(mode), controllerMode, nativeControls,
                 escape(peerText), escape(detail), LanNativeBridge.isInstalled(),
                 remoteInput.horizontal, remoteInput.vertical, remoteInput.buttons,
                 remoteInput.sequence, remoteInput.receivedAtMs,
-                localHorizontal, localVertical, localButtons, System.currentTimeMillis()
+                localHorizontal, localVertical, localButtons,
+                localProfile == null ? "null" : localProfile.toJson(),
+                remoteProfile == null ? "null" : remoteProfile.toJson(),
+                localReady, remoteReady, localReady && remoteReady,
+                System.currentTimeMillis()
             );
             try (FileOutputStream output = new FileOutputStream(status, false)) {
                 output.write(json.getBytes(StandardCharsets.UTF_8));

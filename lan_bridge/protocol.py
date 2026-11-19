@@ -12,6 +12,10 @@ VERSION = 1
 MAX_PAYLOAD = 1024
 HEADER = struct.Struct("!4sBBHIQ16s")
 INPUT_PAYLOAD = struct.Struct("!ffH")
+PROFILE_HEADER = struct.Struct("!BB")
+PROFILE_VERSION = 1
+PROFILE_FIELDS = ("name", "avatar", "voice", "skeleton", "armor", "helm", "weapon", "ranged", "magic")
+MAX_PROFILE_FIELD_BYTES = 96
 
 
 class ProtocolError(ValueError):
@@ -25,6 +29,8 @@ class PacketType(IntEnum):
     PONG = 4
     INPUT = 5
     DISCONNECT = 6
+    PROFILE = 7
+    READY = 8
 
 
 class Button(IntFlag):
@@ -66,6 +72,57 @@ class InputState:
         state = cls(horizontal, vertical, Button(buttons))
         state.encode()
         return state
+
+
+@dataclass(frozen=True, slots=True)
+class FighterProfile:
+    level: int
+    name: str
+    avatar: str
+    voice: str
+    skeleton: str
+    armor: str
+    helm: str
+    weapon: str
+    ranged: str
+    magic: str
+
+    def encode(self) -> bytes:
+        if not 1 <= self.level <= 255:
+            raise ProtocolError("Nivel do lutador fora do intervalo 1..255.")
+        payload = bytearray(PROFILE_HEADER.pack(PROFILE_VERSION, self.level))
+        for field_name in PROFILE_FIELDS:
+            encoded = getattr(self, field_name).encode("utf-8")
+            if len(encoded) > MAX_PROFILE_FIELD_BYTES:
+                raise ProtocolError(f"Campo de perfil muito longo: {field_name}.")
+            payload.append(len(encoded))
+            payload.extend(encoded)
+        return bytes(payload)
+
+    @classmethod
+    def decode(cls, payload: bytes) -> FighterProfile:
+        if len(payload) < PROFILE_HEADER.size:
+            raise ProtocolError("Perfil do lutador incompleto.")
+        version, level = PROFILE_HEADER.unpack_from(payload)
+        if version != PROFILE_VERSION:
+            raise ProtocolError(f"Versao de perfil incompativel: {version}.")
+        offset = PROFILE_HEADER.size
+        values: dict[str, str] = {}
+        for field_name in PROFILE_FIELDS:
+            if offset >= len(payload):
+                raise ProtocolError("Perfil do lutador truncado.")
+            size = payload[offset]
+            offset += 1
+            if size > MAX_PROFILE_FIELD_BYTES or offset + size > len(payload):
+                raise ProtocolError(f"Campo de perfil invalido: {field_name}.")
+            try:
+                values[field_name] = payload[offset:offset + size].decode("utf-8")
+            except UnicodeDecodeError as exc:
+                raise ProtocolError(f"Campo de perfil nao e UTF-8: {field_name}.") from exc
+            offset += size
+        if offset != len(payload):
+            raise ProtocolError("Perfil do lutador contem bytes excedentes.")
+        return cls(level=level, **values)
 
 
 def session_digest(token: str) -> bytes:

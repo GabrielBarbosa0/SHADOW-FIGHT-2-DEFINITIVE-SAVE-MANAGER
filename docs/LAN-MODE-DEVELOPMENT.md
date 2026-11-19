@@ -17,6 +17,8 @@
 - O controle transmite eixos e botoes a aproximadamente 30 Hz e retem toques curtos ate o primeiro envio.
 - O hook agora captura os resultados nativos do `GamePad 0` sem modificar os controles originais.
 - Com `nativeControls=true`, cada aparelho transmite seu proprio analogico e botoes e recebe o adversario no `GamePad 1`.
+- Cada peer le o perfil selecionado em `userdata/users.xml` e troca somente nivel, visual e equipamento de combate.
+- A negociacao `PROFILE`/`READY` repete pacotes perdidos e so libera a sessao quando os dois perfis foram confirmados.
 
 Artefato local:
 

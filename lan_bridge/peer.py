@@ -5,7 +5,7 @@ import time
 from dataclasses import dataclass
 from enum import Enum
 
-from .protocol import InputState, Packet, PacketType, ProtocolError, decode_packet, encode_packet
+from .protocol import FighterProfile, InputState, Packet, PacketType, ProtocolError, decode_packet, encode_packet
 
 
 class PeerMode(str, Enum):
@@ -19,6 +19,7 @@ class LanEvent:
     address: tuple[str, int] | None = None
     packet: Packet | None = None
     input_state: InputState | None = None
+    fighter_profile: FighterProfile | None = None
     detail: str = ""
 
 
@@ -128,6 +129,16 @@ class LanPeer:
             except ProtocolError as exc:
                 return [LanEvent("rejected", address, packet, detail=str(exc))]
             return [LanEvent("input", address, packet, state)]
+        if packet.kind is PacketType.PROFILE:
+            try:
+                profile = FighterProfile.decode(packet.payload)
+            except ProtocolError as exc:
+                return [LanEvent("rejected", address, packet, detail=str(exc))]
+            return [LanEvent("profile", address, packet, fighter_profile=profile)]
+        if packet.kind is PacketType.READY:
+            if packet.payload:
+                return [LanEvent("rejected", address, packet, detail="READY deve ter payload vazio.")]
+            return [LanEvent("ready", address, packet)]
         if packet.kind is PacketType.DISCONNECT:
             self.connected = False
             self.peer_address = None
@@ -138,6 +149,16 @@ class LanPeer:
         if not self.connected or self.peer_address is None:
             raise ConnectionError("Nenhum peer LAN conectado.")
         return self._send(PacketType.INPUT, state.encode(), self.peer_address)
+
+    def send_profile(self, profile: FighterProfile) -> int:
+        if not self.connected or self.peer_address is None:
+            raise ConnectionError("Nenhum peer LAN conectado.")
+        return self._send(PacketType.PROFILE, profile.encode(), self.peer_address)
+
+    def send_ready(self) -> int:
+        if not self.connected or self.peer_address is None:
+            raise ConnectionError("Nenhum peer LAN conectado.")
+        return self._send(PacketType.READY, address=self.peer_address)
 
     def _address_allowed(self, address: tuple[str, int], kind: PacketType) -> bool:
         if self.mode is PeerMode.HOST:

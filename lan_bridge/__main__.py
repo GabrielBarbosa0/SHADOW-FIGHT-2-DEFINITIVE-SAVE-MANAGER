@@ -44,6 +44,12 @@ def main() -> int:
                         f" vertical={event.input_state.vertical:.3f}"
                         f" buttons=0x{int(event.input_state.buttons):02x}"
                     )
+                elif event.fighter_profile is not None:
+                    profile = event.fighter_profile
+                    suffix = (
+                        f" level={profile.level} avatar={profile.avatar}"
+                        f" weapon={profile.weapon} armor={profile.armor}"
+                    )
                 print(f"{event.name}: {event.address} {event.detail}{suffix}".rstrip())
             now = time.monotonic()
             should_send_once = not input_sent and args.input_duration <= 0

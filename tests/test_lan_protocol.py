@@ -6,6 +6,7 @@ import unittest
 from lan_bridge.peer import LanPeer, PeerMode
 from lan_bridge.protocol import (
     Button,
+    FighterProfile,
     InputState,
     PacketType,
     ProtocolError,
@@ -42,6 +43,25 @@ class ProtocolTests(unittest.TestCase):
     def test_invalid_axis_is_rejected(self) -> None:
         with self.assertRaisesRegex(ProtocolError, "horizontal"):
             InputState(1.5, 0.0).encode()
+
+    def test_fighter_profile_round_trip(self) -> None:
+        original = FighterProfile(
+            level=52,
+            name="NAME_SHADOW",
+            avatar="avatar_human",
+            voice="Male",
+            skeleton="Skeleton",
+            armor="ARMOR_SHOGUN",
+            helm="HELM_CRESCENT",
+            weapon="WEAPON_SHOGUN_KATANA",
+            ranged="RANGED_CHAKRAM_OF_MASTER",
+            magic="MAGIC_ASTEROID",
+        )
+        self.assertEqual(FighterProfile.decode(original.encode()), original)
+
+    def test_truncated_fighter_profile_is_rejected(self) -> None:
+        with self.assertRaisesRegex(ProtocolError, "perfil"):
+            FighterProfile.decode(b"\x01\x34\x05abc")
 
 
 class PeerTests(unittest.TestCase):
@@ -85,6 +105,22 @@ class PeerTests(unittest.TestCase):
         client_input_event = self.client.poll(1.0)[0]
         self.assertEqual(client_input_event.name, "input")
         self.assertEqual(client_input_event.input_state, host_sent)
+
+        profile = FighterProfile(52, "NAME_SHADOW", "avatar_human", "Male", "Skeleton",
+            "BODY_TITAN", "HEAD_TITAN", "WEAPON_TITAN_GIANT_SWORD",
+            "RANGED_TITANS_HARPOON", "MAGIC_MIND_THROW")
+        self.client.send_profile(profile)
+        profile_event = self.host.poll(1.0)[0]
+        self.assertEqual(profile_event.name, "profile")
+        self.assertEqual(profile_event.fighter_profile, profile)
+
+        self.host.send_ready()
+        ready_event = self.client.poll(1.0)[0]
+        self.assertEqual(ready_event.name, "ready")
+
+        self.client._send(PacketType.READY, b"invalido", self.client.peer_address)
+        rejected_ready = self.host.poll(1.0)[0]
+        self.assertEqual(rejected_ready.name, "rejected")
 
 
 if __name__ == "__main__":
