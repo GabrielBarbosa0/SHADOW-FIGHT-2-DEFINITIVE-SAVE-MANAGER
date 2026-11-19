@@ -55,7 +55,7 @@ Esta interface é o protótipo funcional do futuro aplicativo nativo para Window
 
 ## Protótipo do modo multiplayer
 
-O APK possui um PVP local oculto com dois jogadores e arenas próprias. O protótipo 11 expõe esse modo, inclui uma ponte UDP e injeta a entrada recebida no `GamePad 1` do IL2CPP. Movimento e ataque do segundo lutador foram controlados via LAN no MuMu sem falha fatal. Ainda faltam captura dos controles do segundo celular e sincronização visual/estado entre os dois aparelhos para formar uma partida completa.
+O APK possui um PVP local oculto com dois jogadores e arenas próprias. O protótipo 13 expõe esse modo, inclui uma ponte UDP e injeta a entrada recebida no `GamePad 1` do IL2CPP. Movimento e ataque do segundo lutador foram controlados via LAN no MuMu sem falha fatal. Um segundo Android também pode operar como controle remoto, com joystick e botões multitouch transmitidos a aproximadamente 30 Hz. Ainda falta sincronizar a imagem e o estado entre duas simulações para formar uma partida completa executada nos dois celulares.
 
 A Definitive Edition valida internamente o pacote `com.sf2.de` e a versão `2.41.9`. Por isso, a build de pesquisa não pode coexistir com o jogo original no mesmo Android: qualquer teste em aparelho real exige backup prévio do save e do APK. Os originais do projeto nunca são usados como destino de patch ou build.
 

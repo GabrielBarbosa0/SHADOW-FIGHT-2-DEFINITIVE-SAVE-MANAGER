@@ -6,21 +6,23 @@
 - Motor: Unity `2022.3.62f2` com IL2CPP metadata v31.
 - Pacote original preservado: `com.sf2.de`.
 - O APK ja contem `PvpScene`, dois jogadores, selecao de personagens, selecao de arenas e telas proprias de luta PVP.
-- O prototipo 11 redireciona `GeneralMenuScene.ShowCredits` e `GeneralMenuScene.ShowExit` para o PVP oculto.
+- O prototipo 13 redireciona `GeneralMenuScene.ShowCredits` e `GeneralMenuScene.ShowExit` para o PVP oculto.
 - O PVP local foi aberto e executado no MuMu Player 15 com dois lutadores na mesma arena.
 - Movimento e ataque foram enviados ao jogo sem travamento, encerramento do processo ou erro fatal no log.
 - A ponte UDP Android ja conecta host e cliente, valida o token e mantem heartbeat.
 - Os pacotes de entrada ja sao validados, ordenados e mantidos num snapshot dentro do processo Android.
 - Um hook ARM64 liga o snapshot aos sete leitores do `GamePad 1` usados pelo jogador 2.
 - Movimento horizontal e ataque do segundo lutador foram confirmados no MuMu via UDP.
+- Um segundo Android agora pode funcionar como controle LAN, com joystick e botoes sobrepostos ao jogo.
+- O controle transmite eixos e botoes a aproximadamente 30 Hz e retem toques curtos ate o primeiro envio.
 
 Artefato local:
 
-`dist/Shadow-Fight-2-Definitive-Edition-LAN-prototype-11.apk`
+`dist/Shadow-Fight-2-Definitive-Edition-LAN-prototype-13.apk`
 
 SHA-256:
 
-`A6A7C1E5ED8A0A54E5C08D4085C66844BBF814EFBC54B7CD3250A0EAC8135CD0`
+`F3293198DAAB3A069C063AF11932F8154B0FECE8A9CE0E5322D75A1B69860DED`
 
 O artefato nao e versionado no GitHub por conter os dados proprietarios do jogo.
 
@@ -31,7 +33,7 @@ Os testes mostraram que a validacao interna desta Definitive Edition exige exata
 - pacote `com.sf2.de`;
 - `versionName` `2.41.9`.
 
-Mudar o pacote para `com.sf2.de.lan` ou acrescentar um sufixo a versao faz o jogo rejeitar a build durante a inicializacao. Por isso, o prototipo 11 nao pode coexistir com a instalacao original no mesmo Android e deve ser tratado como uma substituicao de teste.
+Mudar o pacote para `com.sf2.de.lan` ou acrescentar um sufixo a versao faz o jogo rejeitar a build durante a inicializacao. Por isso, o prototipo 13 nao pode coexistir com a instalacao original no mesmo Android e deve ser tratado como uma substituicao de teste.
 
 Antes de instala-lo em um aparelho real, e obrigatorio extrair o save atual, manter uma copia do APK original e confirmar que ambos podem ser restaurados. O teste atual foi feito apenas no emulador; o Poco X7 Pro nao foi alterado.
 
@@ -109,6 +111,19 @@ Essa validacao confirma o PVP local oculto, nao uma partida LAN completa. O segu
 
 O formato dos pacotes, a configuracao e os comandos de diagnostico estao em [`LAN-PROTOCOL.md`](LAN-PROTOCOL.md).
 
+### Validacao do controle Android no prototipo 13
+
+- overlay multitouch exibido em paisagem sobre o jogo, com joystick, soco, chute, arma de longo alcance, magia, habilidade de chefe e pausa;
+- modo ativado somente com `controller=true`, sem instalar o hook do jogador 2 no aparelho-controle;
+- handshake do MuMu com o host de diagnostico confirmado;
+- joystick transmitiu valores graduais de `0.05` ate `1.00` e retornou a zero ao soltar;
+- um toque curto em SOCO transmitiu `buttons=0x01` seguido por `buttons=0x00`;
+- pulsos de botao ficam pendentes ate serem enviados, evitando perder um toque entre dois pacotes;
+- APK anterior e saves das duas instancias do MuMu foram copiados antes da instalacao de teste.
+
+Esta etapa transforma o segundo aparelho em controle remoto. Ela ainda nao replica a imagem,
+o save nem a simulacao da luta no segundo aparelho. A luta continua sendo executada no anfitriao.
+
 O receptor Android expoe o ultimo comando valido por `LanTransport.getRemoteInput()`. O snapshot e imutavel e contem os eixos, a mascara de botoes, a sequencia UDP e o horario de recebimento. Essa API e a fronteira preparada para o hook JNI/IL2CPP da proxima etapa.
 
 A etapa LAN usara o PVP existente como simulacao de combate e transformara a entrada do jogador 2 em uma entrada recebida pela rede local.
@@ -124,7 +139,7 @@ O PVP usa InControl e mantem descritores separados para `PlayerOneInput` e `Play
 5. detectar divergencia de simulacao e solicitar ressincronizacao;
 6. expor criar sala e entrar por IP dentro da interface.
 
-O APK original nao declara permissao de internet. O prototipo 11 acrescenta `INTERNET`, `ACCESS_NETWORK_STATE`, `ACCESS_WIFI_STATE` e `CHANGE_WIFI_MULTICAST_STATE` apenas na copia de trabalho. O manifesto do APK original permanece imutavel.
+O APK original nao declara permissao de internet. O prototipo 13 acrescenta `INTERNET`, `ACCESS_NETWORK_STATE`, `ACCESS_WIFI_STATE` e `CHANGE_WIFI_MULTICAST_STATE` apenas na copia de trabalho. O manifesto do APK original permanece imutavel.
 
 ### Dependencia nativa
 

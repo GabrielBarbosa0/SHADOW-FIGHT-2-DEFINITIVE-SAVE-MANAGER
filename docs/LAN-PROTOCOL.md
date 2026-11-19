@@ -2,7 +2,7 @@
 
 ## Marco atual
 
-O protótipo 11 acrescenta uma ponte UDP e um hook ARM64 ao processo Android do jogo. Ele já executa:
+O protótipo 13 acrescenta uma ponte UDP, um hook ARM64 e um controle multitouch ao processo Android do jogo. Ele já executa:
 
 - configuração de host ou cliente;
 - autenticação por token compartilhado;
@@ -13,17 +13,35 @@ O protótipo 11 acrescenta uma ponte UDP e um hook ARM64 ao processo Android do 
 - validação, ordenação e armazenamento dos pacotes `INPUT` no Android;
 - neutralização automática da entrada quando a conexão expira;
 - aplicação dos eixos e botões ao `GamePad 1` do PVP;
+- captura de joystick e botões num segundo Android em modo controle;
+- transmissão da entrada a aproximadamente 30 Hz, com retenção de toques curtos;
 - status legível fora do processo do jogo.
 
 A ponte Android e a implementação de referência em Python usam o mesmo protocolo. O teste MuMu-to-PC foi concluído com conexão e heartbeat contínuo, sem falha fatal no jogo.
 
-Movimento e ataque do jogador 2 já funcionam por LAN numa única simulação de combate. Ainda faltam capturar o controle local do segundo Android e sincronizar a luta entre duas simulações; portanto, o protótipo 11 ainda não representa um duelo completo em dois celulares.
+Movimento e ataque do jogador 2 já funcionam por LAN numa única simulação de combate, e o segundo Android já pode fornecer esses comandos. Ainda falta sincronizar a luta entre duas simulações; portanto, o protótipo 13 ainda não representa um duelo completo renderizado nos dois celulares.
 
 ## Configuração Android
 
 O arquivo fica em:
 
 `/sdcard/Android/data/com.sf2.de/files/sf2lan.properties`
+
+Para transformar o segundo Android em controle do jogador 2, use o modo cliente e
+adicione `controller=true`. O overlay exibe um joystick e os botoes de combate e
+transmite o estado aproximadamente 30 vezes por segundo:
+
+```properties
+mode=client
+peer=192.168.0.10
+port=24190
+token=troque-este-token
+name=Jogador-2
+controller=true
+```
+
+No anfitriao, omita a propriedade ou use `controller=false`. Nesta etapa, somente
+o anfitriao executa e mostra a luta; o segundo aparelho funciona como controle LAN.
 
 Exemplo de host:
 

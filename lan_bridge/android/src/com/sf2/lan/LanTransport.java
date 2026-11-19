@@ -36,8 +36,10 @@ public final class LanTransport implements Runnable {
     private static final int INPUT_SIZE = 10;
     private static final int KNOWN_BUTTONS_MASK = 0x3f;
     private static final int MAX_PAYLOAD = 1024;
+    private static final long INPUT_INTERVAL_MS = 33;
     private static final AtomicBoolean STARTED = new AtomicBoolean(false);
     private static volatile LanInputState remoteInput = LanInputState.NEUTRAL;
+    private static volatile LanTransport activeTransport;
 
     private final Context context;
     private final String mode;
@@ -45,12 +47,18 @@ public final class LanTransport implements Runnable {
     private final int port;
     private final String token;
     private final byte[] deviceName;
+    private final boolean controllerMode;
     private DatagramSocket socket;
     private InetSocketAddress peer;
     private int sequence;
     private long lastSend;
     private long lastReceive;
     private boolean connected;
+    private volatile float localHorizontal;
+    private volatile float localVertical;
+    private volatile int localButtons;
+    private int pendingButtons;
+    private long lastInputSend;
 
     private LanTransport(Context context, Properties properties) {
         this.context = context;
@@ -59,6 +67,7 @@ public final class LanTransport implements Runnable {
         this.port = Integer.parseInt(properties.getProperty("port", "24190").trim());
         this.token = properties.getProperty("token", "").trim();
         this.deviceName = properties.getProperty("name", android.os.Build.MODEL).getBytes(StandardCharsets.UTF_8);
+        this.controllerMode = Boolean.parseBoolean(properties.getProperty("controller", "false").trim());
     }
 
     public static void start(Context context) {
@@ -78,7 +87,12 @@ public final class LanTransport implements Runnable {
             }
             LanTransport transport = new LanTransport(context, properties);
             transport.validate();
-            LanNativeBridge.start();
+            activeTransport = transport;
+            if (transport.controllerMode) {
+                LanControllerOverlay.start();
+            } else {
+                LanNativeBridge.start();
+            }
             Thread thread = new Thread(transport, "sf2-lan-udp");
             thread.setDaemon(true);
             thread.start();
@@ -91,6 +105,26 @@ public final class LanTransport implements Runnable {
     /** Ponto estavel para a proxima etapa: o hook nativo consulta este snapshot. */
     public static LanInputState getRemoteInput() {
         return remoteInput;
+    }
+
+    static void updateLocalInput(float horizontal, float vertical, int buttons) {
+        LanTransport transport = activeTransport;
+        if (transport == null || !transport.controllerMode) {
+            return;
+        }
+        transport.setLocalInput(horizontal, vertical, buttons);
+    }
+
+    private static float clamp(float value) {
+        return Math.max(-1.0f, Math.min(1.0f, value));
+    }
+
+    private synchronized void setLocalInput(float horizontal, float vertical, int buttons) {
+        int sanitizedButtons = buttons & KNOWN_BUTTONS_MASK;
+        pendingButtons |= sanitizedButtons & ~localButtons;
+        localHorizontal = clamp(horizontal);
+        localVertical = clamp(vertical);
+        localButtons = sanitizedButtons;
     }
 
     private void validate() {
@@ -115,7 +149,7 @@ public final class LanTransport implements Runnable {
     public void run() {
         try {
             socket = mode.equals("host") ? new DatagramSocket(port) : new DatagramSocket();
-            socket.setSoTimeout(250);
+            socket.setSoTimeout(controllerMode ? 15 : 250);
             if (mode.equals("client")) {
                 peer = new InetSocketAddress(InetAddress.getByName(peerHost), port);
             }
@@ -127,13 +161,19 @@ public final class LanTransport implements Runnable {
                 long now = System.currentTimeMillis();
                 if (mode.equals("client") && !connected && now - lastSend >= 1000) {
                     send(TYPE_HELLO, deviceName, peer);
+                } else if (connected && controllerMode && peer != null
+                    && now - lastInputSend >= INPUT_INTERVAL_MS) {
+                    send(TYPE_INPUT, encodeLocalInput(), peer);
+                    lastInputSend = now;
                 } else if (connected && peer != null && now - lastSend >= 1000) {
                     send(TYPE_PING, new byte[0], peer);
                 }
                 if (connected && now - lastReceive > 5000) {
                     connected = false;
                     remoteInput = LanInputState.NEUTRAL;
-                    LanNativeBridge.update(remoteInput);
+                    if (!controllerMode) {
+                        LanNativeBridge.update(remoteInput);
+                    }
                     writeStatus("timeout", peer, "heartbeat expirado");
                     if (mode.equals("client")) {
                         peer = new InetSocketAddress(InetAddress.getByName(peerHost), port);
@@ -155,6 +195,7 @@ public final class LanTransport implements Runnable {
             if (socket != null) {
                 socket.close();
             }
+            activeTransport = null;
             STARTED.set(false);
         }
     }
@@ -206,7 +247,9 @@ public final class LanTransport implements Runnable {
         } else if (type == TYPE_DISCONNECT) {
             connected = false;
             remoteInput = LanInputState.NEUTRAL;
-            LanNativeBridge.update(remoteInput);
+            if (!controllerMode) {
+                LanNativeBridge.update(remoteInput);
+            }
             writeStatus("disconnected", peer, "peer encerrou a sessao");
             if (mode.equals("host")) {
                 peer = null;
@@ -215,6 +258,9 @@ public final class LanTransport implements Runnable {
     }
 
     private void handleInput(byte[] payload, long packetSequence) {
+        if (controllerMode) {
+            return;
+        }
         if (!connected || payload.length != INPUT_SIZE) {
             Log.w(TAG, "Pacote INPUT rejeitado: estado ou tamanho invalido.");
             return;
@@ -237,6 +283,16 @@ public final class LanTransport implements Runnable {
         remoteInput = new LanInputState(horizontal, vertical, buttons, packetSequence, System.currentTimeMillis());
         LanNativeBridge.update(remoteInput);
         writeStatus("connected", peer, "input recebido");
+    }
+
+    private synchronized byte[] encodeLocalInput() {
+        int outgoingButtons = localButtons | pendingButtons;
+        pendingButtons = 0;
+        return ByteBuffer.allocate(INPUT_SIZE).order(ByteOrder.BIG_ENDIAN)
+            .putFloat(localHorizontal)
+            .putFloat(localVertical)
+            .putShort((short) outgoingButtons)
+            .array();
     }
 
     private static boolean isNewerSequence(long candidate, long previous) {
@@ -272,12 +328,14 @@ public final class LanTransport implements Runnable {
             String peerText = address == null ? "" : address.getAddress().getHostAddress() + ":" + address.getPort();
             String json = String.format(
                 Locale.ROOT,
-                "{\"state\":\"%s\",\"mode\":\"%s\",\"peer\":\"%s\",\"detail\":\"%s\",\"nativeHook\":%s,"
+                "{\"state\":\"%s\",\"mode\":\"%s\",\"controller\":%s,\"peer\":\"%s\",\"detail\":\"%s\",\"nativeHook\":%s,"
                     + "\"input\":{\"horizontal\":%.6f,\"vertical\":%.6f,\"buttons\":%d,\"sequence\":%d,\"receivedAt\":%d},"
+                    + "\"localInput\":{\"horizontal\":%.6f,\"vertical\":%.6f,\"buttons\":%d},"
                     + "\"updated\":%d}\n",
-                escape(state), escape(mode), escape(peerText), escape(detail), LanNativeBridge.isInstalled(),
+                escape(state), escape(mode), controllerMode, escape(peerText), escape(detail), LanNativeBridge.isInstalled(),
                 remoteInput.horizontal, remoteInput.vertical, remoteInput.buttons,
-                remoteInput.sequence, remoteInput.receivedAtMs, System.currentTimeMillis()
+                remoteInput.sequence, remoteInput.receivedAtMs,
+                localHorizontal, localVertical, localButtons, System.currentTimeMillis()
             );
             try (FileOutputStream output = new FileOutputStream(status, false)) {
                 output.write(json.getBytes(StandardCharsets.UTF_8));

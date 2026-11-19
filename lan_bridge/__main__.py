@@ -30,10 +30,21 @@ def main() -> int:
     input_sent = False
     input_started_at: float | None = None
     next_input_at = 0.0
+    last_received_input: InputState | None = None
     try:
         while True:
             for event in peer.poll(0.01 if args.input_duration > 0 else 0.25):
-                print(f"{event.name}: {event.address} {event.detail}".rstrip())
+                suffix = ""
+                if event.input_state is not None:
+                    if event.input_state == last_received_input:
+                        continue
+                    last_received_input = event.input_state
+                    suffix = (
+                        f" horizontal={event.input_state.horizontal:.3f}"
+                        f" vertical={event.input_state.vertical:.3f}"
+                        f" buttons=0x{int(event.input_state.buttons):02x}"
+                    )
+                print(f"{event.name}: {event.address} {event.detail}{suffix}".rstrip())
             now = time.monotonic()
             should_send_once = not input_sent and args.input_duration <= 0
             should_repeat = args.input_duration > 0 and now >= next_input_at
