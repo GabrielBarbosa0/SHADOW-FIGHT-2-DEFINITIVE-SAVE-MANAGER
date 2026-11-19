@@ -12,7 +12,7 @@ O protótipo 15 acrescenta uma ponte UDP, um hook ARM64 e negociação de lutado
 - serialização do estado de movimento e botões;
 - validação, ordenação e armazenamento dos pacotes `INPUT` no Android;
 - neutralização automática da entrada quando a conexão expira;
-- aplicação dos eixos e botões ao `GamePad 1` do PVP;
+- aplicação dos eixos e botões às leituras do `GamePad 1` usadas pelo código de combate;
 - captura de joystick e botões num segundo Android em modo controle;
 - transmissão da entrada a aproximadamente 30 Hz, com retenção de toques curtos;
 - status legível fora do processo do jogo.
@@ -21,7 +21,7 @@ O protótipo 15 acrescenta uma ponte UDP, um hook ARM64 e negociação de lutado
 
 A ponte Android e a implementação de referência em Python usam o mesmo protocolo. O teste MuMu-to-PC foi concluído com conexão e heartbeat contínuo, sem falha fatal no jogo.
 
-Movimento e ataque do jogador 2 já funcionam por LAN numa única simulação de combate, e o segundo Android já pode fornecer esses comandos. Ainda falta sincronizar a luta entre duas simulações; portanto, o protótipo 15 ainda não representa um duelo completo renderizado nos dois celulares.
+A ponte já transporta os comandos do segundo jogador, e os hooks nativos capturam o `GamePad 0` e injetam os dados recebidos no `GamePad 1`. A tela de dois lutadores observada no dojo, porém, era apenas uma pré-visualização. O carregamento direto confirmou que a cena Unity `ModulePvp` não existe neste APK; por isso, ainda não há um duelo jogável e renderizado nos dois celulares.
 
 ## Configuração Android
 
@@ -42,8 +42,8 @@ name=Jogador-2
 controller=true
 ```
 
-No anfitriao, omita a propriedade ou use `controller=false`. Nesta etapa, somente
-o anfitriao executa e mostra a luta; o segundo aparelho funciona como controle LAN.
+No anfitriao, omita a propriedade ou use `controller=false`. Esse modo permanece
+como diagnostico de transporte e entrada; ele nao produz uma luta PVP completa.
 
 O modo em desenvolvimento para dois jogos completos usa os controles originais do
 Shadow Fight 2. Em cada aparelho, configure `nativeControls=true` e nao ative
@@ -61,6 +61,10 @@ nativeControls=true
 No segundo aparelho, use a mesma propriedade com `mode=client` e o IP do anfitriao.
 O overlay criado no prototipo 13 permanece apenas como diagnostico por meio de
 `controller=true` e nao faz parte da interface final.
+
+Existe ainda `diagnosticOpenPvp=true`, desativado por padrão. Essa opção apenas
+reproduz a tentativa de carregar `ModulePvp`; no APK atual ela termina na tela de
+carregamento porque a cena de índice 9 não foi incluída no build Unity.
 
 Exemplo de host:
 

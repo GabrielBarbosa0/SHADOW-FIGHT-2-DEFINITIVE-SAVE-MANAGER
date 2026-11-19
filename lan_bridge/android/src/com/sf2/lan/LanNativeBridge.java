@@ -13,7 +13,7 @@ public final class LanNativeBridge {
     private LanNativeBridge() {
     }
 
-    public static void start() {
+    public static void start(boolean requestPvp) {
         if (!STARTED.compareAndSet(false, true)) {
             return;
         }
@@ -42,6 +42,9 @@ public final class LanNativeBridge {
             }
             if (installed) {
                 update(LanTransport.getRemoteInput());
+                if (requestPvp) {
+                    nativeRequestOpenPvp();
+                }
             }
             Log.i(TAG, installed ? "Hook do GamePad 1 instalado." : "libil2cpp nao ficou disponivel para o hook.");
         }, "sf2-lan-hook");
@@ -80,6 +83,8 @@ public final class LanNativeBridge {
         long sequence,
         long receivedAtMs
     );
+
+    private static native void nativeRequestOpenPvp();
 
     private static native float[] nativeReadLocalInput();
 }

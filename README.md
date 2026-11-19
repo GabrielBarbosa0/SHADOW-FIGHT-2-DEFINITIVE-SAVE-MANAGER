@@ -55,7 +55,7 @@ Esta interface é o protótipo funcional do futuro aplicativo nativo para Window
 
 ## Protótipo do modo multiplayer
 
-O APK possui um PVP local oculto com dois jogadores e arenas próprias. O protótipo 15 expõe esse modo, captura os controles nativos do `GamePad 0`, troca os perfis dos lutadores e injeta a entrada recebida no `GamePad 1` do IL2CPP. A sessão autenticada, os equipamentos do adversário e os comandos remotos foram validados no MuMu. O utilitário Python também oferece um relay de dois jogadores para emuladores ou redes que não permitem conexão direta. Ainda falta aplicar o perfil remoto à cena PVP e sincronizar o restante do estado da luta para formar um duelo completo renderizado nos dois celulares.
+O APK conserva no IL2CPP o código de um PVP local com dois jogadores, mas a cena Unity `ModulePvp` não foi incluída no build Android. O protótipo 19 confirmou a chamada ao módulo e o erro de cena ausente no MuMu; portanto, a tela de dois lutadores vista no dojo não era uma partida PVP completa. A ponte UDP, a troca de perfis, a captura do `GamePad 0`, a injeção no `GamePad 1` e o relay de dois jogadores continuam implementados. A próxima etapa é recuperar ou reconstruir uma cena compatível antes de integrar os perfis e a sincronização da luta.
 
 A Definitive Edition valida internamente o pacote `com.sf2.de` e a versão `2.41.9`. Por isso, a build de pesquisa não pode coexistir com o jogo original no mesmo Android: qualquer teste em aparelho real exige backup prévio do save e do APK. Os originais do projeto nunca são usados como destino de patch ou build.
 

@@ -5,10 +5,10 @@
 - APK analisado: Definitive Edition 2.41.9, ARM64.
 - Motor: Unity `2022.3.62f2` com IL2CPP metadata v31.
 - Pacote original preservado: `com.sf2.de`.
-- O APK ja contem `PvpScene`, dois jogadores, selecao de personagens, selecao de arenas e telas proprias de luta PVP.
-- O prototipo 15 redireciona `GeneralMenuScene.ShowCredits` e `GeneralMenuScene.ShowExit` para o PVP oculto.
-- O PVP local foi aberto e executado no MuMu Player 15 com dois lutadores na mesma arena.
-- Movimento e ataque foram enviados ao jogo sem travamento, encerramento do processo ou erro fatal no log.
+- O IL2CPP contem `PvpScene`, logica para dois jogadores, selecao de personagens e arenas.
+- O prototipo 15 contem redirecionamentos em `GeneralMenuScene`, mas essa cena nao e percorrida pelo fluxo da Definitive Edition.
+- O prototipo 19 confirmou que `ModulePvp` e solicitado corretamente, mas a cena nao foi incluida no build Unity Android.
+- A tela com dois lutadores observada no dojo era uma pre-visualizacao, nao uma luta PVP completa.
 - A ponte UDP Android ja conecta host e cliente, valida o token e mantem heartbeat.
 - Os pacotes de entrada ja sao validados, ordenados e mantidos num snapshot dentro do processo Android.
 - Um hook ARM64 liga o snapshot aos sete leitores do `GamePad 1` usados pelo jogador 2.
@@ -89,22 +89,24 @@ quando uma etapa falha. Isso evita manter cerca de 4 GB de arquivos decompilados
 prototipo. Use `-KeepWorkingDirectory` somente quando esses arquivos forem necessarios
 para diagnosticar uma compilacao e remova a pasta manualmente depois.
 
-## Descoberta do PVP oculto
+## Descoberta do codigo PVP e da cena ausente
 
-A build 2.41.9 ja inclui `PvpScene`, selecao de dois personagens, selecao de arena, telas de versus/fim de luta e dois objetos de entrada independentes. Esse modo e local no mesmo aparelho e esta oculto na interface Android.
+A build 2.41.9 inclui no IL2CPP `PvpScene`, selecao de dois personagens, selecao de arena, telas de versus/fim de luta e dois objetos de entrada independentes. Entretanto, o APK Android possui somente `level0` a `level7`. Ao solicitar `ModulePvp`, a Unity registra: `Scene with build index: 9 couldn't be loaded because it has not been added to the build settings`.
 
-O prototipo redireciona temporariamente a opcao de creditos e a acao de sair/voltar para `GeneralMenuScene.ShowPvp`. Dentro da cena do dojo, o botao circular da esquerda abre o estado de combate com os dois lutadores. Isso permite validar os recursos de PVP que ja existem antes de adicionar a entrada remota. O patch e limitado pelo hash da `libil2cpp.so` e sempre gera outra biblioteca, sem escrever sobre a original.
+O prototipo 19 localizou o carregador interno de cenas e solicitou diretamente o ID 9 no thread do jogo por meio de `DojoScene.FixedUpdate`. O log confirmou `GoToModule ModulePvp` e `LoaderScene::LoadLevel: scene: ModulePvp`, seguido do erro de cena ausente. O botao circular do dojo apenas alterna a pre-visualizacao do adversario e do saco de treino; ele nao abre a cena PVP. O patch e limitado pelo hash da `libil2cpp.so` e sempre gera outra biblioteca, sem escrever sobre a original.
+
+O codigo de diagnostico permanece desativado por padrao. `diagnosticOpenPvp=true` em `sf2lan.properties` reproduz a tentativa, mas deixa o jogo na tela de carregamento enquanto a cena nao for recuperada de outra distribuicao compativel ou reconstruida.
 
 ### Validacao no MuMu Player 15
 
 - Android 15, ABI `x86_64` com traducao ARM64;
 - APK assinado e instalado com sucesso;
-- inicializacao, importacao do save completo e abertura do PVP confirmadas;
-- dois lutadores renderizados simultaneamente com controles de combate;
-- processo `com.sf2.de` permaneceu ativo depois de comandos de movimento e ataque;
-- nenhum `FATAL EXCEPTION`, `SIGSEGV` ou ANR do aplicativo no log verificado.
+- inicializacao e importacao do save completo confirmadas;
+- chamada ao modulo PVP e falha de carregamento reproduzidas sem `SIGSEGV` ou `FATAL EXCEPTION`;
+- ausencia de `level9`/`ModulePvp` confirmada no APK original;
+- processo permaneceu ativo, parado na tela de carregamento por falta da cena.
 
-Essa validacao confirma o PVP local oculto, nao uma partida LAN completa. O segundo jogador ainda precisa receber os pacotes de entrada da camada de rede ja funcional.
+Essa validacao corrige a conclusao anterior: a infraestrutura de codigo PVP existe, mas o modo nao e jogavel neste APK sem o asset da cena. A proxima etapa e localizar uma cena `ModulePvp` da mesma versao Unity/IL2CPP ou reconstruir uma cena equivalente antes de aplicar perfis e sincronizacao de luta.
 
 ### Validacao de entrada do prototipo 11
 
@@ -165,7 +167,7 @@ duas VMs ainda precisa ser repetida quando uma segunda instancia estiver disponi
 
 O receptor Android expoe o ultimo comando valido por `LanTransport.getRemoteInput()`. O snapshot e imutavel e contem os eixos, a mascara de botoes, a sequencia UDP e o horario de recebimento. Essa API e a fronteira preparada para o hook JNI/IL2CPP da proxima etapa.
 
-A etapa LAN usara o PVP existente como simulacao de combate e transformara a entrada do jogador 2 em uma entrada recebida pela rede local.
+A etapa LAN so podera usar a simulacao PVP depois que uma cena compativel for recuperada ou reconstruida. A ponte de entrada do jogador 2 permanece pronta para essa integracao.
 
 ## Proxima integracao
 
