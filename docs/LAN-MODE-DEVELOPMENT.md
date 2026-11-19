@@ -78,6 +78,11 @@ As pastas ficam sob `game/`, portanto nao sao publicadas no GitHub.
 
 O APK final sera sempre gerado em uma pasta de saida separada. O APK original e o save original nao serao usados como destino de build.
 
+O script de build apaga automaticamente a pasta de intermediarios ao terminar, inclusive
+quando uma etapa falha. Isso evita manter cerca de 4 GB de arquivos decompilados por
+prototipo. Use `-KeepWorkingDirectory` somente quando esses arquivos forem necessarios
+para diagnosticar uma compilacao e remova a pasta manualmente depois.
+
 ## Descoberta do PVP oculto
 
 A build 2.41.9 ja inclui `PvpScene`, selecao de dois personagens, selecao de arena, telas de versus/fim de luta e dois objetos de entrada independentes. Esse modo e local no mesmo aparelho e esta oculto na interface Android.

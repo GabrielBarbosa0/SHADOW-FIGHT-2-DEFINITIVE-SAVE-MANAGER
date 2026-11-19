@@ -1,7 +1,8 @@
 param(
     [string]$SourceApk = "",
     [Parameter(Mandatory)] [string]$WorkingDirectory,
-    [Parameter(Mandatory)] [string]$OutputApk
+    [Parameter(Mandatory)] [string]$OutputApk,
+    [switch]$KeepWorkingDirectory
 )
 
 $ErrorActionPreference = 'Stop'
@@ -18,6 +19,13 @@ if ((Get-FileHash -Algorithm SHA256 -LiteralPath $sourcePath).Hash -ne $expected
 
 $workPath = [IO.Path]::GetFullPath((Join-Path (Get-Location) $WorkingDirectory))
 $outputPath = [IO.Path]::GetFullPath((Join-Path (Get-Location) $OutputApk))
+$volumeRoot = [IO.Path]::GetPathRoot($workPath).TrimEnd('\')
+if ($workPath.TrimEnd('\') -eq $volumeRoot -or $workPath.TrimEnd('\') -eq $repoRoot.TrimEnd('\')) {
+    throw "WorkingDirectory deve ser uma subpasta dedicada: $workPath"
+}
+if ($outputPath.StartsWith($workPath.TrimEnd('\') + '\', [StringComparison]::OrdinalIgnoreCase)) {
+    throw 'OutputApk nao pode ficar dentro de WorkingDirectory, que e removida apos a build.'
+}
 if (Test-Path -LiteralPath $workPath) {
     throw "A area de trabalho ja existe e nao sera substituida: $workPath"
 }
@@ -52,7 +60,10 @@ $patchedLibrary = Join-Path $workPath 'libil2cpp.lan.so'
 $nativeOutput = Join-Path $workPath 'libsf2lanhook.so'
 $unsignedApk = Join-Path $workPath 'unsigned.apk'
 $alignedApk = Join-Path $workPath 'aligned.apk'
+$workCreated = $false
+try {
 New-Item -ItemType Directory -Path $workPath, $javaClasses, $dexOutput, $miniStage | Out-Null
+$workCreated = $true
 
 Write-Output 'Decodificando uma nova copia do APK original...'
 & java -jar $apktool d $sourcePath -o $decoded
@@ -155,6 +166,7 @@ if ($LASTEXITCODE -ne 0) { throw 'zipalign falhou.' }
 $outputParent = Split-Path -Parent $outputPath
 if ($outputParent) { New-Item -ItemType Directory -Path $outputParent -Force | Out-Null }
 & $apksigner sign --ks $keystore --ks-key-alias sf2lan --ks-pass pass:android --key-pass pass:android `
+    --v4-signing-enabled false `
     --out $outputPath $alignedApk
 if ($LASTEXITCODE -ne 0) { throw 'apksigner falhou.' }
 & $apksigner verify --verbose $outputPath
@@ -163,3 +175,11 @@ if ($LASTEXITCODE -ne 0) { throw 'A verificacao da assinatura falhou.' }
 $resultHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $outputPath).Hash
 Write-Output "APK LAN criado sem substituir os originais: $outputPath"
 Write-Output "SHA-256: $resultHash"
+} finally {
+    if ($workCreated -and -not $KeepWorkingDirectory -and (Test-Path -LiteralPath $workPath)) {
+        Write-Output "Removendo intermediarios da build: $workPath"
+        Remove-Item -LiteralPath $workPath -Recurse -Force
+    } elseif ($workCreated -and $KeepWorkingDirectory) {
+        Write-Output "Intermediarios mantidos para diagnostico: $workPath"
+    }
+}
