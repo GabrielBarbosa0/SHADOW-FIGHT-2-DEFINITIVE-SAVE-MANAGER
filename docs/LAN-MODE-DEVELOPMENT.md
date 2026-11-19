@@ -6,7 +6,7 @@
 - Motor: Unity `2022.3.62f2` com IL2CPP metadata v31.
 - Pacote original preservado: `com.sf2.de`.
 - O APK ja contem `PvpScene`, dois jogadores, selecao de personagens, selecao de arenas e telas proprias de luta PVP.
-- O prototipo 13 redireciona `GeneralMenuScene.ShowCredits` e `GeneralMenuScene.ShowExit` para o PVP oculto.
+- O prototipo 15 redireciona `GeneralMenuScene.ShowCredits` e `GeneralMenuScene.ShowExit` para o PVP oculto.
 - O PVP local foi aberto e executado no MuMu Player 15 com dois lutadores na mesma arena.
 - Movimento e ataque foram enviados ao jogo sem travamento, encerramento do processo ou erro fatal no log.
 - A ponte UDP Android ja conecta host e cliente, valida o token e mantem heartbeat.
@@ -22,15 +22,15 @@
 
 Artefato local:
 
-`dist/Shadow-Fight-2-Definitive-Edition-LAN-prototype-14.apk`
+`dist/Shadow-Fight-2-Definitive-Edition-LAN-prototype-15.apk`
 
 SHA-256:
 
-`948A0EEC65C35D012DC8A793BE757102CA151A1B9D7578322B3788C8B00F4ADF`
+`D6FE0959863BDEF5E35E9380AE1A0E6B26230C46B8A51B16B9FAD2B999097532`
 
 O artefato nao e versionado no GitHub por conter os dados proprietarios do jogo.
-O prototipo 14 compilou e foi assinado, mas ainda nao foi instalado em Android. O
-prototipo 13 permanece como a ultima build validada em execucao.
+O prototipo 15 foi compilado, assinado e instalado no MuMu Player 15. A atualizacao
+preservou o `users.xml`, e o hash do APK instalado corresponde ao artefato em `dist/`.
 
 ## Compatibilidade de identidade do aplicativo
 
@@ -39,7 +39,7 @@ Os testes mostraram que a validacao interna desta Definitive Edition exige exata
 - pacote `com.sf2.de`;
 - `versionName` `2.41.9`.
 
-Mudar o pacote para `com.sf2.de.lan` ou acrescentar um sufixo a versao faz o jogo rejeitar a build durante a inicializacao. Por isso, o prototipo 13 nao pode coexistir com a instalacao original no mesmo Android e deve ser tratado como uma substituicao de teste.
+Mudar o pacote para `com.sf2.de.lan` ou acrescentar um sufixo a versao faz o jogo rejeitar a build durante a inicializacao. Por isso, o prototipo 15 nao pode coexistir com a instalacao original no mesmo Android e deve ser tratado como uma substituicao de teste.
 
 Antes de instala-lo em um aparelho real, e obrigatorio extrair o save atual, manter uma copia do APK original e confirmar que ambos podem ser restaurados. O teste atual foi feito apenas no emulador; o Poco X7 Pro nao foi alterado.
 
@@ -142,9 +142,26 @@ deixam o retorno original do `GamePad 0` passar normalmente e registram eixos, b
 pressionados e liberados. A ponte Java consulta esse snapshot antes de cada envio UDP.
 O analogico virtual e os botoes originais continuam sendo desenhados e processados pelo jogo.
 
-Essa integracao esta implementada no codigo, mas ainda nao foi instalada nem executada em
-aparelho nesta etapa. A validacao em Android sera feita somente quando os aparelhos de teste
-estiverem liberados para uso.
+Essa integracao foi validada no prototipo 15. O status confirmou `nativeHook=true`,
+`nativeControls=true`, leitura do perfil local e recepcao dos eixos e botoes enviados
+pelo segundo peer sem substituir os controles originais.
+
+### Validacao da sessao do prototipo 15
+
+- os dados do MuMu foram copiados antes da atualizacao;
+- o APK instalado e o artefato local possuem SHA-256 identico;
+- `PROFILE` trocou nivel, visual e equipamento entre Android e peer de referencia;
+- o Android recebeu um perfil remoto com o conjunto do Shogun;
+- `localReady`, `remoteReady` e `sessionReady` ficaram verdadeiros;
+- `INPUT` remoto registrou eixos `0.625`, `-0.25` e botoes `PUNCH | MAGIC`;
+- o hook ARM64 permaneceu ativo durante a sessao;
+- o MuMu expunha somente uma VM; por isso, o segundo peer desta validacao foi a
+  implementacao Python, sem alterar o Poco X7 Pro.
+
+O relay UDP de dois jogadores foi adicionado para contornar NAT de emuladores. Ele
+autentica os dois clientes pelo token, responde ao heartbeat e encaminha `PROFILE`,
+`READY` e `INPUT` sem modificar sequencia ou payload. Conexao Android-a-Android em
+duas VMs ainda precisa ser repetida quando uma segunda instancia estiver disponivel.
 
 O receptor Android expoe o ultimo comando valido por `LanTransport.getRemoteInput()`. O snapshot e imutavel e contem os eixos, a mascara de botoes, a sequencia UDP e o horario de recebimento. Essa API e a fronteira preparada para o hook JNI/IL2CPP da proxima etapa.
 
@@ -161,7 +178,7 @@ O PVP usa InControl e mantem descritores separados para `PlayerOneInput` e `Play
 5. detectar divergencia de simulacao e solicitar ressincronizacao;
 6. expor criar sala e entrar por IP dentro da interface.
 
-O APK original nao declara permissao de internet. O prototipo 13 acrescenta `INTERNET`, `ACCESS_NETWORK_STATE`, `ACCESS_WIFI_STATE` e `CHANGE_WIFI_MULTICAST_STATE` apenas na copia de trabalho. O manifesto do APK original permanece imutavel.
+O APK original nao declara permissao de internet. O prototipo 15 acrescenta `INTERNET`, `ACCESS_NETWORK_STATE`, `ACCESS_WIFI_STATE` e `CHANGE_WIFI_MULTICAST_STATE` apenas na copia de trabalho. O manifesto do APK original permanece imutavel.
 
 ### Dependencia nativa
 

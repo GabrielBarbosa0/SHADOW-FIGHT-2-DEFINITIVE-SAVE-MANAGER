@@ -4,15 +4,17 @@ import argparse
 import time
 
 from .peer import LanPeer, PeerMode
-from .protocol import Button, InputState
+from .protocol import Button, InputState, PacketType
+from .relay import LanRoomRelay
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Diagnóstico do transporte UDP do Shadow Fight 2 LAN")
-    parser.add_argument("mode", choices=[mode.value for mode in PeerMode])
+    parser.add_argument("mode", choices=[mode.value for mode in PeerMode] + ["relay"])
     parser.add_argument("--token", required=True, help="Token compartilhado da sala")
     parser.add_argument("--peer", help="IP do host; obrigatório para client")
     parser.add_argument("--port", type=int, default=24190)
+    parser.add_argument("--second-port", type=int, help="segunda entrada do relay para emuladores com NAT identico")
     parser.add_argument("--name", default="desktop-diagnostic")
     parser.add_argument(
         "--send-input",
@@ -23,6 +25,25 @@ def main() -> int:
     parser.add_argument("--input-duration", type=float, default=0.0, help="repete --send-input por N segundos")
     parser.add_argument("--input-hz", type=float, default=30.0, help="frequencia do envio repetido (padrao: 30)")
     args = parser.parse_args()
+
+    if args.mode == "relay":
+        if args.send_input:
+            parser.error("--send-input nao se aplica ao modo relay")
+        relay = LanRoomRelay(args.token, port=args.port, second_port=args.second_port, name=args.name)
+        listeners = ", ".join(f"{host}:{port}" for host, port in relay.local_addresses)
+        print(f"SF2 LAN relay ouvindo em {listeners}")
+        try:
+            while True:
+                for event in relay.poll(0.25):
+                    if event.packet is not None and event.packet.kind is PacketType.INPUT:
+                        continue
+                    print(f"{event.name}: {event.address} {event.detail}".rstrip())
+                for event in relay.tick():
+                    print(f"{event.name}: {event.address}")
+        except KeyboardInterrupt:
+            return 0
+        finally:
+            relay.close()
 
     peer = LanPeer(PeerMode(args.mode), args.token, port=args.port, server_host=args.peer, device_name=args.name)
     print(f"SF2 LAN {args.mode} ouvindo em {peer.local_address[0]}:{peer.local_address[1]}")

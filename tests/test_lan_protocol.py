@@ -14,6 +14,7 @@ from lan_bridge.protocol import (
     encode_packet,
     session_digest,
 )
+from lan_bridge.relay import LanRoomRelay
 
 
 class ProtocolTests(unittest.TestCase):
@@ -121,6 +122,61 @@ class PeerTests(unittest.TestCase):
         self.client._send(PacketType.READY, b"invalido", self.client.peer_address)
         rejected_ready = self.host.poll(1.0)[0]
         self.assertEqual(rejected_ready.name, "rejected")
+
+
+class RelayTests(unittest.TestCase):
+    def setUp(self) -> None:
+        probe = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        probe.bind(("127.0.0.1", 0))
+        self.port = probe.getsockname()[1]
+        probe.close()
+        second_probe = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        second_probe.bind(("127.0.0.1", 0))
+        self.second_port = second_probe.getsockname()[1]
+        second_probe.close()
+        self.relay = LanRoomRelay(
+            "sala-relay", bind_host="127.0.0.1", port=self.port,
+            second_port=self.second_port, name="relay",
+        )
+        self.player_one = LanPeer(
+            PeerMode.CLIENT, "sala-relay", bind_host="127.0.0.1", port=self.port,
+            server_host="127.0.0.1", device_name="player-one",
+        )
+        self.player_two = LanPeer(
+            PeerMode.CLIENT, "sala-relay", bind_host="127.0.0.1", port=self.second_port,
+            server_host="127.0.0.1", device_name="player-two",
+        )
+        self.addCleanup(self.player_two.close)
+        self.addCleanup(self.player_one.close)
+        self.addCleanup(self.relay.close)
+
+    def connect(self, player: LanPeer) -> None:
+        player.start()
+        self.assertEqual(self.relay.poll(1.0)[0].name, "joined")
+        self.assertEqual(player.poll(1.0)[0].name, "connected")
+
+    def test_forwards_profiles_ready_and_input_between_two_clients(self) -> None:
+        self.connect(self.player_one)
+        self.connect(self.player_two)
+        self.assertEqual(len(self.relay.participants), 2)
+
+        profile = FighterProfile(
+            52, "NAME_SHADOW", "avatar_human", "Male", "Skeleton",
+            "BODY_TITAN", "HEAD_TITAN", "WEAPON_TITAN_GIANT_SWORD",
+            "RANGED_TITANS_HARPOON", "MAGIC_MIND_THROW",
+        )
+        self.player_one.send_profile(profile)
+        self.assertEqual(self.relay.poll(1.0)[0].detail, "PROFILE")
+        self.assertEqual(self.player_two.poll(1.0)[0].fighter_profile, profile)
+
+        self.player_two.send_ready()
+        self.assertEqual(self.relay.poll(1.0)[0].detail, "READY")
+        self.assertEqual(self.player_one.poll(1.0)[0].name, "ready")
+
+        state = InputState(-0.5, 1.0, Button.KICK | Button.MAGIC)
+        self.player_one.send_input(state)
+        self.assertEqual(self.relay.poll(1.0)[0].detail, "INPUT")
+        self.assertEqual(self.player_two.poll(1.0)[0].input_state, state)
 
 
 if __name__ == "__main__":

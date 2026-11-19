@@ -2,7 +2,7 @@
 
 ## Marco atual
 
-O protótipo 13 acrescenta uma ponte UDP, um hook ARM64 e um controle multitouch ao processo Android do jogo. Ele já executa:
+O protótipo 15 acrescenta uma ponte UDP, um hook ARM64 e negociação de lutadores ao processo Android do jogo. Ele já executa:
 
 - configuração de host ou cliente;
 - autenticação por token compartilhado;
@@ -16,10 +16,12 @@ O protótipo 13 acrescenta uma ponte UDP, um hook ARM64 e um controle multitouch
 - captura de joystick e botões num segundo Android em modo controle;
 - transmissão da entrada a aproximadamente 30 Hz, com retenção de toques curtos;
 - status legível fora do processo do jogo.
+- troca autenticada de perfis `PROFILE` e confirmação bilateral `READY`;
+- relay opcional de dois jogadores para clientes separados por NAT.
 
 A ponte Android e a implementação de referência em Python usam o mesmo protocolo. O teste MuMu-to-PC foi concluído com conexão e heartbeat contínuo, sem falha fatal no jogo.
 
-Movimento e ataque do jogador 2 já funcionam por LAN numa única simulação de combate, e o segundo Android já pode fornecer esses comandos. Ainda falta sincronizar a luta entre duas simulações; portanto, o protótipo 13 ainda não representa um duelo completo renderizado nos dois celulares.
+Movimento e ataque do jogador 2 já funcionam por LAN numa única simulação de combate, e o segundo Android já pode fornecer esses comandos. Ainda falta sincronizar a luta entre duas simulações; portanto, o protótipo 15 ainda não representa um duelo completo renderizado nos dois celulares.
 
 ## Configuração Android
 
@@ -113,6 +115,26 @@ comando aceito pelo Android. O receptor ignora sequencias repetidas ou
 atrasadas e volta ao estado neutro quando a sessao e encerrada.
 
 Esse utilitário serve para validar rede, firewall, token e heartbeat sem depender ainda do combate.
+
+### Relay para emuladores
+
+Quando dois emuladores ficam isolados por NAT, ambos podem usar o computador como
+endereco `peer`. O relay aceita exatamente dois jogadores e encaminha os pacotes de
+sessao e entrada sem alterar o conteudo:
+
+```powershell
+python -m lan_bridge relay --token troque-este-token --port 24190 --name Meu-PC
+```
+
+Alguns emuladores apresentam a mesma origem UDP para mais de uma VM. Nesse caso, use
+uma porta de entrada por instancia:
+
+```powershell
+python -m lan_bridge relay --token troque-este-token --port 24190 --second-port 24191 --name Meu-PC
+```
+
+O primeiro Android usa `port=24190` e o segundo usa `port=24191`. Em celulares na
+mesma rede local, o modo direto `host`/`client` continua sendo o caminho preferido.
 
 ## Formato binário v1
 

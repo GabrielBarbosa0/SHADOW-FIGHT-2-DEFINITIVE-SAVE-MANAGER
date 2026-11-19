@@ -13,6 +13,12 @@ REMOTE_USERDATA = f"/sdcard/Android/data/{PACKAGE}/files/userdata"
 LogCallback = Callable[[str], None]
 
 
+def _safe_path_component(value: str) -> str:
+    """Return a portable directory-name representation of an ADB serial."""
+    cleaned = "".join(character if character.isalnum() or character in ".-_" else "_" for character in value)
+    return cleaned.strip(". ") or "android-device"
+
+
 class AdbError(RuntimeError):
     pass
 
@@ -92,7 +98,7 @@ class AdbClient:
             raise AdbError(f"O pacote {PACKAGE} não está instalado no aparelho selecionado.")
 
         stamp = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
-        destination = backup_root / f"{serial}-{stamp}"
+        destination = backup_root / f"{_safe_path_component(serial)}-{stamp}"
         destination.mkdir(parents=True, exist_ok=False)
         self.log(f"Criando backup em {destination}")
         self._run(["shell", "am", "force-stop", PACKAGE], serial=serial)

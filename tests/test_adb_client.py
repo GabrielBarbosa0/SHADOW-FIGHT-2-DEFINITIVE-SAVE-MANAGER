@@ -43,6 +43,23 @@ class DeviceBackupTests(unittest.TestCase):
         self.assertTrue((destination / "userdata" / "users_backup.xml").is_file())
         self.assertTrue(any("Save atual confirmado" in message for message in self.logs))
 
+    def test_backup_sanitizes_network_adb_serial_for_windows(self) -> None:
+        def run(args, **_kwargs):
+            if args[:2] == ["pull", REMOTE_USERDATA]:
+                userdata = Path(args[2]) / "userdata"
+                userdata.mkdir(parents=True)
+                (userdata / "users.xml").write_text("<Root />", encoding="utf-8")
+            return subprocess.CompletedProcess(args, 0, "", "")
+
+        with (
+            patch.object(self.client, "package_installed", return_value=True),
+            patch.object(self.client, "_run", side_effect=run),
+        ):
+            destination = self.client.backup("127.0.0.1:5555", self.backup_root)
+
+        self.assertTrue(destination.name.startswith("127.0.0.1_5555-"))
+        self.assertNotIn(":", destination.name)
+
     def test_backup_rejects_copy_without_users_xml(self) -> None:
         def run(args, **_kwargs):
             if args[:2] == ["pull", REMOTE_USERDATA]:
