@@ -15,16 +15,20 @@
 - Movimento horizontal e ataque do segundo lutador foram confirmados no MuMu via UDP.
 - Um segundo Android agora pode funcionar como controle LAN, com joystick e botoes sobrepostos ao jogo.
 - O controle transmite eixos e botoes a aproximadamente 30 Hz e retem toques curtos ate o primeiro envio.
+- O hook agora captura os resultados nativos do `GamePad 0` sem modificar os controles originais.
+- Com `nativeControls=true`, cada aparelho transmite seu proprio analogico e botoes e recebe o adversario no `GamePad 1`.
 
 Artefato local:
 
-`dist/Shadow-Fight-2-Definitive-Edition-LAN-prototype-13.apk`
+`dist/Shadow-Fight-2-Definitive-Edition-LAN-prototype-14.apk`
 
 SHA-256:
 
-`F3293198DAAB3A069C063AF11932F8154B0FECE8A9CE0E5322D75A1B69860DED`
+`948A0EEC65C35D012DC8A793BE757102CA151A1B9D7578322B3788C8B00F4ADF`
 
 O artefato nao e versionado no GitHub por conter os dados proprietarios do jogo.
+O prototipo 14 compilou e foi assinado, mas ainda nao foi instalado em Android. O
+prototipo 13 permanece como a ultima build validada em execucao.
 
 ## Compatibilidade de identidade do aplicativo
 
@@ -128,6 +132,17 @@ O formato dos pacotes, a configuracao e os comandos de diagnostico estao em [`LA
 
 Esta etapa transforma o segundo aparelho em controle remoto. Ela ainda nao replica a imagem,
 o save nem a simulacao da luta no segundo aparelho. A luta continua sendo executada no anfitriao.
+
+### Captura dos controles nativos
+
+O caminho definitivo nao usa o overlay. Os mesmos sete hooks instalados para o jogador 2
+deixam o retorno original do `GamePad 0` passar normalmente e registram eixos, botoes
+pressionados e liberados. A ponte Java consulta esse snapshot antes de cada envio UDP.
+O analogico virtual e os botoes originais continuam sendo desenhados e processados pelo jogo.
+
+Essa integracao esta implementada no codigo, mas ainda nao foi instalada nem executada em
+aparelho nesta etapa. A validacao em Android sera feita somente quando os aparelhos de teste
+estiverem liberados para uso.
 
 O receptor Android expoe o ultimo comando valido por `LanTransport.getRemoteInput()`. O snapshot e imutavel e contem os eixos, a mascara de botoes, a sequencia UDP e o horario de recebimento. Essa API e a fronteira preparada para o hook JNI/IL2CPP da proxima etapa.
 

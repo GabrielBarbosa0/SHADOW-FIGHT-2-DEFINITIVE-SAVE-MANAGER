@@ -80,6 +80,12 @@ class PeerTests(unittest.TestCase):
         self.assertEqual(input_event.name, "input")
         self.assertEqual(input_event.input_state, sent)
 
+        host_sent = InputState(0.25, -0.75, Button.PUNCH | Button.BOSS_ABILITY)
+        self.host.send_input(host_sent)
+        client_input_event = self.client.poll(1.0)[0]
+        self.assertEqual(client_input_event.name, "input")
+        self.assertEqual(client_input_event.input_state, host_sent)
+
 
 if __name__ == "__main__":
     unittest.main()

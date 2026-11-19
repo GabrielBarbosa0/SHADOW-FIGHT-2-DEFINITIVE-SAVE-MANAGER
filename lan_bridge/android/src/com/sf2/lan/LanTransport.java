@@ -48,6 +48,7 @@ public final class LanTransport implements Runnable {
     private final String token;
     private final byte[] deviceName;
     private final boolean controllerMode;
+    private final boolean nativeControls;
     private DatagramSocket socket;
     private InetSocketAddress peer;
     private int sequence;
@@ -68,6 +69,7 @@ public final class LanTransport implements Runnable {
         this.token = properties.getProperty("token", "").trim();
         this.deviceName = properties.getProperty("name", android.os.Build.MODEL).getBytes(StandardCharsets.UTF_8);
         this.controllerMode = Boolean.parseBoolean(properties.getProperty("controller", "false").trim());
+        this.nativeControls = Boolean.parseBoolean(properties.getProperty("nativeControls", "false").trim());
     }
 
     public static void start(Context context) {
@@ -143,13 +145,16 @@ public final class LanTransport implements Runnable {
         if (deviceName.length < 1 || deviceName.length > 64) {
             throw new IllegalArgumentException("name deve ter entre 1 e 64 bytes");
         }
+        if (controllerMode && nativeControls) {
+            throw new IllegalArgumentException("controller e nativeControls nao podem ser ativados juntos");
+        }
     }
 
     @Override
     public void run() {
         try {
             socket = mode.equals("host") ? new DatagramSocket(port) : new DatagramSocket();
-            socket.setSoTimeout(controllerMode ? 15 : 250);
+            socket.setSoTimeout(sendsLocalInput() ? 15 : 250);
             if (mode.equals("client")) {
                 peer = new InetSocketAddress(InetAddress.getByName(peerHost), port);
             }
@@ -161,8 +166,12 @@ public final class LanTransport implements Runnable {
                 long now = System.currentTimeMillis();
                 if (mode.equals("client") && !connected && now - lastSend >= 1000) {
                     send(TYPE_HELLO, deviceName, peer);
-                } else if (connected && controllerMode && peer != null
+                } else if (connected && sendsLocalInput() && peer != null
                     && now - lastInputSend >= INPUT_INTERVAL_MS) {
+                    if (nativeControls) {
+                        LanInputState local = LanNativeBridge.readLocalInput();
+                        setLocalInput(local.horizontal, local.vertical, local.buttons);
+                    }
                     send(TYPE_INPUT, encodeLocalInput(), peer);
                     lastInputSend = now;
                 } else if (connected && peer != null && now - lastSend >= 1000) {
@@ -295,6 +304,10 @@ public final class LanTransport implements Runnable {
             .array();
     }
 
+    private boolean sendsLocalInput() {
+        return controllerMode || nativeControls;
+    }
+
     private static boolean isNewerSequence(long candidate, long previous) {
         long difference = (candidate - previous) & 0xffffffffL;
         return difference != 0 && difference < 0x80000000L;
@@ -328,11 +341,12 @@ public final class LanTransport implements Runnable {
             String peerText = address == null ? "" : address.getAddress().getHostAddress() + ":" + address.getPort();
             String json = String.format(
                 Locale.ROOT,
-                "{\"state\":\"%s\",\"mode\":\"%s\",\"controller\":%s,\"peer\":\"%s\",\"detail\":\"%s\",\"nativeHook\":%s,"
+                "{\"state\":\"%s\",\"mode\":\"%s\",\"controller\":%s,\"nativeControls\":%s,\"peer\":\"%s\",\"detail\":\"%s\",\"nativeHook\":%s,"
                     + "\"input\":{\"horizontal\":%.6f,\"vertical\":%.6f,\"buttons\":%d,\"sequence\":%d,\"receivedAt\":%d},"
                     + "\"localInput\":{\"horizontal\":%.6f,\"vertical\":%.6f,\"buttons\":%d},"
                     + "\"updated\":%d}\n",
-                escape(state), escape(mode), controllerMode, escape(peerText), escape(detail), LanNativeBridge.isInstalled(),
+                escape(state), escape(mode), controllerMode, nativeControls,
+                escape(peerText), escape(detail), LanNativeBridge.isInstalled(),
                 remoteInput.horizontal, remoteInput.vertical, remoteInput.buttons,
                 remoteInput.sequence, remoteInput.receivedAtMs,
                 localHorizontal, localVertical, localButtons, System.currentTimeMillis()

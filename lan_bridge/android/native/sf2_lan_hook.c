@@ -13,6 +13,7 @@
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__)
 
+#define PLAYER_ONE_INDEX 0
 #define PLAYER_TWO_INDEX 1
 #define INPUT_FRESH_MS 750
 #define AXIS_THRESHOLD 0.30f
@@ -52,6 +53,11 @@ static _Atomic uint32_t key_up_latch;
 static _Atomic uint32_t axis_down_latch;
 static _Atomic uint32_t axis_up_latch;
 static _Atomic int64_t received_at_ms;
+static _Atomic uint32_t local_left_x_bits;
+static _Atomic uint32_t local_left_y_bits;
+static _Atomic uint32_t local_dpad_x_bits;
+static _Atomic uint32_t local_dpad_y_bits;
+static _Atomic uint32_t local_buttons;
 static _Atomic bool hook_installed;
 static _Atomic bool hook_failed;
 
@@ -114,24 +120,68 @@ static bool consume_latch(_Atomic uint32_t *latch, uint32_t mask) {
     return (previous & mask) != 0;
 }
 
+static void capture_local_button(int32_t key, bool pressed) {
+    uint32_t mask = key_to_button(key);
+    if (!mask) return;
+    if (pressed) {
+        atomic_fetch_or_explicit(&local_buttons, mask, memory_order_relaxed);
+    } else {
+        atomic_fetch_and_explicit(&local_buttons, ~mask, memory_order_relaxed);
+    }
+}
+
+static void capture_local_axis(int32_t axis, float value) {
+    _Atomic uint32_t *destination = NULL;
+    switch (axis) {
+        case 0: destination = &local_left_x_bits; break;
+        case 1: destination = &local_left_y_bits; break;
+        case 4: destination = &local_dpad_x_bits; break;
+        case 5: destination = &local_dpad_y_bits; break;
+        default: return;
+    }
+    atomic_store_explicit(destination, float_bits(value), memory_order_relaxed);
+}
+
+static float strongest_axis(float primary, float secondary) {
+    float primary_magnitude = primary < 0.0f ? -primary : primary;
+    float secondary_magnitude = secondary < 0.0f ? -secondary : secondary;
+    return primary_magnitude >= secondary_magnitude ? primary : secondary;
+}
+
 static bool hooked_get_key(void *self, int32_t index, int32_t key, const void *method) {
-    if (index != PLAYER_TWO_INDEX) return original_get_key(self, index, key, method);
+    if (index != PLAYER_TWO_INDEX) {
+        bool result = original_get_key(self, index, key, method);
+        if (index == PLAYER_ONE_INDEX) capture_local_button(key, result);
+        return result;
+    }
     uint32_t mask = key_to_button(key);
     return input_is_fresh() && mask && (atomic_load_explicit(&buttons, memory_order_relaxed) & mask);
 }
 
 static bool hooked_get_key_down(void *self, int32_t index, int32_t key, const void *method) {
-    if (index != PLAYER_TWO_INDEX) return original_get_key_down(self, index, key, method);
+    if (index != PLAYER_TWO_INDEX) {
+        bool result = original_get_key_down(self, index, key, method);
+        if (index == PLAYER_ONE_INDEX && result) capture_local_button(key, true);
+        return result;
+    }
     return input_is_fresh() && consume_latch(&key_down_latch, key_to_button(key));
 }
 
 static bool hooked_get_key_up(void *self, int32_t index, int32_t key, const void *method) {
-    if (index != PLAYER_TWO_INDEX) return original_get_key_up(self, index, key, method);
+    if (index != PLAYER_TWO_INDEX) {
+        bool result = original_get_key_up(self, index, key, method);
+        if (index == PLAYER_ONE_INDEX && result) capture_local_button(key, false);
+        return result;
+    }
     return consume_latch(&key_up_latch, key_to_button(key));
 }
 
 static float hooked_get_axis_value(void *self, int32_t index, int32_t axis, const void *method) {
-    if (index != PLAYER_TWO_INDEX) return original_get_axis_value(self, index, axis, method);
+    if (index != PLAYER_TWO_INDEX) {
+        float result = original_get_axis_value(self, index, axis, method);
+        if (index == PLAYER_ONE_INDEX) capture_local_axis(axis, result);
+        return result;
+    }
     return input_is_fresh() ? remote_axis_value(axis) : 0.0f;
 }
 
@@ -314,4 +364,23 @@ Java_com_sf2_lan_LanNativeBridge_nativeUpdateInput(
         if (was_active && !is_active) atomic_fetch_or_explicit(&axis_up_latch, 1u << axis, memory_order_relaxed);
     }
     atomic_store_explicit(&received_at_ms, (int64_t)received, memory_order_release);
+}
+
+JNIEXPORT jfloatArray JNICALL
+Java_com_sf2_lan_LanNativeBridge_nativeReadLocalInput(JNIEnv *env, jclass type) {
+    (void)type;
+    float left_x = bits_float(atomic_load_explicit(&local_left_x_bits, memory_order_relaxed));
+    float left_y = bits_float(atomic_load_explicit(&local_left_y_bits, memory_order_relaxed));
+    float dpad_x = bits_float(atomic_load_explicit(&local_dpad_x_bits, memory_order_relaxed));
+    float dpad_y = bits_float(atomic_load_explicit(&local_dpad_y_bits, memory_order_relaxed));
+    float snapshot[] = {
+        strongest_axis(left_x, dpad_x),
+        strongest_axis(left_y, dpad_y),
+        (float)atomic_load_explicit(&local_buttons, memory_order_relaxed)
+    };
+    jfloatArray result = (*env)->NewFloatArray(env, 3);
+    if (result != NULL) {
+        (*env)->SetFloatArrayRegion(env, result, 0, 3, snapshot);
+    }
+    return result;
 }

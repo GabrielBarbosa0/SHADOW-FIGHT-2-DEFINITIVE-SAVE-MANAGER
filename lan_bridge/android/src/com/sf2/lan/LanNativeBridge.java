@@ -59,6 +59,18 @@ public final class LanNativeBridge {
         }
     }
 
+    public static LanInputState readLocalInput() {
+        if (!installed) {
+            return LanInputState.NEUTRAL;
+        }
+        float[] values = nativeReadLocalInput();
+        if (values == null || values.length != 3
+            || !Float.isFinite(values[0]) || !Float.isFinite(values[1])) {
+            return LanInputState.NEUTRAL;
+        }
+        return new LanInputState(values[0], values[1], (int) values[2], -1, System.currentTimeMillis());
+    }
+
     private static native boolean nativeInstall();
 
     private static native void nativeUpdateInput(
@@ -68,4 +80,6 @@ public final class LanNativeBridge {
         long sequence,
         long receivedAtMs
     );
+
+    private static native float[] nativeReadLocalInput();
 }

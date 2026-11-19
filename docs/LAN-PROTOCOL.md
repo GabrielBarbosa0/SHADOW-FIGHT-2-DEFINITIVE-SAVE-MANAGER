@@ -43,6 +43,23 @@ controller=true
 No anfitriao, omita a propriedade ou use `controller=false`. Nesta etapa, somente
 o anfitriao executa e mostra a luta; o segundo aparelho funciona como controle LAN.
 
+O modo em desenvolvimento para dois jogos completos usa os controles originais do
+Shadow Fight 2. Em cada aparelho, configure `nativeControls=true` e nao ative
+`controller`. O hook observa o `GamePad 0` sem alterar seu retorno, transmite essa
+entrada e continua aplicando a entrada recebida ao `GamePad 1`:
+
+```properties
+mode=host
+port=24190
+token=troque-este-token
+name=Jogador-1
+nativeControls=true
+```
+
+No segundo aparelho, use a mesma propriedade com `mode=client` e o IP do anfitriao.
+O overlay criado no prototipo 13 permanece apenas como diagnostico por meio de
+`controller=true` e nao faz parte da interface final.
+
 Exemplo de host:
 
 ```properties
