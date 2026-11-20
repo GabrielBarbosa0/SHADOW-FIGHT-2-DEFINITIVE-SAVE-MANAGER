@@ -39,26 +39,7 @@ O APK `com.sf2.de` 2.41.9 nao pode substituir essa entrada. Ele usa outro empaco
 outro binario IL2CPP, outros enderecos e nao contem a cena PVP. Copiar apenas o protocolo,
 os menus ou os hooks do SF2Recomp para o APK nao cria a cena que esta faltando.
 
-## Caminhos possiveis
-
-### Usar o SF2Recomp como base
-
-Este e o caminho com maior chance de produzir multiplayer visivel. Ele preserva a
-Definitive Edition e seu save como projeto separado, mas gera outro aplicativo Android
-a partir dos arquivos da edicao de Switch.
-
-Marco de viabilidade:
-
-1. fornecer uma entrada Switch 1.1.0 compativel sem adiciona-la ao Git;
-2. executar a conversao para Android x86-64;
-3. instalar somente no MuMu;
-4. abrir Sparring e registrar visualmente os menus Normal/LAN e Host/Join;
-5. executar uma luta local antes de qualquer adaptacao ao gerenciador de saves.
-
-Sem os arquivos da edicao de Switch, o codigo pode ser estudado e testado parcialmente,
-mas nao existe como gerar o jogo nem demonstrar a luta.
-
-### Transplantar ideias para a Definitive Edition
+## Uso permitido neste projeto
 
 O protocolo lockstep, a descoberta LAN e algumas decisoes de interface podem servir de
 referencia. Os hooks e enderecos nativos nao sao portaveis. Esse caminho continuaria
@@ -67,10 +48,14 @@ nao remove o bloqueio descoberto nos prototipos 17 a 19.
 
 ## Decisao atual
 
-O SF2Recomp sera avaliado como uma base independente, nao como uma biblioteca que pode
-ser simplesmente ligada ao APK. A proxima implementacao fica condicionada a uma entrada
-Switch compativel e ao marco visual no MuMu. Ate esse marco, nao devem ser criados novos
-APKs da Definitive Edition com alegacao de multiplayer jogavel.
+O produto final e, obrigatoriamente, uma modificacao da **Definitive Edition Android**.
+O SF2Recomp nao sera compilado, nao recebera os saves deste projeto e nao sera usado como
+base do aplicativo. Ele permanece apenas como referencia externa para estudar lockstep,
+descoberta LAN e validacao de divergencia.
+
+A engenharia reversa prossegue sobre `com.sf2.de` com o REA. O marco seguinte e adaptar
+uma cena ja incluida no APK para instanciar dois lutadores controlaveis. Ate esse marco,
+nao deve ser criado outro APK com alegacao de multiplayer jogavel.
 
 ## Verificacao local do upstream
 

@@ -61,7 +61,7 @@ A Definitive Edition valida internamente o pacote `com.sf2.de` e a versão `2.41
 
 O processo, as regras de backup e as limitações da build atual estão em [`docs/LAN-MODE-DEVELOPMENT.md`](docs/LAN-MODE-DEVELOPMENT.md). O protocolo e sua configuração estão em [`docs/LAN-PROTOCOL.md`](docs/LAN-PROTOCOL.md). O APK de teste fica somente em `dist/` e não é publicado no GitHub.
 
-A alternativa baseada na recompilação da edição de Nintendo Switch, suas vantagens e o limite de compatibilidade com a Definitive Edition estão documentados em [`docs/SF2RECOMP-EVALUATION.md`](docs/SF2RECOMP-EVALUATION.md).
+O projeto final usa exclusivamente a Definitive Edition Android. A análise reproduzível com o REA e o novo caminho para reaproveitar uma cena existente estão em [`docs/REA-DEFINITIVE-EDITION-ANALYSIS.md`](docs/REA-DEFINITIVE-EDITION-ANALYSIS.md). O SF2Recomp permanece apenas como referência externa de arquitetura LAN, conforme [`docs/SF2RECOMP-EVALUATION.md`](docs/SF2RECOMP-EVALUATION.md).
 
 ## Save ativo: campanha do início com facilidades
 

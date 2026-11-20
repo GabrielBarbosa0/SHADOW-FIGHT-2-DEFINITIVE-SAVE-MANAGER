@@ -8,6 +8,7 @@
 - O IL2CPP contem `PvpScene`, logica para dois jogadores, selecao de personagens e arenas.
 - O prototipo 15 contem redirecionamentos em `GeneralMenuScene`, mas essa cena nao e percorrida pelo fluxo da Definitive Edition.
 - O prototipo 19 confirmou que `ModulePvp` e solicitado corretamente, mas a cena nao foi incluida no build Unity Android.
+- O REA 6.9.0 confirmou de forma independente `PvpScene`, 12 campos internos, 27 metodos e os acessores/trocas de entrada dos dois jogadores.
 - A tela com dois lutadores observada no dojo era uma pre-visualizacao, nao uma luta PVP completa.
 - A ponte UDP Android ja conecta host e cliente, valida o token e mantem heartbeat.
 - Os pacotes de entrada ja sao validados, ordenados e mantidos num snapshot dentro do processo Android.
@@ -107,6 +108,12 @@ O codigo de diagnostico usado nos prototipos 17 a 19 foi removido depois dessa c
 - processo permaneceu ativo, parado na tela de carregamento por falta da cena.
 
 Essa validacao corrige a conclusao anterior: a infraestrutura de codigo PVP existe, mas o modo nao e jogavel neste APK sem o asset da cena. A proxima etapa e localizar uma cena `ModulePvp` da mesma versao Unity/IL2CPP ou reconstruir uma cena equivalente antes de aplicar perfis e sincronizacao de luta.
+
+A analise posterior com o REA refinou esse plano: em vez de depender de encontrar o
+asset original, o primeiro caminho sera reutilizar uma cena de luta ja empacotada. O
+marco e instanciar nela dois lutadores independentes por meio de `FightScene`,
+`PreFight.SetPlayerPvpMode`, `PlayerOneInput` e `PlayerTwoInput`. Os resultados e o
+script reproduzivel estao em [`REA-DEFINITIVE-EDITION-ANALYSIS.md`](REA-DEFINITIVE-EDITION-ANALYSIS.md).
 
 ### Validacao de entrada do prototipo 11
 
