@@ -2,7 +2,7 @@
 setlocal
 
 set "PROJECT_ROOT=%~dp0"
-set "LAUNCHER=%PROJECT_ROOT%scripts\run-save-manager.ps1"
+set "LAUNCHER=%PROJECT_ROOT%save-manager\scripts\run-save-manager.ps1"
 
 if not exist "%LAUNCHER%" (
     echo Nao foi possivel encontrar:

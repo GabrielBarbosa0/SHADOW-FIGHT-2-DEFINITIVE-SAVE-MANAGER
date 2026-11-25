@@ -1,6 +1,8 @@
-# Shadow Fight 2: Definitive Edition no Android moderno
+# Shadow Fight 2: Definitive Edition — Save Manager e LAN Multiplayer
 
-Este projeto usa **Shadow Fight 2: Definitive Edition 2.41.9** no POCO X7 Pro. A edição é ARM64 nativa e funciona diretamente no Android 16.
+Este repositório reúne dois componentes independentes para **Shadow Fight 2:
+Definitive Edition 2.41.9**: o gerenciador de saves e o módulo experimental de
+multiplayer LAN. A edição é ARM64 nativa e funciona diretamente no Android 16.
 
 O objetivo atual é jogar a campanha desde o começo com a aparência normal do Shadow, mantendo apenas facilidades de recursos: nível máximo, dinheiro, gemas, energia e orbes de encantamento praticamente infinitos.
 
@@ -40,34 +42,40 @@ INICIAR-GERENCIADOR.bat
 Basta dar dois cliques nesse arquivo para abrir o aplicativo. Como alternativa, execute pelo PowerShell:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-save-manager.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\save-manager\scripts\run-save-manager.ps1
 ```
 
 Ou diretamente pelo Python:
 
 ```powershell
+Set-Location .\save-manager
 python -m save_manager.app
 ```
 
-O aplicativo usa somente Python 3 e Tkinter. Os saves gerados ficam em `generated/`; os backups manuais e automáticos ficam em `backups/`. Ambas as pastas são locais e ignoradas pelo Git.
+O aplicativo usa somente Python 3 e Tkinter. Os saves gerados ficam em `save-manager/generated/`; os backups manuais e automáticos ficam em `save-manager/backups/`. Ambas as pastas são locais e ignoradas pelo Git.
 
-Esta interface é o protótipo funcional do futuro aplicativo nativo para Windows. A migração planejada para C#, WinUI 3, executável autocontido e instalador está documentada em [`docs/CSHARP-APP-ROADMAP.md`](docs/CSHARP-APP-ROADMAP.md).
+Esta interface é o protótipo funcional do futuro aplicativo nativo para Windows. A migração planejada para C#, WinUI 3, executável autocontido e instalador está documentada em [`save-manager/docs/CSHARP-APP-ROADMAP.md`](save-manager/docs/CSHARP-APP-ROADMAP.md).
 
 ## Protótipo do modo multiplayer
 
-O APK conserva no IL2CPP o código de um PVP local com dois jogadores, mas a cena Unity `ModulePvp` não foi incluída no build Android. O protótipo 19 confirmou a chamada ao módulo e o erro de cena ausente no MuMu; portanto, a tela de dois lutadores vista no dojo não era uma partida PVP completa. A ponte UDP, a troca de perfis, a captura do `GamePad 0`, a injeção no `GamePad 1` e o relay de dois jogadores continuam implementados. A próxima etapa é recuperar ou reconstruir uma cena compatível antes de integrar os perfis e a sincronização da luta.
+O APK conserva no IL2CPP o código de um PVP local com dois jogadores, mas a cena Unity `ModulePvp` não foi incluída no build Android. O caminho atual reutiliza uma `FightScene` existente, ativa `FightPVP` somente depois de `PROFILE`/`READY` e resolve os cinco IDs de equipamento remoto pelo gerenciador IL2CPP do próprio jogo. No MuMu, uma luta de Torneio exibiu o Titã local e o conjunto do Lynx recebido pela LAN como adversário. A IA desse adversário foi suprimida pelo ponteiro e pelo perfil exatos do segundo lutador; um comando horizontal remoto foi roteado ao mesmo objeto (`index=1`). A arena possui um segundo handshake: cada aparelho envia `FIGHT_READY` somente depois de criar os dois lutadores, e `START`/`START_ACK` coordenam o início. A engenharia reversa também localizou o `PreFight`, o `ViewerFight` e os dois `PlayerLifeBar`: o pacote `STATE` transporta cronômetro em segundos/frames, vida exibida à esquerda/direita e contadores de frames a 20 Hz. O protótipo 51 foi executado em duas VMs Android independentes: ambas usaram o mesmo `roundId`, trocaram estado nos dois sentidos e mantiveram a diferença em 8–9 frames depois de mais de um minuto graças ao frame pacing. Ainda faltam sincronização autoritativa de vida, posição, animação e resultado da luta; por isso, esta build continua sendo um protótipo técnico, não um multiplayer final.
 
 A Definitive Edition valida internamente o pacote `com.sf2.de` e a versão `2.41.9`. Por isso, a build de pesquisa não pode coexistir com o jogo original no mesmo Android: qualquer teste em aparelho real exige backup prévio do save e do APK. Os originais do projeto nunca são usados como destino de patch ou build.
 
-O processo, as regras de backup e as limitações da build atual estão em [`docs/LAN-MODE-DEVELOPMENT.md`](docs/LAN-MODE-DEVELOPMENT.md). O protocolo e sua configuração estão em [`docs/LAN-PROTOCOL.md`](docs/LAN-PROTOCOL.md). O APK de teste fica somente em `dist/` e não é publicado no GitHub.
+O processo, as regras de backup e as limitações da build atual estão em [`lan-multiplayer/docs/LAN-MODE-DEVELOPMENT.md`](lan-multiplayer/docs/LAN-MODE-DEVELOPMENT.md). O protocolo e sua configuração estão em [`lan-multiplayer/docs/LAN-PROTOCOL.md`](lan-multiplayer/docs/LAN-PROTOCOL.md). O APK de teste fica somente em `dist/` e não é publicado no GitHub.
 
-O projeto final usa exclusivamente a Definitive Edition Android. A análise reproduzível com o REA e o novo caminho para reaproveitar uma cena existente estão em [`docs/REA-DEFINITIVE-EDITION-ANALYSIS.md`](docs/REA-DEFINITIVE-EDITION-ANALYSIS.md). O SF2Recomp permanece apenas como referência externa de arquitetura LAN, conforme [`docs/SF2RECOMP-EVALUATION.md`](docs/SF2RECOMP-EVALUATION.md).
+Como cada APK completo ocupa aproximadamente 1,05 GiB, `lan-multiplayer/scripts/cleanup-lan-builds.ps1`
+faz uma simulação da limpeza e, com `-Apply`, mantém apenas a build mais recente em
+`dist/` e remove cópias antigas de instalação. O APK original, o backup original e
+os saves não são removidos.
+
+O projeto final usa exclusivamente a Definitive Edition Android. A análise reproduzível com o REA e o novo caminho para reaproveitar uma cena existente estão em [`lan-multiplayer/docs/REA-DEFINITIVE-EDITION-ANALYSIS.md`](lan-multiplayer/docs/REA-DEFINITIVE-EDITION-ANALYSIS.md). O SF2Recomp permanece apenas como referência externa de arquitetura LAN, conforme [`lan-multiplayer/docs/SF2RECOMP-EVALUATION.md`](lan-multiplayer/docs/SF2RECOMP-EVALUATION.md).
 
 ## Save ativo: campanha do início com facilidades
 
 O perfil recomendado está em:
 
-`saves/fresh-start-cheats/users.xml`
+`save-manager/saves/fresh-start-cheats/users.xml`
 
 SHA-256:
 
@@ -101,7 +109,7 @@ Observação: o nível 52 pode liberar sistemas e itens da loja mais cedo que nu
 O `users.xml` recebido com a Definitive Edition foi preservado sem alterações em dois lugares:
 
 - `game/Shadow Fight 2 DE/users.xml`
-- `saves/titan-complete/users.xml`
+- `save-manager/saves/titan-complete/users.xml`
 
 SHA-256:
 
@@ -149,8 +157,8 @@ Para aplicar o perfil de campanha inicial:
 adb shell am force-stop com.sf2.de
 adb shell mv /sdcard/Android/data/com.sf2.de/files/userdata/users.xml.hash /sdcard/Android/data/com.sf2.de/files/userdata/users.xml.hash.pre-import
 adb shell mv /sdcard/Android/data/com.sf2.de/files/userdata/users_backup.xml.hash /sdcard/Android/data/com.sf2.de/files/userdata/users_backup.xml.hash.pre-import
-adb push ".\saves\fresh-start-cheats\users.xml" /sdcard/Android/data/com.sf2.de/files/userdata/users.xml
-adb push ".\saves\fresh-start-cheats\users.xml" /sdcard/Android/data/com.sf2.de/files/userdata/users_backup.xml
+adb push ".\save-manager\saves\fresh-start-cheats\users.xml" /sdcard/Android/data/com.sf2.de/files/userdata/users.xml
+adb push ".\save-manager\saves\fresh-start-cheats\users.xml" /sdcard/Android/data/com.sf2.de/files/userdata/users_backup.xml
 adb shell monkey -p com.sf2.de -c android.intent.category.LAUNCHER 1
 ```
 
@@ -164,20 +172,12 @@ Arquivos `*.apk` e toda a pasta `game/` estão ignorados pelo Git. O APK da Defi
 
 ## Estrutura principal
 
-- `game/Shadow Fight 2 DE/`: APK local da Definitive Edition e save completo originalmente recebido.
-- `saves/fresh-start-cheats/`: campanha desde o início com facilidades.
-- `saves/titan-complete/`: cópia preservada do save completo com Titã.
-- `saves/README.md`: detalhes e comparação dos perfis.
-- `save_manager/`: aplicativo gráfico, gerador de XML e integração ADB.
-- `scripts/run-save-manager.ps1`: inicializador da interface gráfica.
-- `tests/`: testes automatizados do gerador de save.
-- `docs/CSHARP-APP-ROADMAP.md`: plano da migração para o aplicativo nativo em C#.
-- `docs/LAN-MODE-DEVELOPMENT.md`: regras de preservação e plano técnico do modo multiplayer em LAN.
-- `docs/LAN-PROTOCOL.md`: protocolo UDP, configuração host/cliente e diagnóstico da conexão.
-- `scripts/create-lan-modding-workspace.ps1`: cria backups verificados e uma nova cópia de trabalho sem substituir os originais.
-- `scripts/build-lan-transport-apk.ps1`: cria uma build LAN nova, assinada e isolada, a partir do APK original verificado.
+- `save-manager/`: aplicativo gráfico, saves, testes e plano da futura versão C#.
+- `lan-multiplayer/`: ponte UDP, hook ARM64, engenharia reversa, scripts de build e testes LAN.
+- `game/Shadow Fight 2 DE/`: APK local da Definitive Edition e save originalmente recebido.
+- `dist/`: APK experimental mais recente, mantido somente no computador.
 
-As pastas locais `game/`, `backups/` e `generated/` são criadas ou utilizadas durante o uso, mas permanecem fora do Git.
+As pastas locais `game/`, `backups/`, `generated/` e suas equivalentes dentro dos componentes permanecem fora do Git.
 
 ## Licença
 
