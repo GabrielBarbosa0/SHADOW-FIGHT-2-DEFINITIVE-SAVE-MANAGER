@@ -11,6 +11,7 @@ public final class LanNativeBridge {
     private static volatile boolean installed;
     private static volatile boolean sessionReady;
     private static volatile int playerRole;
+    private static volatile LanFighterProfile localMatchProfile;
     private static volatile LanFighterProfile remoteProfile;
 
     private LanNativeBridge() {
@@ -44,6 +45,7 @@ public final class LanNativeBridge {
                 }
             }
             if (installed) {
+                pushLocalProfile();
                 pushRemoteProfile();
                 nativeSetSessionReady(sessionReady);
                 nativeSetPlayerRole(playerRole);
@@ -78,6 +80,31 @@ public final class LanNativeBridge {
         if (installed) {
             pushRemoteProfile();
         }
+    }
+
+    public static void setMatchProfiles(LanFighterProfile localProfile, LanFighterProfile remoteProfile) {
+        localMatchProfile = localProfile;
+        LanNativeBridge.remoteProfile = remoteProfile;
+        if (installed) {
+            pushLocalProfile();
+            pushRemoteProfile();
+        }
+    }
+
+    private static void pushLocalProfile() {
+        LanFighterProfile profile = localMatchProfile;
+        if (profile == null) {
+            nativeClearLocalProfile();
+            return;
+        }
+        nativeSetLocalProfile(
+            profile.level,
+            profile.armor,
+            profile.helm,
+            profile.weapon,
+            profile.ranged,
+            profile.magic
+        );
     }
 
     private static void pushRemoteProfile() {
@@ -238,7 +265,18 @@ public final class LanNativeBridge {
         String magic
     );
 
+    private static native void nativeSetLocalProfile(
+        int level,
+        String armor,
+        String helm,
+        String weapon,
+        String ranged,
+        String magic
+    );
+
     private static native void nativeClearRemoteProfile();
+
+    private static native void nativeClearLocalProfile();
 
     private static native void nativeUpdateInput(
         float horizontal,

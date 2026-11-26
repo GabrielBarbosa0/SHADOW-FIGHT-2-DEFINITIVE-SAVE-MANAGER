@@ -20,6 +20,10 @@ PLAYER_ROLE_PAYLOAD = struct.Struct("!B")
 FIGHT_CONFIG_HEADER = struct.Struct("!BBQH")
 FIGHT_CONFIG_VERSION = 1
 MAX_FIGHT_CONFIG_ID_BYTES = 512
+MATCH_CONFIG_HEADER = struct.Struct("!BBQBB")
+MATCH_CONFIG_ACK_PAYLOAD = struct.Struct("!Q")
+MATCH_CONFIG_VERSION = 1
+MAX_PRESET_NAME_BYTES = 32
 PROFILE_HEADER = struct.Struct("!BB")
 PROFILE_VERSION = 1
 PROFILE_FIELDS = ("name", "avatar", "voice", "skeleton", "armor", "helm", "weapon", "ranged", "magic")
@@ -46,6 +50,8 @@ class PacketType(IntEnum):
     PLAYER_ROLE = 13
     FIGHT_CONFIG = 14
     FIGHT_AUTHORITY = 15
+    MATCH_CONFIG = 16
+    MATCH_CONFIG_ACK = 17
 
 
 class PlayerRole(IntEnum):
@@ -207,6 +213,82 @@ class FightConfig:
 
 
 @dataclass(frozen=True, slots=True)
+class MatchConfig:
+    """Escolha autoritativa de tier e equipamento para os dois jogadores."""
+
+    match_level: int
+    seed: int
+    player_one_preset: str
+    player_two_preset: str
+
+    def encode(self) -> bytes:
+        if not 1 <= self.match_level <= 52:
+            raise ProtocolError("Nivel da partida deve ficar entre 1 e 52.")
+        if not 1 <= self.seed <= 0xFFFFFFFFFFFFFFFF:
+            raise ProtocolError("Seed da partida fora do intervalo uint64.")
+        player_one = self.player_one_preset.encode("utf-8")
+        player_two = self.player_two_preset.encode("utf-8")
+        for name, encoded in (("P1", player_one), ("P2", player_two)):
+            if not encoded or len(encoded) > MAX_PRESET_NAME_BYTES:
+                raise ProtocolError(
+                    f"Preset de {name} deve ter entre 1 e {MAX_PRESET_NAME_BYTES} bytes."
+                )
+        return MATCH_CONFIG_HEADER.pack(
+            MATCH_CONFIG_VERSION,
+            self.match_level,
+            self.seed,
+            len(player_one),
+            len(player_two),
+        ) + player_one + player_two
+
+    @property
+    def fingerprint(self) -> int:
+        value = int.from_bytes(hashlib.sha256(self.encode()).digest()[:8], "big")
+        return value or 1
+
+    @classmethod
+    def decode(cls, payload: bytes) -> MatchConfig:
+        if len(payload) < MATCH_CONFIG_HEADER.size:
+            raise ProtocolError("Configuracao da partida incompleta.")
+        version, match_level, seed, p1_size, p2_size = MATCH_CONFIG_HEADER.unpack_from(payload)
+        if version != MATCH_CONFIG_VERSION:
+            raise ProtocolError(f"Versao de configuracao de partida incompativel: {version}.")
+        expected_size = MATCH_CONFIG_HEADER.size + p1_size + p2_size
+        if (
+            p1_size < 1
+            or p2_size < 1
+            or p1_size > MAX_PRESET_NAME_BYTES
+            or p2_size > MAX_PRESET_NAME_BYTES
+            or len(payload) != expected_size
+        ):
+            raise ProtocolError("Tamanho dos presets da partida invalido.")
+        offset = MATCH_CONFIG_HEADER.size
+        try:
+            player_one = payload[offset:offset + p1_size].decode("utf-8")
+            offset += p1_size
+            player_two = payload[offset:offset + p2_size].decode("utf-8")
+        except UnicodeDecodeError as exc:
+            raise ProtocolError("Preset da partida nao e UTF-8.") from exc
+        value = cls(match_level, seed, player_one, player_two)
+        value.encode()
+        return value
+
+
+def encode_match_config_ack(fingerprint: int) -> bytes:
+    if not 1 <= fingerprint <= 0xFFFFFFFFFFFFFFFF:
+        raise ProtocolError("Fingerprint da partida fora do intervalo uint64.")
+    return MATCH_CONFIG_ACK_PAYLOAD.pack(fingerprint)
+
+
+def decode_match_config_ack(payload: bytes) -> int:
+    if len(payload) != MATCH_CONFIG_ACK_PAYLOAD.size:
+        raise ProtocolError("Tamanho invalido da confirmacao da partida.")
+    fingerprint = MATCH_CONFIG_ACK_PAYLOAD.unpack(payload)[0]
+    encode_match_config_ack(fingerprint)
+    return fingerprint
+
+
+@dataclass(frozen=True, slots=True)
 class FightState:
     """Snapshot read-only do HUD capturado no thread do ``FixedUpdate``."""
 
@@ -333,10 +415,7 @@ def compare_fight_states(
     life_tolerance: float = 0.01,
     freshness_tolerance_ms: int = 500,
 ) -> FightStateComparison:
-    """Compara peers que exibem o lutador local sempre no lado esquerdo.
-
-    O lado esquerdo local corresponde ao lado direito no outro aparelho, e vice-versa.
-    """
+    """Compara peers que exibem P1 à esquerda e P2 à direita nas duas telas."""
 
     if local.round_id != remote.round_id:
         raise ProtocolError("Snapshots pertencem a rodadas diferentes.")
@@ -347,10 +426,10 @@ def compare_fight_states(
 
     timer_frames_delta = local.time_left_frames - remote.time_left_frames
     elapsed_frames_delta = local.time_passed_frames - remote.time_passed_frames
-    local_fighter_life_delta = local.left_life - remote.right_life
-    local_fighter_hit_delta = local.left_hit_life - remote.right_hit_life
-    remote_fighter_life_delta = local.right_life - remote.left_life
-    remote_fighter_hit_delta = local.right_hit_life - remote.left_hit_life
+    local_fighter_life_delta = local.left_life - remote.left_life
+    local_fighter_hit_delta = local.left_hit_life - remote.left_hit_life
+    remote_fighter_life_delta = local.right_life - remote.right_life
+    remote_fighter_hit_delta = local.right_hit_life - remote.right_hit_life
     max_life_delta = max(
         abs(local_fighter_life_delta),
         abs(local_fighter_hit_delta),

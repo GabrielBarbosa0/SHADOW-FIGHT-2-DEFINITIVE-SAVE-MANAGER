@@ -12,13 +12,16 @@ from .protocol import (
     FightStart,
     FightState,
     InputState,
+    MatchConfig,
     Packet,
     PacketType,
     PlayerRole,
     ProtocolError,
+    decode_match_config_ack,
     decode_packet,
     decode_player_role,
     decode_round_id,
+    encode_match_config_ack,
     encode_packet,
     encode_round_id,
 )
@@ -42,6 +45,8 @@ class LanEvent:
     fight_state: FightState | None = None
     round_id: int | None = None
     player_role: PlayerRole | None = None
+    match_config: MatchConfig | None = None
+    match_config_fingerprint: int | None = None
     detail: str = ""
 
 
@@ -206,6 +211,21 @@ class LanPeer:
                 "fight-authority", address, packet,
                 fight_authority=authority, round_id=authority.round_id,
             )]
+        if packet.kind is PacketType.MATCH_CONFIG:
+            try:
+                config = MatchConfig.decode(packet.payload)
+            except ProtocolError as exc:
+                return [LanEvent("rejected", address, packet, detail=str(exc))]
+            return [LanEvent("match-config", address, packet, match_config=config)]
+        if packet.kind is PacketType.MATCH_CONFIG_ACK:
+            try:
+                fingerprint = decode_match_config_ack(packet.payload)
+            except ProtocolError as exc:
+                return [LanEvent("rejected", address, packet, detail=str(exc))]
+            return [LanEvent(
+                "match-config-ack", address, packet,
+                match_config_fingerprint=fingerprint,
+            )]
         if packet.kind is PacketType.DISCONNECT:
             self.connected = False
             self.peer_address = None
@@ -256,6 +276,20 @@ class LanPeer:
         if not self.connected or self.peer_address is None:
             raise ConnectionError("Nenhum peer LAN conectado.")
         return self._send(PacketType.FIGHT_AUTHORITY, authority.encode(), self.peer_address)
+
+    def send_match_config(self, config: MatchConfig) -> int:
+        if not self.connected or self.peer_address is None:
+            raise ConnectionError("Nenhum peer LAN conectado.")
+        return self._send(PacketType.MATCH_CONFIG, config.encode(), self.peer_address)
+
+    def send_match_config_ack(self, fingerprint: int) -> int:
+        if not self.connected or self.peer_address is None:
+            raise ConnectionError("Nenhum peer LAN conectado.")
+        return self._send(
+            PacketType.MATCH_CONFIG_ACK,
+            encode_match_config_ack(fingerprint),
+            self.peer_address,
+        )
 
     def _address_allowed(self, address: tuple[str, int], kind: PacketType) -> bool:
         if self.mode is PeerMode.HOST:

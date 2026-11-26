@@ -2,7 +2,7 @@ package com.sf2.lan;
 
 import java.util.Locale;
 
-/** Divergencia entre peers, invertendo os lados para comparar a mesma identidade. */
+/** Divergencia entre peers na composicao canonica P1-esquerda/P2-direita. */
 final class LanFightStateComparison {
     private static final float FRAME_TOLERANCE = 12.0f;
     private static final float LIFE_TOLERANCE = 0.01f;
@@ -60,10 +60,10 @@ final class LanFightStateComparison {
         long remoteAgeMs = Math.max(0L, nowMs - remote.capturedAtMs);
         float timerFramesDelta = local.values[1] - remote.values[1];
         float elapsedFramesDelta = local.values[6] - remote.values[6];
-        float localFighterLifeDelta = local.values[2] - remote.values[4];
-        float localFighterHitDelta = local.values[3] - remote.values[5];
-        float remoteFighterLifeDelta = local.values[4] - remote.values[2];
-        float remoteFighterHitDelta = local.values[5] - remote.values[3];
+        float localFighterLifeDelta = local.values[2] - remote.values[2];
+        float localFighterHitDelta = local.values[3] - remote.values[3];
+        float remoteFighterLifeDelta = local.values[4] - remote.values[4];
+        float remoteFighterHitDelta = local.values[5] - remote.values[5];
         float maxLifeDelta = Math.max(
             Math.max(Math.abs(localFighterLifeDelta), Math.abs(localFighterHitDelta)),
             Math.max(Math.abs(remoteFighterLifeDelta), Math.abs(remoteFighterHitDelta))

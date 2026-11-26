@@ -17,9 +17,11 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class LanTransport implements Runnable {
@@ -41,17 +43,21 @@ public final class LanTransport implements Runnable {
     private static final int TYPE_PLAYER_ROLE = 13;
     private static final int TYPE_FIGHT_CONFIG = 14;
     private static final int TYPE_FIGHT_AUTHORITY = 15;
+    private static final int TYPE_MATCH_CONFIG = 16;
+    private static final int TYPE_MATCH_CONFIG_ACK = 17;
     private static final int HEADER_SIZE = 36;
     private static final int INPUT_SIZE = 10;
     private static final int START_SIZE = 8;
     private static final int ROUND_ID_SIZE = 4;
     private static final int STATE_SIZE = 40;
     private static final int FIGHT_AUTHORITY_SIZE = 48;
+    private static final int MATCH_CONFIG_ACK_SIZE = 8;
     private static final int KNOWN_BUTTONS_MASK = 0x3f;
     private static final int MAX_PAYLOAD = 1024;
     private static final long INPUT_INTERVAL_MS = 33;
     private static final long FIGHT_READY_INTERVAL_MS = 1000;
     private static final long FIGHT_CONFIG_INTERVAL_MS = 1000;
+    private static final long MATCH_CONFIG_INTERVAL_MS = 1000;
     private static final long START_RETRY_INTERVAL_MS = 250;
     private static final long STATE_INTERVAL_MS = 50;
     private static final AtomicBoolean STARTED = new AtomicBoolean(false);
@@ -69,6 +75,8 @@ public final class LanTransport implements Runnable {
     private final int fightStartDelayMs;
     private final LanFighterProfile localProfile;
     private volatile LanFighterProfile remoteProfile;
+    private LanFighterProfile localMatchProfile;
+    private LanFighterProfile remoteMatchProfile;
     private boolean localReady;
     private boolean remoteReady;
     private DatagramSocket socket;
@@ -102,6 +110,10 @@ public final class LanTransport implements Runnable {
     private LanFightConfig localFightConfig;
     private LanFightConfig remoteFightConfig;
     private long lastFightConfigSend;
+    private LanMatchConfig matchConfig;
+    private boolean matchConfigApplied;
+    private boolean matchConfigConfirmed;
+    private long lastMatchConfigSend;
 
     private LanTransport(Context context, Properties properties) {
         this.context = context;
@@ -221,6 +233,7 @@ public final class LanTransport implements Runnable {
             byte[] receiveBuffer = new byte[HEADER_SIZE + MAX_PAYLOAD];
             while (!Thread.currentThread().isInterrupted()) {
                 long now = System.currentTimeMillis();
+                updateMatchHandshake(now);
                 updateFightHandshake(now);
                 if (mode.equals("client") && !connected && now - lastSend >= 1000) {
                     send(TYPE_HELLO, deviceName, peer);
@@ -341,6 +354,10 @@ public final class LanTransport implements Runnable {
             handleFightConfig(payload);
         } else if (type == TYPE_FIGHT_AUTHORITY) {
             handleFightAuthority(payload);
+        } else if (type == TYPE_MATCH_CONFIG) {
+            handleMatchConfig(payload);
+        } else if (type == TYPE_MATCH_CONFIG_ACK) {
+            handleMatchConfigAck(payload);
         } else if (type == TYPE_DISCONNECT) {
             connected = false;
             resetSession();
@@ -399,8 +416,9 @@ public final class LanTransport implements Runnable {
     private void handleProfile(byte[] payload) throws Exception {
         try {
             remoteProfile = LanFighterProfile.decode(payload);
-            LanNativeBridge.setRemoteProfile(remoteProfile);
             localReady = true;
+            ensureHostMatchConfig();
+            applyMatchConfigIfPossible();
             sendReady();
             publishSessionState();
             writeStatus("connected", peer, "perfil remoto recebido");
@@ -423,7 +441,114 @@ public final class LanTransport implements Runnable {
         }
         remoteReady = true;
         publishSessionState();
-        writeStatus("connected", peer, localReady ? "sessao pronta" : "peer pronto");
+        writeStatus("connected", peer, isSessionReady() ? "sessao pronta" : "peer pronto");
+    }
+
+    private void ensureHostMatchConfig() throws Exception {
+        if (!mode.equals("host") || matchConfig != null || localProfile == null || remoteProfile == null) {
+            return;
+        }
+        long seed;
+        do {
+            seed = new SecureRandom().nextLong();
+        } while (seed == 0);
+        Random random = new Random(seed);
+        String playerOne = LanEquipmentPreset.NAMES[random.nextInt(LanEquipmentPreset.NAMES.length)];
+        String playerTwo = LanEquipmentPreset.NAMES[random.nextInt(LanEquipmentPreset.NAMES.length)];
+        int matchLevel = Math.max(1, Math.min(52, Math.min(localProfile.level, remoteProfile.level)));
+        matchConfig = new LanMatchConfig(matchLevel, seed, playerOne, playerTwo);
+        applyMatchConfigIfPossible();
+        sendMatchConfig();
+        Log.i(TAG, "Partida LAN sorteada pelo host: nivel=" + matchLevel
+            + " P1=" + playerOne + " P2=" + playerTwo + ".");
+    }
+
+    private void updateMatchHandshake(long now) throws Exception {
+        if (!connected || peer == null) {
+            return;
+        }
+        ensureHostMatchConfig();
+        applyMatchConfigIfPossible();
+        if (matchConfig == null || !matchConfigApplied || matchConfigConfirmed
+            || now - lastMatchConfigSend < MATCH_CONFIG_INTERVAL_MS) {
+            return;
+        }
+        if (mode.equals("host")) {
+            sendMatchConfig();
+        } else {
+            sendMatchConfigAck();
+        }
+    }
+
+    private void handleMatchConfig(byte[] payload) throws Exception {
+        LanMatchConfig received;
+        try {
+            received = LanMatchConfig.decode(payload);
+        } catch (IllegalArgumentException error) {
+            Log.w(TAG, "MATCH_CONFIG rejeitado.", error);
+            return;
+        }
+        if (mode.equals("host")) {
+            Log.w(TAG, "MATCH_CONFIG rejeitado: o host e a autoridade da partida.");
+            return;
+        }
+        if (matchConfig != null && matchConfig.fingerprint() != received.fingerprint()) {
+            Log.e(TAG, "MATCH_CONFIG divergente recebido durante a mesma sessao.");
+            return;
+        }
+        matchConfig = received;
+        applyMatchConfigIfPossible();
+        if (matchConfigApplied) {
+            sendMatchConfigAck();
+        }
+    }
+
+    private void handleMatchConfigAck(byte[] payload) throws Exception {
+        if (payload.length != MATCH_CONFIG_ACK_SIZE || matchConfig == null || !matchConfigApplied) {
+            Log.w(TAG, "MATCH_CONFIG_ACK rejeitado.");
+            return;
+        }
+        long fingerprint = ByteBuffer.wrap(payload).order(ByteOrder.BIG_ENDIAN).getLong();
+        if (fingerprint == 0 || fingerprint != matchConfig.fingerprint()) {
+            Log.w(TAG, "MATCH_CONFIG_ACK com fingerprint desconhecido.");
+            return;
+        }
+        matchConfigConfirmed = true;
+        if (mode.equals("host")) {
+            send(TYPE_MATCH_CONFIG_ACK, payload, peer);
+        }
+        publishSessionState();
+        writeStatus("connected", peer, "configuracao de partida confirmada");
+        Log.i(TAG, "Partida LAN confirmada: " + matchConfig.toJson());
+    }
+
+    private void sendMatchConfig() throws Exception {
+        if (peer != null && matchConfig != null) {
+            send(TYPE_MATCH_CONFIG, matchConfig.encode(), peer);
+            lastMatchConfigSend = System.currentTimeMillis();
+        }
+    }
+
+    private void sendMatchConfigAck() throws Exception {
+        if (peer != null && matchConfig != null) {
+            byte[] payload = ByteBuffer.allocate(MATCH_CONFIG_ACK_SIZE).order(ByteOrder.BIG_ENDIAN)
+                .putLong(matchConfig.fingerprint()).array();
+            send(TYPE_MATCH_CONFIG_ACK, payload, peer);
+            lastMatchConfigSend = System.currentTimeMillis();
+        }
+    }
+
+    private void applyMatchConfigIfPossible() {
+        if (matchConfigApplied || matchConfig == null || localProfile == null || remoteProfile == null) {
+            return;
+        }
+        LanEquipmentPreset localPreset = LanEquipmentPreset.get(matchConfig.presetForRole(localPlayerRole));
+        LanEquipmentPreset remotePreset = LanEquipmentPreset.get(matchConfig.remotePresetForRole(localPlayerRole));
+        localMatchProfile = localProfile.withPreset(localPreset, matchConfig.matchLevel);
+        remoteMatchProfile = remoteProfile.withPreset(remotePreset, matchConfig.matchLevel);
+        LanNativeBridge.setMatchProfiles(localMatchProfile, remoteMatchProfile);
+        matchConfigApplied = true;
+        publishSessionState();
     }
 
     private void updateFightHandshake(long now) throws Exception {
@@ -527,6 +652,8 @@ public final class LanTransport implements Runnable {
         }
         localPlayerRole = payload[0];
         LanNativeBridge.setPlayerRole(localPlayerRole);
+        matchConfigApplied = false;
+        applyMatchConfigIfPossible();
         Log.i(TAG, "Identidade LAN atribuida pelo relay: jogador " + localPlayerRole + ".");
         writeStatus("connected", peer, "jogador " + localPlayerRole);
     }
@@ -737,7 +864,13 @@ public final class LanTransport implements Runnable {
         localReady = false;
         remoteReady = false;
         remoteProfile = null;
-        LanNativeBridge.setRemoteProfile(null);
+        localMatchProfile = null;
+        remoteMatchProfile = null;
+        LanNativeBridge.setMatchProfiles(null, null);
+        matchConfig = null;
+        matchConfigApplied = false;
+        matchConfigConfirmed = false;
+        lastMatchConfigSend = 0;
         lastProfileSend = 0;
         lastReadySend = 0;
         lastFightGeneration = 0;
@@ -767,7 +900,7 @@ public final class LanTransport implements Runnable {
     }
 
     private boolean isSessionReady() {
-        return localReady && remoteReady;
+        return localReady && remoteReady && matchConfigApplied && matchConfigConfirmed;
     }
 
     private void publishSessionState() {
@@ -822,7 +955,7 @@ public final class LanTransport implements Runnable {
                 "{\"state\":\"%s\",\"mode\":\"%s\",\"controller\":%s,\"nativeControls\":%s,\"peer\":\"%s\",\"detail\":\"%s\",\"nativeHook\":%s,"
                     + "\"input\":{\"horizontal\":%.6f,\"vertical\":%.6f,\"buttons\":%d,\"sequence\":%d,\"receivedAt\":%d},"
                     + "\"localInput\":{\"horizontal\":%.6f,\"vertical\":%.6f,\"buttons\":%d},"
-                    + "\"localProfile\":%s,\"remoteProfile\":%s,\"localReady\":%s,\"remoteReady\":%s,\"sessionReady\":%s,"
+                    + "\"localProfile\":%s,\"remoteProfile\":%s,\"localMatchProfile\":%s,\"remoteMatchProfile\":%s,\"matchConfig\":%s,\"matchConfigApplied\":%s,\"matchConfigConfirmed\":%s,\"localReady\":%s,\"remoteReady\":%s,\"sessionReady\":%s,"
                     + "\"fight\":{\"generation\":%d,\"playerRole\":%d,\"localReady\":%s,\"remoteReady\":%s,\"configMatch\":%s,\"localConfig\":%s,\"remoteConfig\":%s,\"startScheduled\":%s,\"startAcked\":%s,\"roundId\":%d,\"startAt\":%d},"
                     + "\"fightState\":{\"local\":%s,\"remote\":%s,\"comparison\":%s},"
                     + "\"fightAuthority\":{\"local\":%s,\"remote\":%s},"
@@ -834,7 +967,11 @@ public final class LanTransport implements Runnable {
                 localHorizontal, localVertical, localButtons,
                 localProfile == null ? "null" : localProfile.toJson(),
                 remoteProfile == null ? "null" : remoteProfile.toJson(),
-                localReady, remoteReady, localReady && remoteReady,
+                localMatchProfile == null ? "null" : localMatchProfile.toJson(),
+                remoteMatchProfile == null ? "null" : remoteMatchProfile.toJson(),
+                matchConfig == null ? "null" : matchConfig.toJson(),
+                matchConfigApplied, matchConfigConfirmed,
+                localReady, remoteReady, isSessionReady(),
                 LanNativeBridge.getFightGeneration(), localPlayerRole, localFightReady, remoteFightReady,
                 fightConfigsMatch(),
                 localFightConfig == null ? "null" : localFightConfig.toJson(),

@@ -29,8 +29,8 @@ O protótipo atual acrescenta uma ponte UDP, um hook ARM64, negociação de luta
 - retorno imediato da entrada remota ao estado neutro em timeout ou desconexão;
 - leitura validada do cronômetro, das duas barras do HUD e dos contadores de frames no thread da Unity;
 - transmissão e armazenamento de snapshots `STATE` a aproximadamente 20 Hz;
-- comparação de snapshots pela identidade dos lutadores, invertendo esquerda/direita
-  entre os aparelhos e publicando deltas e tolerância em `sf2lan-status.json`;
+- comparação de snapshots na composição canônica P1 à esquerda/P2 à direita nos
+  dois aparelhos, publicando deltas e tolerância em `sf2lan-status.json`;
 - relay opcional de dois jogadores para clientes separados por NAT;
 - coordenação de `START` pelo relay quando os dois Androids operam como clientes;
 - frame pacing nativo que segura somente a simulação adiantada quando o estado remoto
@@ -38,7 +38,7 @@ O protótipo atual acrescenta uma ponte UDP, um hook ARM64, negociação de luta
 
 A ponte Android e a implementação de referência em Python usam o mesmo protocolo. O teste MuMu-to-PC foi concluído com conexão e heartbeat contínuo, sem falha fatal no jogo.
 
-A ponte já transporta os comandos dos dois lados. A `FightScene` só é preparada como `FightPVP` depois de `PROFILE`/`READY`. Num teste de Torneio, o jogador local conservou o conjunto do Titã e o adversário recebeu o conjunto do Lynx. Depois da criação da arena, o Android envia `FIGHT_READY`; em NAT de emulador, o relay espera os dois clientes, emite `START` e consome os dois `START_ACK`. A IA remota continua suprimida e a entrada recebida continua associada ao oponente com `index=1`. O hook segue `FightScene -> PreFight -> ViewerFight -> PlayerLifeBar` e envia cronômetro, barras esquerda/direita e contadores de frames em `STATE` a 20 Hz. Em duas VMs Android 15, o frame pacing manteve a deriva em 8–9 frames depois de mais de um minuto. Sem peer, a luta permanece no modo original. Ainda faltam correção autoritativa de posição, vida, animação e resultado; portanto, o APK ainda não deve ser apresentado como multiplayer final.
+A ponte já transporta os comandos dos dois lados. A `FightScene` só é preparada como `FightPVP` depois de `PROFILE`/`READY`. Depois da criação da arena, o Android envia `FIGHT_READY`; em NAT de emulador, o relay espera os dois clientes, emite `START` e consome os dois `START_ACK`. No protótipo 77, P1 usa `index=0` e permanece à esquerda nas duas telas; P2 usa `index=1` e permanece à direita. O hook segue `FightScene -> PreFight -> ViewerFight -> PlayerLifeBar` e envia cronômetro, barras esquerda/direita e contadores de frames em `STATE` a 20 Hz. Em duas VMs Android 15, o frame pacing manteve a deriva em 8–9 frames depois de mais de um minuto. A build 87 ainda possui uma regressão conhecida: o primeiro callback nativo liberado para iniciar o cronômetro pode deixar uma ação da IA remota enfileirada, mesmo que os callbacks seguintes sejam suprimidos. Sem peer, a luta permanece no modo original. Ainda faltam isolamento completo da IA e autoridade de animação, colisão, vida, cronômetro, rounds e resultado; portanto, o APK ainda não deve ser apresentado como multiplayer final.
 
 ## Configuração Android
 
@@ -221,7 +221,12 @@ Tipos definidos:
 - `9`: `FIGHT_READY`;
 - `10`: `START`;
 - `11`: `START_ACK`;
-- `12`: `STATE`.
+- `12`: `STATE`;
+- `13`: `PLAYER_ROLE`;
+- `14`: `FIGHT_CONFIG`;
+- `15`: `FIGHT_AUTHORITY`;
+- `16`: `MATCH_CONFIG`;
+- `17`: `MATCH_CONFIG_ACK`.
 
 O payload de `INPUT` possui eixo horizontal `float32`, eixo vertical `float32` e máscara `uint16` de botões. Os bits atuais são soco, chute, arma de longo alcance, magia, habilidade de chefe e pausa.
 
@@ -233,6 +238,19 @@ armadura, elmo, arma, arma de longo alcance e magia. Cada texto aceita no máxim
 `READY` tem payload vazio. Os perfis são retransmitidos até cada lado receber a
 confirmação do outro. `sessionReady` no status só fica verdadeiro quando ambos
 possuem e confirmaram o perfil adversário.
+
+A sessão também exige `MATCH_CONFIG`: versão `uint8`, tier `uint8`, seed `uint64`,
+tamanho do preset P1 `uint8`, tamanho do preset P2 `uint8` e os dois nomes UTF-8.
+O fingerprint é formado pelos primeiros oito bytes de `SHA-256(payload)`. Cada
+Android aplica o preset correspondente ao seu `PLAYER_ROLE` e responde com
+`MATCH_CONFIG_ACK`, cujo payload é esse fingerprint `uint64`. `sessionReady` só fica
+verdadeiro quando perfis e configuração de partida foram aplicados e confirmados.
+
+No modo direto, o host cria a configuração. No modo relay coordenado, o relay espera
+os dois `PROFILE`, usa o menor nível (limitado a 1..52), sorteia P1/P2 de forma
+independente e envia a mesma configuração aos dois clientes. Presets repetidos são
+válidos. A versão atual aplica armadura, capacete, arma, arma de longo alcance e
+magia; o tier ainda não altera o campo interno de nível do perfil IL2CPP.
 
 `FIGHT_READY` também tem payload vazio, mas só é enviado depois que o hook nativo
 termina de criar a arena e os dois lutadores. `START` contém um identificador de
@@ -248,8 +266,8 @@ restantes, vida esquerda, barra de impacto esquerda, vida direita, barra de impa
 direita, frames transcorridos e total de frames da rodada. O emissor publica esse
 snapshot a aproximadamente 20 Hz.
 O receptor valida tamanho, rodada e ordenação, guarda o estado mais recente e o
-expõe em `sf2lan-status.json`. A seção `comparison` cruza a barra esquerda local com
-a direita remota, e a direita local com a esquerda remota. Ela informa idade do
+expõe em `sf2lan-status.json`. A seção `comparison` compara esquerda com esquerda e
+direita com direita, preservando P1/P2 em ambos os aparelhos. Ela informa idade do
 snapshot, deltas de frames e vida e `withinTolerance`; as tolerâncias atuais são 12
 frames, `0.01` de vida e 500 ms de idade. O frame pacing usa somente
 `frames transcorridos`: se o estado remoto tiver no máximo 500 ms e a simulação

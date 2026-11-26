@@ -1,5 +1,8 @@
 """Conjuntos usados somente pelos diagnósticos visuais do módulo LAN."""
 
+import random
+
+
 EQUIPMENT_PRESETS = {
     "initial": {"Avatar": "avatar_hero", "Skeleton": "Skeleton", "Armor": "Body", "Helm": "Head", "Weapon": "Fists", "Ranged": "NoRanged", "Magic": "NoMagic"},
     "lynx": {"Avatar": "boss_lynx", "Skeleton": "Skeleton", "Armor": "BODY_LYNX", "Helm": "HEAD_LYNX", "Weapon": "WEAPON_LYNX_CLAWS", "Ranged": "NoRanged", "Magic": "NoMagic"},
@@ -10,3 +13,17 @@ EQUIPMENT_PRESETS = {
     "shogun": {"Avatar": "boss_shogun", "Skeleton": "Skeleton", "Armor": "ARMOR_SHOGUN", "Helm": "HELM_CRESCENT", "Weapon": "WEAPON_SHOGUN_KATANA", "Ranged": "RANGED_CHAKRAM_OF_MASTER", "Magic": "MAGIC_ASTEROID"},
     "titan": {"Avatar": "avatar_human", "Skeleton": "Skeleton", "Armor": "BODY_TITAN", "Helm": "HEAD_TITAN", "Weapon": "WEAPON_TITAN_GIANT_SWORD", "Ranged": "RANGED_TITANS_HARPOON", "Magic": "MAGIC_MIND_THROW"},
 }
+
+EQUIPMENT_PRESET_NAMES = tuple(EQUIPMENT_PRESETS)
+
+
+def select_match_presets(seed: int) -> tuple[str, str]:
+    """Sorteia P1/P2 de forma reproduzivel; repeticoes sao permitidas."""
+
+    if not 1 <= seed <= 0xFFFFFFFFFFFFFFFF:
+        raise ValueError("seed deve ficar no intervalo uint64 sem zero")
+    generator = random.Random(seed)
+    return (
+        generator.choice(EQUIPMENT_PRESET_NAMES),
+        generator.choice(EQUIPMENT_PRESET_NAMES),
+    )

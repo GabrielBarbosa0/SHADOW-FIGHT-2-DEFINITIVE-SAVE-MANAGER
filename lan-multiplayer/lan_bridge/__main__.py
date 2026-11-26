@@ -32,17 +32,17 @@ def pulse_buttons(buttons: Button, elapsed: float, frequency_hz: float) -> Butto
 
 
 def mirror_fight_state(state: FightState) -> FightState:
-    """Representa o mesmo snapshot visto pelo aparelho do lado oposto."""
+    """Representa o mesmo snapshot na composição canônica P1/P2."""
 
     return FightState(
         round_id=state.round_id,
         tick=state.tick,
         time_left_seconds=state.time_left_seconds,
         time_left_frames=state.time_left_frames,
-        left_life=state.right_life,
-        left_hit_life=state.right_hit_life,
-        right_life=state.left_life,
-        right_hit_life=state.left_hit_life,
+        left_life=state.left_life,
+        left_hit_life=state.left_hit_life,
+        right_life=state.right_life,
+        right_hit_life=state.right_hit_life,
         time_passed_frames=state.time_passed_frames,
         time_total_frames=state.time_total_frames,
     )
@@ -92,7 +92,7 @@ def main() -> int:
     parser.add_argument(
         "--mirror-state",
         action="store_true",
-        help="devolve STATE com esquerda/direita invertidas para testar a comparacao com um Android",
+        help="devolve STATE na composicao canonica para testar a comparacao com um Android",
     )
     args = parser.parse_args()
 

@@ -73,14 +73,27 @@
 - Com `nativeControls=true`, cada aparelho transmite seu proprio analogico e botoes e recebe o adversario no `GamePad 1`.
 - Cada peer le o perfil selecionado em `userdata/users.xml` e troca somente nivel, visual e equipamento de combate.
 - A negociacao `PROFILE`/`READY` repete pacotes perdidos e so libera a sessao quando os dois perfis foram confirmados.
+- O prototipo 73 localizou uma fase visual persistente e passou a aplicar as
+  coordenadas autoritativas do jogador 1 no segundo processo.
+- O prototipo 74 tentou alinhar a orientacao pelo vetor de escala, mas testes
+  posteriores comprovaram que esse campo nao controla o facing real do Fighter.
+- O prototipo 77 eliminou o roteamento cruzado: P1/indice 0 permanece sempre a
+  esquerda e P2/indice 1 sempre a direita nas duas telas.
+- O prototipo 83 mantem o `mode=7` e clona a identidade do oponente original em vez
+  do perfil do jogador. Os dois Fighters agora nascem frente a frente e a virada
+  nativa ocorre quando eles cruzam. Um evento inicial da IA e liberado para iniciar
+  o relogio; todas as decisoes posteriores continuam suprimidas.
+- O prototipo 87 aplica temporariamente o preset canonico de P1 aos dois Fighters
+  nas duas VMs. Os quatro modelos recebem o mesmo avatar e os mesmos cinco IDs
+  enquanto posicao, camera, vida e rounds ainda estao sendo sincronizados.
 
 Artefato local:
 
-`dist/Shadow-Fight-2-Definitive-Edition-LAN-prototype-51.apk`
+`dist/Shadow-Fight-2-Definitive-Edition-LAN-prototype-87.apk`
 
 SHA-256:
 
-`1AF082C9999DF58B0F6C6F0C34DCADB7F4A3EE353074421F943B86B13B8A4669`
+`7249F4F197B2D4C4FBD4F6A3C9BB633E0235E9D6AF5DACBF41D01ED3CF260F65`
 
 O artefato nao e versionado no GitHub por conter os dados proprietarios do jogo.
 O prototipo 51 foi compilado, assinado e instalado em duas VMs do MuMu Player 15.
@@ -471,9 +484,196 @@ antes do decremento/repeticao do laco (`0x34EC3B0`/`0x34EC3B4`), portanto nao e 
 fronteira de fim de frame. Isso explica por que usa-la como callback pos-fisica nao
 produziu um estado visual/canonico persistente.
 
+## Configuracao autoritativa de equipamentos
+
+Antes de continuar a autoridade espacial, o protocolo passou a negociar uma unica
+configuracao de partida. O host direto ou o relay escolhe um seed, o menor nivel dos
+dois perfis (1..52) e dois presets independentes entre `initial`, `lynx`, `hermit`,
+`butcher`, `wasp`, `widow`, `shogun` e `titan`. O mesmo preset pode sair para os dois.
+
+Os Androids derivam o perfil local/remoto a partir de `PLAYER_ROLE`, aplicam os cinco
+slots pelo `PlayerProfile.SetItem` e confirmam o fingerprint SHA-256. Entrada e criacao
+da luta ficam bloqueadas ate os dois confirmarem. A ponte Java e o hook ARM64 compilam,
+e os testes do protocolo cobrem round-trip, sorteio reproduzivel e confirmacao bilateral
+pelo relay. Ainda falta validar visualmente esta etapa nas duas VMs e localizar uma
+forma segura de escrever o nivel interno; ate la, `matchLevel` e metadado comum, nao
+uma afirmacao de normalizacao completa dos atributos.
+
+### Validacao dos prototipos 67 e 68
+
+O prototipo 67 confirmou em duas VMs MuMu que o relay cria uma configuracao unica,
+os dois Androids devolvem o mesmo fingerprint e `sessionReady` permanece bloqueado
+ate dois `MATCH_CONFIG_ACK`. O primeiro teste revelou reaplicacao do perfil em todo
+ciclo da ponte Java; nao houve crash, mas o log recebia milhares de cargas repetidas.
+
+O prototipo 68 tornou a aplicacao idempotente e passou pela validacao completa:
+
+- APK assinado com v2/v3 e instalado nas duas VMs sem alterar os hashes dos saves;
+- P1/P2 receberam o mesmo fingerprint e confirmaram a configuracao em 2/2;
+- cada VM publicou `matchConfigApplied=true`, `matchConfigConfirmed=true` e
+  `sessionReady=true`;
+- cada perfil local/remoto foi enviado ao nativo exatamente uma vez;
+- o sorteio de teste escolheu Titan para P1 e Hermit para P2;
+- no P1, a luta continha `WEAPON_TITAN_GIANT_SWORD` no jogador e
+  `WEAPON_HERMIT_SWORDS` no adversario; no P2, a relacao foi invertida;
+- os cinco slots de ambos os perfis foram resolvidos pelo item manager e os ponteiros
+  de perfil local/remoto permaneceram distintos dentro da `FightScene`;
+- as duas VMs carregaram a mesma arena, receberam o mesmo `roundId` e confirmaram os
+  dois `START_ACK`, sem `FATAL`, `SIGSEGV` ou corrupcao do save.
+
+Essa validacao comprova a selecao autoritativa de equipamentos. Ela nao resolve a
+sincronizacao de posicao, orientacao, dano, animacao ou fim de rodada, que continua
+sendo o proximo marco do multiplayer.
+
 O proximo prototipo deve aplicar a autoridade depois do retorno completo da rotina
 `0x34EC2E4`, ou sincronizar diretamente o estado/animacao que alimenta colisao. A
 validacao sera incremental: primeiro posicao e orientacao com `target/readback`;
 depois dano e resultado; por fim animacao, queda e transicao de round. O teste deve
 exigir no log as linhas `Autoridade espacial escrita` e comparar `target` com
 `readback` antes de considerar a posicao sincronizada.
+
+## Posicao visual e lados canonicos: prototipos 69 a 77
+
+Os prototipos 69 a 72 testaram pontos intermediarios da apresentacao sem produzir
+uma escrita visual persistente. O prototipo 73 encontrou
+`ILLIPBFOIJK.LODMPBBLOPJ` (`RVA 0x3321460`), executado quando a posicao calculada do
+lutador e copiada para o no apresentado. A escrita nesse ponto permaneceu ativa,
+produziu `target/readback` identicos e fez o segundo MuMu acompanhar deslocamentos
+recebidos pela rede. O prototipo 74 acrescentou a orientacao pelo vetor de escala
+do `Fighter`, fazendo o lutador da esquerda olhar para o da direita.
+
+As capturas manuais seguintes revelaram um problema diferente: o transporte estava
+correto, mas cada processo ainda tratava seu jogador local como o lado esquerdo.
+Assim, P1 controlava a esquerda em sua tela e a direita na tela de P2; P2 fazia o
+inverso. O desenho em X era evidencia de entrada bilateral real, mas nao era uma
+composicao aceitavel para o duelo.
+
+O prototipo 76 tentou resolver o X apenas trocando ancoras e sinal das coordenadas.
+O teste rejeitou essa abordagem: os eventos recebidos ainda eram criados com
+`index=1`, portanto P1 continuava movendo o lado direito no segundo processo.
+
+O prototipo 77 corrigiu a origem do problema e estabeleceu lados canonicos:
+
+- no jogador 1, o toque local continua em `index=0` e a entrada recebida de P2 usa
+  `index=1`;
+- no jogador 2, a entrada recebida de P1 usa `index=0`, enquanto o toque local e
+  recriado em `index=1` antes de chegar a `FightInput`;
+- os perfis sao aplicados na mesma ordem visual: jogador 1 a esquerda e jogador 2
+  a direita;
+- posicao e autoridade de combate usam a ordem direta `{0, 1}` em ambos os processos.
+
+A validacao no MuMu moveu somente o analogico de cima para a esquerda. O segundo
+processo registrou `Comando LAN ... index=0`, e o lutador esquerdo se afastou para a
+esquerda nas duas telas. Em seguida, somente o analogico de baixo foi movido para a
+direita. O segundo processo registrou o redirecionamento local em `index=1`, o
+primeiro recebeu `Comando LAN ... index=1`, e o lutador direito se afastou para a
+direita nas duas telas. Nao houve `SIGSEGV` ou `FATAL`.
+
+Artefato validado localmente:
+
+`dist/Shadow-Fight-2-Definitive-Edition-LAN-prototype-77.apk`
+
+SHA-256:
+
+`A25A0CFD4C9AA7881D9D57322C4FAB76E24629DA1A4062BCA62BD9B76EE47426`
+
+Essa validacao encerra apenas o marco de lados e movimento. Animacao, colisao,
+dano, vida, cronometro, rounds e vitoria ainda precisam de autoridade compartilhada.
+
+## Facing nativo do Duelo: prototipos 78 a 83
+
+Os prototipos 78 e 79 tentaram inverter a escala do no visual e o parametro de
+inicio da animacao. Os dois testes foram rejeitados: os personagens continuaram
+olhando para a mesma direcao. A leitura de memoria mostrou ainda que o campo
+`Fighter + 0x198` distingue o lado criado, mas altera-lo depois da construcao nao
+vira o modelo.
+
+A causa estava na configuracao usada desde os primeiros prototipos: o catalogo
+`PvpBattle|pvp|1`, em `mode=17`, cria dois Fighters com identidade de jogador. O
+prototipo 80 voltou ao `mode=7` do Duelo, mas ainda clonava o perfil do jogador para
+o adversario e, por isso, conservou o erro visual. O prototipo 81 passou a clonar o
+oponente original do Duelo e aplicar apenas o equipamento remoto. As duas VMs entao
+criaram corretamente um `Player` e um `Opponent`, ambos frente a frente.
+
+Esse oponente nativo depende de um primeiro callback do planejador da IA para sair
+da apresentacao e iniciar o cronometro. Bloquear todos os callbacks deixou o HUD em
+150. O prototipo 82 de diagnostico confirmou a relacao ao liberar a IA completa. O
+prototipo 83 adotou a solucao restrita: permite exatamente o primeiro callback e
+suprime todos os seguintes. O relogio passou a correr, a IA deixou de tomar novas
+decisoes e a entrada LAN continuou chegando aos indices canonicos.
+
+Validacao do prototipo 83 em duas VMs MuMu:
+
+- ambas carregaram `mode=7`, o mesmo fingerprint de arena e o mesmo `START`;
+- os dois lados exibiram o lutador esquerdo olhando para a direita e o direito
+  olhando para a esquerda;
+- depois de um salto que trocou a ordem horizontal no jogador 1, o motor fez a
+  virada automaticamente e manteve os lutadores frente a frente;
+- o log registrou um unico `evento unico de inicializacao liberado` e depois apenas
+  `IA remota suprimida`;
+- nao houve `SIGSEGV`, `FATAL` nem alteracao do save durante a instalacao.
+
+Artefato local validado nessa etapa:
+
+`dist/Shadow-Fight-2-Definitive-Edition-LAN-prototype-83.apk`
+
+SHA-256:
+
+`4C4EFBBAFA670C05C59175B1C914DE3808B6077C5BDFC7C46D11E50601987F96`
+
+A apresentacao espacial do segundo aparelho ainda pode sair da camera depois de
+deslocamentos longos e a transicao de round permanece dessincronizada. Esses pontos
+sao o proximo marco; o prototipo 83 resolve o facing, nao o estado completo da luta.
+
+## Equipamento canônico temporário: protótipos 84 a 87
+
+Para retirar a divergencia de armas e armaduras dos testes de sincronizacao, o
+prototipo 84 passou a aplicar temporariamente o preset canonico de P1 aos dois perfis antes de
+`FightScene.CreateFight`. No aparelho de papel 1, esse preset vem do perfil local;
+no aparelho de papel 2, ele vem do perfil remoto recebido pela rede. A identidade
+nativa `Player/Opponent` introduzida no prototipo 83 permanece inalterada.
+
+O primeiro teste comprovou que igualar apenas os cinco ponteiros de itens nao era
+suficiente: o motor ainda escolhia a apresentacao a partir do avatar antigo de cada
+perfil. O prototipo 85 tentou incluir a aparencia, mas foi rejeitado porque escreveu
+num offset de texto incorreto. O prototipo 86 mapeou os campos em execucao e confirmou
+`nome=0x188` e `avatar=0x198`. O prototipo 87 escreve somente o avatar correto em
+`0x198`, sem tocar no nome nem na identidade que determina o lado do Fighter.
+
+Validacao em duas VMs MuMu:
+
+- no teste final, papel 1 e papel 2 resolveram os mesmos IDs: `ARMOR_WASP`,
+  `HEAD_WASP`, `WEAPON_WASP_NAGINATA`, `NoRanged` e `NoMagic`;
+- em cada VM, os perfis esquerdo e direito aplicaram `5/5` itens;
+- os perfis armazenados pela luta conservaram os cinco ponteiros aplicados;
+- as duas telas exibiram o mesmo retrato/avatar da Vespa e o mesmo loadout nos dois
+  lados, mantendo os Fighters frente a frente;
+- os 32 testes automatizados do protocolo e do relay passaram;
+- a instalacao foi limitada a `emulator-5554` e `emulator-5556`; o Poco X7 Pro nao
+  foi acessado;
+- o enquadramento/posicao da segunda tela continua sendo uma pendencia independente
+  e pode deixar os lutadores fora da camera.
+
+Este comportamento e intencionalmente transitorio. Depois da convergencia de estado,
+P1 e P2 voltarao a receber presets independentes, escolhidos pelo sorteio autoritativo
+ja existente.
+
+### Regressao conhecida depois da validacao visual
+
+Um teste manual posterior mostrou que a IA remota ainda pode executar uma acao. Os
+logs confirmam que a identificacao do lutador remoto funciona e que apenas o primeiro
+callback original e liberado; os seguintes sao suprimidos. A regressao ocorre porque
+esse primeiro callback, introduzido para encerrar a apresentacao do Duelo e iniciar o
+relogio, tambem pode armar o planejador ou deixar uma ordem enfileirada. Portanto, a
+build 87 e um checkpoint reproduzivel dos equipamentos canonicos, mas nao representa
+isolamento completo da IA. Antes de avancar para vida e rounds, o proximo prototipo
+deve reproduzir somente a transicao inicial necessaria, sem chamar o planejador, ou
+neutralizar explicitamente o controlador e qualquer comando pendente.
+
+Artefato local atual:
+
+`dist/Shadow-Fight-2-Definitive-Edition-LAN-prototype-87.apk`
+
+SHA-256:
+
+`7249F4F197B2D4C4FBD4F6A3C9BB633E0235E9D6AF5DACBF41D01ED3CF260F65`

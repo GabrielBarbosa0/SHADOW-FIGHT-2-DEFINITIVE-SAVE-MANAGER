@@ -4,6 +4,7 @@ import socket
 import unittest
 
 from lan_bridge.__main__ import mirror_fight_state, profile_with_equipment, pulse_buttons
+from lan_bridge.equipment import EQUIPMENT_PRESET_NAMES, select_match_presets
 from lan_bridge.peer import LanPeer, PeerMode
 from lan_bridge.protocol import (
     Button,
@@ -13,6 +14,7 @@ from lan_bridge.protocol import (
     FightStart,
     FightState,
     InputState,
+    MatchConfig,
     PacketType,
     PlayerRole,
     ProtocolError,
@@ -91,6 +93,23 @@ class ProtocolTests(unittest.TestCase):
         with self.assertRaisesRegex(ProtocolError, "Identidade"):
             FightConfig(mode=7, fingerprint=1, identity="").encode()
 
+    def test_match_config_round_trip_and_fingerprint(self) -> None:
+        original = MatchConfig(37, 0x123456789ABCDEF0, "shogun", "titan")
+        decoded = MatchConfig.decode(original.encode())
+        self.assertEqual(decoded, original)
+        self.assertEqual(decoded.fingerprint, original.fingerprint)
+        self.assertNotEqual(decoded.fingerprint, 0)
+
+    def test_match_preset_selection_is_reproducible_and_allows_duplicates(self) -> None:
+        self.assertEqual(select_match_presets(12345), select_match_presets(12345))
+        duplicate_seed = next(
+            seed for seed in range(1, 10_000)
+            if len(set(select_match_presets(seed))) == 1
+        )
+        selected = select_match_presets(duplicate_seed)
+        self.assertEqual(selected[0], selected[1])
+        self.assertIn(selected[0], EQUIPMENT_PRESET_NAMES)
+
     def test_fight_start_rejects_unsafe_delay(self) -> None:
         with self.assertRaisesRegex(ProtocolError, "Atraso"):
             FightStart(round_id=1, delay_ms=100).encode()
@@ -133,21 +152,21 @@ class ProtocolTests(unittest.TestCase):
         with self.assertRaisesRegex(ProtocolError, "Tick"):
             FightState(1, 0, 10.0, 20.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0).encode()
 
-    def test_fight_state_comparison_swaps_peer_sides(self) -> None:
+    def test_fight_state_comparison_uses_canonical_peer_sides(self) -> None:
         local = FightState(7, 120, 148.0, 8880.0, 0.75, 0.80, 0.40, 0.45, 120.0, 9000.0)
-        remote = FightState(7, 118, 148.0, 8882.0, 0.40, 0.45, 0.75, 0.80, 118.0, 9000.0)
+        remote = FightState(7, 118, 148.0, 8882.0, 0.75, 0.80, 0.40, 0.45, 118.0, 9000.0)
         comparison = compare_fight_states(local, remote, remote_age_ms=35)
         self.assertEqual(comparison.timer_frames_delta, -2.0)
         self.assertEqual(comparison.local_fighter_life_delta, 0.0)
         self.assertEqual(comparison.remote_fighter_life_delta, 0.0)
         self.assertTrue(comparison.within_tolerance)
 
-    def test_mirror_fight_state_preserves_identity_across_sides(self) -> None:
+    def test_mirror_fight_state_preserves_canonical_sides(self) -> None:
         local = FightState(9, 44, 149.0, 8940.0, 0.80, 0.85, 0.30, 0.35, 60.0, 9000.0)
         remote = mirror_fight_state(local)
         comparison = compare_fight_states(local, remote)
-        self.assertEqual(remote.left_life, local.right_life)
-        self.assertEqual(remote.right_life, local.left_life)
+        self.assertEqual(remote.left_life, local.left_life)
+        self.assertEqual(remote.right_life, local.right_life)
         self.assertEqual(comparison.max_life_delta, 0.0)
         self.assertTrue(comparison.within_tolerance)
 
@@ -155,7 +174,7 @@ class ProtocolTests(unittest.TestCase):
         local = FightState(8, 200, 145.0, 8700.0, 1.0, 1.0, 0.25, 0.25, 300.0, 9000.0)
         remote = FightState(8, 160, 147.0, 8820.0, 0.90, 0.90, 0.50, 0.50, 180.0, 9000.0)
         comparison = compare_fight_states(local, remote, remote_age_ms=800)
-        self.assertEqual(comparison.max_life_delta, 0.65)
+        self.assertEqual(comparison.max_life_delta, 0.25)
         self.assertFalse(comparison.within_tolerance)
 
     def test_fight_state_comparison_rejects_mismatched_rounds(self) -> None:
@@ -387,6 +406,52 @@ class RelayTests(unittest.TestCase):
     def test_dual_port_roles_do_not_depend_on_join_order(self) -> None:
         self.connect(self.player_two)
         self.connect(self.player_one)
+
+    def test_relay_creates_one_authoritative_match_config_for_both_players(self) -> None:
+        self.relay.close()
+        self.relay = LanRoomRelay(
+            "sala-relay",
+            bind_host="127.0.0.1",
+            port=self.port,
+            second_port=self.second_port,
+            name="relay",
+            fight_start_delay_ms=1500,
+        )
+        self.addCleanup(self.relay.close)
+        self.connect(self.player_one)
+        self.connect(self.player_two)
+
+        player_one_profile = FighterProfile(
+            52, "P1", "avatar_human", "Male", "Skeleton",
+            "Body", "Head", "Fists", "NoRanged", "NoMagic",
+        )
+        player_two_profile = FighterProfile(
+            31, "P2", "avatar_human", "Male", "Skeleton",
+            "Body", "Head", "Fists", "NoRanged", "NoMagic",
+        )
+        self.player_one.send_profile(player_one_profile)
+        self.assertEqual(self.relay.poll(1.0)[0].name, "forwarded")
+        self.assertEqual(self.player_two.poll(1.0)[0].fighter_profile, player_one_profile)
+
+        self.player_two.send_profile(player_two_profile)
+        created = self.relay.poll(1.0)[0]
+        self.assertEqual(created.name, "match-config-created")
+        self.assertEqual(self.player_one.poll(1.0)[0].fighter_profile, player_two_profile)
+        player_one_config = self.player_one.poll(1.0)[0].match_config
+        player_two_config = self.player_two.poll(1.0)[0].match_config
+        self.assertIsNotNone(player_one_config)
+        self.assertEqual(player_one_config, player_two_config)
+        self.assertEqual(player_one_config.match_level, 31)
+        self.assertIn(player_one_config.player_one_preset, EQUIPMENT_PRESET_NAMES)
+        self.assertIn(player_one_config.player_two_preset, EQUIPMENT_PRESET_NAMES)
+
+        fingerprint = player_one_config.fingerprint
+        self.player_one.send_match_config_ack(fingerprint)
+        self.assertEqual(self.relay.poll(1.0)[0].name, "match-config-ack")
+        self.player_two.send_match_config_ack(fingerprint)
+        self.assertEqual(self.relay.poll(1.0)[0].name, "match-config-confirmed")
+        self.assertEqual(self.player_one.poll(1.0)[0].match_config_fingerprint, fingerprint)
+        self.assertEqual(self.player_two.poll(1.0)[0].match_config_fingerprint, fingerprint)
 
     def test_coordinates_start_for_two_client_only_android_peers(self) -> None:
         self.relay.close()

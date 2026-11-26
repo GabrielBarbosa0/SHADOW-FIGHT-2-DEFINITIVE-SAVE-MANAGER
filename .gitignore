@@ -11,6 +11,7 @@ venv/
 game/
 backups/
 generated/
+tmp/
 __pycache__/
 *.pyc
 .pytest_cache/

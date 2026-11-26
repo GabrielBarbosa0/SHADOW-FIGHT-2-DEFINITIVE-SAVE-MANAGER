@@ -105,6 +105,21 @@ final class LanFighterProfile {
         return profile;
     }
 
+    LanFighterProfile withPreset(LanEquipmentPreset preset, int matchLevel) {
+        return new LanFighterProfile(
+            matchLevel,
+            name,
+            preset.avatar,
+            voice,
+            preset.skeleton,
+            preset.armor,
+            preset.helm,
+            preset.weapon,
+            preset.ranged,
+            preset.magic
+        );
+    }
+
     String toJson() {
         return String.format(java.util.Locale.ROOT,
             "{\"level\":%d,\"name\":\"%s\",\"avatar\":\"%s\",\"voice\":\"%s\","

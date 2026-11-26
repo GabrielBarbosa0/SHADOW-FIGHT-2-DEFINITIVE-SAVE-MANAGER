@@ -2,17 +2,23 @@ from __future__ import annotations
 
 import socket
 import select
+import secrets
 import time
 from dataclasses import dataclass
 
+from .equipment import EQUIPMENT_PRESET_NAMES, select_match_presets
 from .protocol import (
+    FighterProfile,
     FightConfig,
     FightStart,
+    MatchConfig,
     Packet,
     PacketType,
     ProtocolError,
+    decode_match_config_ack,
     decode_packet,
     encode_player_role,
+    encode_match_config_ack,
     decode_round_id,
     encode_packet,
 )
@@ -75,6 +81,10 @@ class LanRoomRelay:
         self._fight_configs: dict[tuple[int, tuple[str, int]], FightConfig] = {}
         self._start_sent_at = 0.0
         self._last_start_send = 0.0
+        self._profiles: dict[tuple[int, tuple[str, int]], FighterProfile] = {}
+        self._match_config: MatchConfig | None = None
+        self._match_config_acked: set[tuple[int, tuple[str, int]]] = set()
+        self._last_match_config_send = 0.0
 
     @property
     def local_address(self) -> tuple[str, int]:
@@ -97,6 +107,7 @@ class LanRoomRelay:
                 pass
         self._participants.clear()
         self._reset_fight()
+        self._reset_match()
         for listener in self.sockets:
             listener.close()
 
@@ -145,9 +156,20 @@ class LanRoomRelay:
             self._forward(data, endpoint)
             del self._participants[endpoint]
             self._reset_fight()
+            self._reset_match()
             return [RelayEvent("left", address, packet)]
         if packet.kind in (PacketType.WELCOME, PacketType.PONG):
             return [RelayEvent("ignored", address, packet)]
+
+        if packet.kind is PacketType.PROFILE:
+            return [self._handle_profile(data, endpoint, packet)]
+        if packet.kind is PacketType.MATCH_CONFIG:
+            return [RelayEvent(
+                "rejected", address, packet,
+                "MATCH_CONFIG e definido pelo relay nesta sala.",
+            )]
+        if packet.kind is PacketType.MATCH_CONFIG_ACK:
+            return [self._handle_match_config_ack(endpoint, packet)]
 
         if self.fight_start_delay_ms is not None and packet.kind is PacketType.FIGHT_READY:
             return [self._handle_fight_ready(data, endpoint, packet, now)]
@@ -167,7 +189,14 @@ class LanRoomRelay:
                 continue
             del self._participants[endpoint]
             self._reset_fight()
+            self._reset_match()
             events.append(RelayEvent("timeout", endpoint[1]))
+        if (
+            self._match_config is not None
+            and len(self._match_config_acked) < len(self._participants)
+            and now - self._last_match_config_send >= 1.0
+        ):
+            self._send_match_config_to_unacked()
         if (
             self._active_start is not None
             and len(self._start_acked) < len(self._participants)
@@ -178,6 +207,77 @@ class LanRoomRelay:
                     self._send(PacketType.START, endpoint, self._active_start.encode())
             self._last_start_send = now
         return events
+
+    def _handle_profile(
+        self,
+        data: bytes,
+        endpoint: tuple[int, tuple[str, int]],
+        packet: Packet,
+    ) -> RelayEvent:
+        try:
+            profile = FighterProfile.decode(packet.payload)
+        except ProtocolError as exc:
+            return RelayEvent("rejected", endpoint[1], packet, str(exc))
+        self._profiles[endpoint] = profile
+        forwarded = self._forward(data, endpoint)
+        if self._match_config is None and len(self._participants) == len(self._profiles) == 2:
+            by_player = sorted(self._profiles.items(), key=lambda item: self._player_number(item[0]))
+            match_level = max(1, min(52, *(profile.level for _, profile in by_player)))
+            seed = secrets.randbits(64) or 1
+            player_one_preset, player_two_preset = select_match_presets(seed)
+            if player_one_preset not in EQUIPMENT_PRESET_NAMES or player_two_preset not in EQUIPMENT_PRESET_NAMES:
+                raise AssertionError("Sorteio retornou preset fora do catalogo.")
+            self._match_config = MatchConfig(
+                match_level,
+                seed,
+                player_one_preset,
+                player_two_preset,
+            )
+            self._send_match_config_to_unacked()
+            return RelayEvent(
+                "match-config-created", endpoint[1], packet,
+                f"level={match_level} p1={player_one_preset} p2={player_two_preset} "
+                f"fingerprint={self._match_config.fingerprint:016x}",
+            )
+        if self._match_config is not None and endpoint not in self._match_config_acked:
+            self._send(PacketType.MATCH_CONFIG, endpoint, self._match_config.encode())
+            self._last_match_config_send = time.monotonic()
+        return RelayEvent(
+            "forwarded" if forwarded else "waiting",
+            endpoint[1], packet, packet.kind.name,
+        )
+
+    def _handle_match_config_ack(
+        self,
+        endpoint: tuple[int, tuple[str, int]],
+        packet: Packet,
+    ) -> RelayEvent:
+        try:
+            fingerprint = decode_match_config_ack(packet.payload)
+        except ProtocolError as exc:
+            return RelayEvent("rejected", endpoint[1], packet, str(exc))
+        if self._match_config is None or fingerprint != self._match_config.fingerprint:
+            return RelayEvent("rejected", endpoint[1], packet, "Confirmacao de partida desconhecida.")
+        self._match_config_acked.add(endpoint)
+        confirmed = len(self._match_config_acked) == len(self._participants) == 2
+        if confirmed:
+            payload = encode_match_config_ack(fingerprint)
+            for participant in self._participants:
+                self._send(PacketType.MATCH_CONFIG_ACK, participant, payload)
+        return RelayEvent(
+            "match-config-confirmed" if confirmed else "match-config-ack",
+            endpoint[1], packet,
+            f"fingerprint={fingerprint:016x} acknowledgements={len(self._match_config_acked)}/2",
+        )
+
+    def _send_match_config_to_unacked(self) -> None:
+        if self._match_config is None:
+            return
+        payload = self._match_config.encode()
+        for endpoint in self._participants:
+            if endpoint not in self._match_config_acked:
+                self._send(PacketType.MATCH_CONFIG, endpoint, payload)
+        self._last_match_config_send = time.monotonic()
 
     def _handle_fight_ready(
         self,
@@ -297,6 +397,12 @@ class LanRoomRelay:
         self._active_start = None
         self._start_sent_at = 0.0
         self._last_start_send = 0.0
+
+    def _reset_match(self) -> None:
+        self._profiles.clear()
+        self._match_config = None
+        self._match_config_acked.clear()
+        self._last_match_config_send = 0.0
 
     def _forward(self, data: bytes, sender: tuple[int, tuple[str, int]]) -> bool:
         forwarded = False
