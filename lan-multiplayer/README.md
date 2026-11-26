@@ -15,11 +15,13 @@ avatar, armadura, elmo e armas. Ainda faltam autoridade
 completa de animação, câmera/posição no segundo aparelho, vida, rounds e resultado;
 portanto, não é um multiplayer final.
 
-Regressão conhecida na build 87: o evento nativo liberado uma vez para encerrar a
-apresentação e iniciar o cronômetro também pode armar o planejador da IA remota. Os
-callbacks seguintes são bloqueados, mas isso não cancela a ação já enfileirada. O
-próximo protótipo deve separar a transição inicial do controlador de IA antes de
-continuar a sincronização de combate.
+A build 88 remove o evento nativo que a build 87 liberava uma vez para encerrar a
+apresentação. Isso volta a isolar completamente a IA remota: os dois MuMu registram
+somente eventos suprimidos e nenhum movimento autônomo. Como consequência conhecida,
+o cronômetro permanece em 150 e os lutadores ficam na apresentação inicial. O próximo
+protótipo deve reproduzir apenas a transição de início da luta, sem chamar o planejador
+da IA. Divergências de modelo, arma/animação e câmera continuam pendentes e não devem
+ser tratadas como multiplayer funcional.
 
 A configuracao de partida agora tambem e autoritativa. No modo direto, o host
 sorteia um preset para P1 e outro para P2; no modo relay, o computador faz o

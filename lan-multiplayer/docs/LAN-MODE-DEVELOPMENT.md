@@ -677,3 +677,32 @@ Artefato local atual:
 SHA-256:
 
 `7249F4F197B2D4C4FBD4F6A3C9BB633E0235E9D6AF5DACBF41D01ED3CF260F65`
+
+## Isolamento completo da IA: prototipo 88
+
+O prototipo 88 remove o bootstrap introduzido na build 83. O hook de
+`HPDIKFPFIEI.HPLCHBDPFMC` nao encaminha mais nenhum evento do lutador remoto para o
+planejador original. A build foi gerada incrementalmente a partir de uma copia da p87,
+assinada e instalada somente em `emulator-5554` e `emulator-5556`.
+
+O teste nas duas VMs confirmou:
+
+- nenhum log `evento unico de inicializacao liberado`;
+- somente `IA remota suprimida` nos dois processos;
+- nenhum deslocamento autonomo durante a observacao;
+- nenhum `SIGSEGV` ou `FATAL`;
+- como efeito colateral esperado, o HUD permanece em 150 e os lutadores ficam na
+  apresentacao inicial.
+
+Esta build e o novo checkpoint seguro para a IA, nao uma versao jogavel. O proximo
+passo e localizar a transicao minima que encerra a apresentacao e inicia o relogio sem
+executar o planejador. Os problemas visuais reportados de modelo, arma/animacao,
+desaparecimento e camera permanecem separados e ainda precisam de correcao.
+
+Artefato local:
+
+`dist/Shadow-Fight-2-Definitive-Edition-LAN-prototype-88.apk`
+
+SHA-256:
+
+`DE4C02DF3143EE3CF67B71E3B7C337A7D176F9AD3FAAF5169CF4395C478ED890`

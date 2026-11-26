@@ -265,7 +265,6 @@ static _Atomic uint32_t injected_input_log_count;
 static _Atomic uint32_t local_input_reroute_log_count;
 static _Atomic uint32_t fight_input_source_log_count;
 static _Atomic uint32_t suppressed_remote_ai_log_count;
-static _Atomic bool remote_ai_bootstrap_pending;
 static _Atomic uint32_t injected_buttons;
 static _Atomic int32_t injected_direction;
 static _Atomic uintptr_t lan_remote_profile;
@@ -761,19 +760,10 @@ static void hooked_fighter_ai_animation_event(
         return;
     }
 
-    // O Opponent nativo precisa receber uma unica conclusao de animacao para
-    // sair da apresentacao do Duel e liberar o cronometro. Depois disso, cada
-    // nova decisao da IA permanece bloqueada e o Touch 1 vindo da LAN assume.
-    bool bootstrap = atomic_exchange_explicit(
-        &remote_ai_bootstrap_pending, false, memory_order_acq_rel);
-    if (bootstrap) {
-        LOGI(
-            "IA remota: evento unico de inicializacao liberado fighter=%p profile=%p animation=%p.",
-            fighter, *(void **)((uint8_t *)fighter + FIGHTER_PROFILE_OFFSET), animation);
-        original_fighter_ai_animation_event(fighter, animation, method);
-        return;
-    }
-
+    // Nao encaminhe nem mesmo o primeiro evento. O prototipo 83 liberava uma
+    // conclusao de animacao para encerrar a apresentacao do Duel, mas esse
+    // callback tambem arma o planejador e pode deixar uma acao automatica
+    // enfileirada. O inicio da luta sera destravado por outro caminho, sem IA.
     uint32_t number = atomic_fetch_add_explicit(
         &suppressed_remote_ai_log_count, 1, memory_order_relaxed) + 1;
     if (number <= 20) {
@@ -891,8 +881,6 @@ static void hooked_fight_scene_create_fight(
         ? prepare_pvp_fight_config(fight_config, player_profile, opponents)
         : NULL;
     bool lan_configured = activate_lan_fight && pvp_config != NULL;
-    atomic_store_explicit(
-        &remote_ai_bootstrap_pending, lan_configured, memory_order_release);
     void *effective_config = pvp_config == NULL ? fight_config : pvp_config;
     LOGI(
         "FightScene: sessaoPronta=%d modo original=%d configOriginal=%p configEfetiva=%p.",
