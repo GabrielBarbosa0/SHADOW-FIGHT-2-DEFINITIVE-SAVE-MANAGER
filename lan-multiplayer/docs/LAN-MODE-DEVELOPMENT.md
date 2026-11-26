@@ -1,5 +1,10 @@
 # Desenvolvimento do modo LAN
 
+> Checkpoint de interrupção: consulte
+> [CHECKPOINT-REGRESSOES-2026-11-25.md](CHECKPOINT-REGRESSOES-2026-11-25.md)
+> para o estado exato das builds 88–94, mudanças não commitadas, regressões e
+> procedimento seguro de retomada/reversão.
+
 ## Estado atual
 
 - APK analisado: Definitive Edition 2.41.9, ARM64.
