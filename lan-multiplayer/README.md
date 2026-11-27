@@ -23,6 +23,15 @@ protótipo deve reproduzir apenas a transição de início da luta, sem chamar o
 da IA. Divergências de modelo, arma/animação e câmera continuam pendentes e não devem
 ser tratadas como multiplayer funcional.
 
+O prototipo nativo p104 substitui esse bloqueio total por uma transicao controlada:
+inicializa o planejador remoto uma unica vez para encerrar a apresentacao, cancela-o
+imediatamente e intercepta `NDABNAKKEFE.NAKIMBDKMKM` antes que qualquer acao autonoma
+seja escolhida. Em duas instancias MuMu, o relogio iniciou, nenhuma acao da IA foi
+executada, o controle superior moveu o lutador esquerdo nas duas telas e o controle
+inferior moveu o lutador direito nas duas telas. O equipamento visual ainda diverge
+porque a regra nativa `RANDOM_EQUIPMENT` do Duelo cria caches antes da substituicao
+dos perfis; p104 e um checkpoint funcional de controle/IA, nao um multiplayer final.
+
 A configuracao de partida agora tambem e autoritativa. No modo direto, o host
 sorteia um preset para P1 e outro para P2; no modo relay, o computador faz o
 sorteio. Os dois Androids recebem o mesmo seed, tier e pares de presets e precisam

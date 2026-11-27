@@ -209,3 +209,33 @@ Antes de qualquer nova implementação:
 Este checkpoint deliberadamente não executa a reversão. Ele apenas registra o
 estado para que a próxima sessão possa escolher entre testar a 94 como experimento
 ou voltar ao código versionado da 88 sem perder o raciocínio obtido.
+
+## Retomada validada em 27/11/2026: prototipo nativo p104
+
+A retomada isolou a diferenca entre liberar a apresentacao e permitir decisoes da
+IA. `EAGJIMCGDJI` ainda precisa ser executado uma vez no planejador remoto para o
+Duelo sair da introducao. A escolha efetiva da proxima acao ocorre em
+`NDABNAKKEFE.NAKIMBDKMKM`, RVA `0x302C034`.
+
+O p104 inicializa o planejador remoto uma vez, cancela-o imediatamente e retorna
+`null` em toda selecao autonoma posterior, preservando apenas `FightInput` humano.
+
+Validacao visual e por log nos dois MuMu:
+
+- o relogio saiu de 150 e passou a correr;
+- as tentativas de selecao autonoma foram registradas e bloqueadas;
+- nenhuma barra de vida mudou sem comando de ataque;
+- `emulator-5554` moveu o lutador esquerdo nas duas telas;
+- `emulator-5556` chegou como `index=1` e moveu o lutador direito nas duas telas;
+- nomes e retratos aparecem como `Shadow` nos quatro HUDs;
+- nenhum aparelho fisico foi acessado.
+
+Pendencia: a configuracao ainda possui `150=RANDOM_EQUIPMENT`. O motor materializa
+arma, esqueleto e pose em caches anteriores aos perfis canonicos, produzindo armas
+diferentes entre cenas. O proximo trabalho deve neutralizar essa regra na origem.
+
+SO testada diretamente, sem empacotar APK:
+
+`%TEMP%\libsf2lanhook-p104.so`
+
+SHA-256: `61BF2BD2722C12C455DBA480DF16947C2A381D19DBE3CA46E71DA32008DC8B1D`.

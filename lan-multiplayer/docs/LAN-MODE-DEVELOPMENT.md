@@ -711,3 +711,18 @@ Artefato local:
 SHA-256:
 
 `DE4C02DF3143EE3CF67B71E3B7C337A7D176F9AD3FAAF5169CF4395C478ED890`
+
+## Transicao sem IA e controles humanos: prototipo nativo p104
+
+Os experimentos p97 a p103 localizaram `NDABNAKKEFE.NAKIMBDKMKM` no RVA
+`0x302C034`: o Fighter usa esse metodo para obter a proxima animacao escolhida
+pelo planejador.
+
+No p104, o callback remoto inicializa `EAGJIMCGDJI` uma vez, cancela o planejador
+e grava seu ponteiro. O hook de `NAKIMBDKMKM` retorna `null` somente para esse
+ponteiro durante a luta LAN. A apresentacao termina e o relogio corre, mas a IA
+nao converte seu estado em golpes ou movimento.
+
+O teste nos dois MuMu confirmou entrada bidirecional sem o antigo X: P1 controla
+a esquerda nas duas cenas e P2 controla a direita nas duas cenas. A regra
+`RANDOM_EQUIPMENT` ainda gera caches visuais divergentes e e o proximo bloqueio.

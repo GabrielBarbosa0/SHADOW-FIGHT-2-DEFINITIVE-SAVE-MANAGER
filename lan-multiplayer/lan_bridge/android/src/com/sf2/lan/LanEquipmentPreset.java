@@ -2,9 +2,10 @@ package com.sf2.lan;
 
 /** Conjunto fechado de equipamentos suportados pelo prototipo LAN. */
 final class LanEquipmentPreset {
-    static final String[] NAMES = {
-        "initial", "lynx", "hermit", "butcher", "wasp", "widow", "shogun", "titan"
-    };
+    // O protocolo mantem os presets antigos reconheciveis para compatibilidade,
+    // mas a partida atual anuncia apenas o lutador humano comum. Esqueletos de
+    // chefes nao participam do sorteio LAN enquanto a simulacao e sincronizada.
+    static final String[] NAMES = { "initial" };
 
     final String name;
     final String avatar;

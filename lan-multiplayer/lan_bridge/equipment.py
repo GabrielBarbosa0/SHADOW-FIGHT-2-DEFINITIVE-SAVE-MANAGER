@@ -14,7 +14,10 @@ EQUIPMENT_PRESETS = {
     "titan": {"Avatar": "avatar_human", "Skeleton": "Skeleton", "Armor": "BODY_TITAN", "Helm": "HEAD_TITAN", "Weapon": "WEAPON_TITAN_GIANT_SWORD", "Ranged": "RANGED_TITANS_HARPOON", "Magic": "MAGIC_MIND_THROW"},
 }
 
-EQUIPMENT_PRESET_NAMES = tuple(EQUIPMENT_PRESETS)
+# Enquanto a sincronizacao visual ainda esta sendo estabilizada, use somente o
+# lutador humano comum. Corpos de chefes possuem esqueletos e controladores de
+# animacao especiais e nao devem entrar no sorteio de uma luta LAN normal.
+EQUIPMENT_PRESET_NAMES = ("initial",)
 
 
 def select_match_presets(seed: int) -> tuple[str, str]:
