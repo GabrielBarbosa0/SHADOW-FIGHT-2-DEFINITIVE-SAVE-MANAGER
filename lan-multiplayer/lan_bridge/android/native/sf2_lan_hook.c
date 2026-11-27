@@ -1511,6 +1511,35 @@ static void log_player_two_input_once(void) {
     }
 }
 
+// O perfil canonico e o controlador de animacao ja podem estar corretos e,
+// ainda assim, o modelo manter a geometria da arma sorteada pelo Duel. Essa
+// geometria e materializada num cache do Fighter que so existe depois de
+// CreateFight. Reaplique exclusivamente a arma canonica nesse ponto tardio;
+// nao toque em armadura/capacete nem recrie os perfis independentes.
+static bool refresh_fighter_weapon_visual(
+    void *fighter,
+    void *profile,
+    const char *label
+) {
+    if (fighter == NULL || profile == NULL ||
+        original_fighter_apply_equipment_item == NULL) return false;
+
+    void *weapon = *(void **)((uint8_t *)profile + PROFILE_WEAPON_OFFSET);
+    if (weapon == NULL) return false;
+
+    original_fighter_apply_equipment_item(
+        fighter,
+        weapon,
+        true,
+        true,
+        false,
+        NULL);
+    LOGI(
+        "Malha de arma LAN reaplicada: lado=%s fighter=%p profile=%p weapon=%p.",
+        label == NULL ? "?" : label, fighter, profile, weapon);
+    return true;
+}
+
 static void hooked_fight_scene_create_fight(
     void *self,
     void *fight_config,
@@ -1566,6 +1595,16 @@ static void hooked_fight_scene_create_fight(
         : *(void **)((uint8_t *)fight + FIGHT_PLAYER_PROFILE_OFFSET);
     void *fight_opponent_profile = fight == NULL ? NULL
         : *(void **)((uint8_t *)fight + FIGHT_OPPONENT_PROFILE_OFFSET);
+    if (lan_configured) {
+        bool player_weapon_refreshed = refresh_fighter_weapon_visual(
+            player, fight_player_profile, "esquerdo");
+        bool opponent_weapon_refreshed = refresh_fighter_weapon_visual(
+            opponent, fight_opponent_profile, "direito");
+        LOGI(
+            "Atualizacao visual das armas LAN: esquerdo=%d direito=%d.",
+            player_weapon_refreshed ? 1 : 0,
+            opponent_weapon_refreshed ? 1 : 0);
+    }
     uint32_t count = atomic_fetch_add_explicit(
         &fight_create_count, 1, memory_order_relaxed) + 1;
     atomic_store_explicit(&injected_buttons, 0, memory_order_release);

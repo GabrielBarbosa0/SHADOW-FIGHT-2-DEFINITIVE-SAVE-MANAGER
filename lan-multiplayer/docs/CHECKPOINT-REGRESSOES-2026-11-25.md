@@ -348,7 +348,7 @@ Resultados observados somente em `emulator-5554` e `emulator-5556`:
 
 - o log registrou `WEAPON_NINJA_SWORD` durante a fabrica visual, construcao da
   luta e consultas posteriores dos perfis;
-- os quatro modelos da luta apareceram com a Espada Ninja;
+- os quatro modelos passaram a usar a pose e os ataques da Espada Ninja;
 - os lutadores passaram a usar guarda de espada e ficaram voltados um para o
   outro;
 - o comando de ataque do jogador 1 produziu um golpe de espada visivel, em vez
@@ -361,8 +361,49 @@ Este resultado valida somente a coerencia entre arma e moveset. As capturas das
 duas VMs ainda ocorreram em instantes diferentes e nao provam sincronizacao
 completa de animacao, vida, rounds ou resultado.
 
+Uma observacao visual posterior qualificou esse resultado: a arma do lutador
+direito ainda nao era a mesma nas duas telas. Na instancia superior parecia
+uma faca ou lamina longa, enquanto na inferior era uma adaga. As duas usavam
+corretamente a pose da Espada Ninja. Portanto, a p124 corrigiu o moveset, mas
+nao a geometria da arma direita que o `Fighter` havia materializado a partir
+do perfil aleatorio do Duelo.
+
+O proximo experimento deve preservar os perfis independentes e reaplicar apenas
+o item de arma canonico depois de `FightScene.CreateFight`, quando o cache
+visual dos dois `Fighter` ja existe. Essa etapa nao deve alterar o moveset nem
+reativar IA.
+
 Biblioteca experimental testada sem substituir o APK-base:
 
 `%TEMP%\libsf2lanhook-p124-ninja-sword.so`
 
 SHA-256: `C5B7F1F2EE7796CAD73B9D06DF6034940398835DA047881E26E25C0CC29A3B31`.
+
+### Validacao p125: mesma geometria de arma nas duas VMs
+
+A p125 preservou a Espada Ninja como preset canonico e acrescentou uma
+atualizacao visual tardia: depois de `FightScene.CreateFight`, quando os dois
+objetos `Fighter` ja existem, o item `WEAPON_NINJA_SWORD` de cada perfil e
+reaplicado ao respectivo lutador. Essa chamada atualiza somente a malha da arma;
+os perfis esquerdo e direito continuam independentes e nao sao recriados.
+
+Resultados observados em `emulator-5554` e `emulator-5556`:
+
+- os logs confirmaram a reaplicacao da mesma `WEAPON_NINJA_SWORD` nos lados
+  esquerdo e direito das duas VMs;
+- a adaga que ainda aparecia no lutador direito da VM inferior desapareceu;
+- os quatro modelos passaram a mostrar a mesma lamina longa, com a mesma pose
+  de Espada Ninja;
+- nome, retrato, armadura e capacete continuaram iguais;
+- o comando de movimento do jogador 1 continuou aparecendo nas duas telas;
+- os dois processos permaneceram ativos e nao houve `SIGSEGV`;
+- o APK-base e os saves nao foram substituidos.
+
+Foram executados 33 testes Python com sucesso. A p124 de cada VM foi preservada
+em `backups/native-libraries/p124-before-weapon-refresh/` antes da troca.
+
+Biblioteca experimental testada:
+
+`%TEMP%\libsf2lanhook-p125-weapon-refresh.so`
+
+SHA-256: `AE379E8E13284D533AB96FE075C7C327BA4F946720BED3D83B3ADD4866C9B7E9`.
