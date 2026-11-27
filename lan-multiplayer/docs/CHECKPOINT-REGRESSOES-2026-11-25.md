@@ -239,3 +239,40 @@ SO testada diretamente, sem empacotar APK:
 `%TEMP%\libsf2lanhook-p104.so`
 
 SHA-256: `61BF2BD2722C12C455DBA480DF16947C2A381D19DBE3CA46E71DA32008DC8B1D`.
+
+## Retomada de 27/11/2026: perfis independentes e luta liberada (p123)
+
+Os prototipos p120 a p122 provaram que clonar os dois lados a partir do mesmo
+perfil humano deixa os quatro modelos visualmente iguais, mas compartilha estado
+interno de animacao: `FightScene.StartFight` entra na rotina original e nao
+retorna. O HUD permanece em 150 e nenhum comando consegue mover os lutadores.
+
+O p123 voltou a usar duas bases independentes para o jogador e o adversario,
+mantendo por cima o mesmo nome `Shadow`, avatar humano e os mesmos IDs canonicos
+de armadura, capacete, arma, ranged e magia. Tambem foi corrigido o agendador:
+frame pacing nao e mais aplicado antes da primeira execucao de `StartFight`.
+
+Validacao somente em `emulator-5554` e `emulator-5556`:
+
+- `StartFight` retorna e os dois relogios contam normalmente;
+- P1 chega ao lado esquerdo nas duas cenas;
+- P2 chega ao outro processo como `Touch 1`/indice 1;
+- as tentativas de selecao autonoma continuam bloqueadas pelo hook do planejador;
+- nomes, retratos e ponteiros de itens registrados sao iguais entre as duas VMs;
+- nenhum aparelho fisico foi acessado.
+
+Pendencias visuais preservadas de proposito neste checkpoint:
+
+- os dois lutadores ainda podem olhar para a mesma direcao, em vez de um para o
+  outro;
+- o modelo esquerdo conserva corpo/pose e cache de arma de uma base de chefe,
+  enquanto o direito conserva a pose de sai, apesar de o perfil registrar o
+  mesmo item canonico nos dois lados;
+- a arma pode aparecer com uma pose incompativel, como ocorreu anteriormente com
+  o sai usando a pose dos cutelos do Acougueiro;
+- o preset da katana inicial foi anotado como proximo instrumento de diagnostico,
+  pois sua silhueta e postura tornam divergencias mais faceis de identificar. Ele
+  ainda nao foi aplicado.
+
+Capturas locais deste teste ficaram fora do repositorio em
+`%TEMP%\sf2-lan-p123` e `%TEMP%\sf2-lan-p123-controls`.

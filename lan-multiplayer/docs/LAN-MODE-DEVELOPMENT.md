@@ -726,3 +726,16 @@ nao converte seu estado em golpes ou movimento.
 O teste nos dois MuMu confirmou entrada bidirecional sem o antigo X: P1 controla
 a esquerda nas duas cenas e P2 controla a direita nas duas cenas. A regra
 `RANDOM_EQUIPMENT` ainda gera caches visuais divergentes e e o proximo bloqueio.
+
+### Marco p123: estado jogavel antes da correcao de pose
+
+O p123 preserva perfis de animacao independentes para os dois Fighters e aplica
+o equipamento canonico apenas como dados de perfil. Isso evita o travamento de
+`StartFight` observado quando ambos eram clonados da mesma base. O sincronizador
+agora tambem ignora frame pacing ate `StartFight` ter sido executado.
+
+O relogio e os controles humanos funcionam nas duas VMs, e a selecao autonoma da
+IA permanece bloqueada. A proxima etapa visual deve separar explicitamente o
+cache de movimentos/pose do cache de itens. Como referencia de diagnostico, usar
+a katana inicial nos dois lados pode facilitar a identificacao, mas essa troca
+nao faz parte do p123. Facing, pose e arma renderizada ainda nao estao aprovados.

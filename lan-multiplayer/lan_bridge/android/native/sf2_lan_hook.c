@@ -1,6 +1,7 @@
 #include <jni.h>
 #include <android/log.h>
 #include <dlfcn.h>
+#include <inttypes.h>
 #include <link.h>
 #include <math.h>
 #include <pthread.h>
@@ -65,6 +66,10 @@
 #define RVA_AI_PLANNER_CANCEL 0x302EC50u
 #define RVA_AI_PLANNER_SELECT_ACTION 0x302C034u
 #define RVA_FIGHTER_CTOR 0x33987C0u
+#define RVA_RANDOM_FIGHTER_PROFILE_CREATE 0x33C1AF0u
+#define RVA_CREATE_FIGHT_PROFILES 0x33C289Cu
+#define RVA_FIGHTER_APPLY_CONFIG_ITEM 0x3397218u
+#define RVA_FIGHTER_APPLY_EQUIPMENT_ITEM 0x339BA2Cu
 #define RVA_FIGHT_INPUT_PRESS 0x34E94C4u
 #define RVA_FIGHT_INPUT_RELEASE 0x34EC58Cu
 #define RVA_IL2CPP_ASSEMBLY_GET_IMAGE 0x1A6DF98u
@@ -79,7 +84,10 @@
 #define RVA_FIGHT_CONFIG_SET_PLAYER 0x3120130u
 #define RVA_FIGHT_CONFIG_CLEAR_OPPONENT 0x3120190u
 #define RVA_FIGHT_CONFIG_SET_OPPONENT 0x31215FCu
+#define RVA_FIGHT_CONFIG_EQUIPMENT_RULE_GET 0x3121DCCu
 #define RVA_PLAYER_PROFILE_COPY_CTOR 0x3169DC4u
+#define RVA_PLAYER_PROFILE_ITEM_BY_SLOT 0x316F390u
+#define RVA_PLAYER_PROFILE_ITEM_GET 0x316F674u
 #define RVA_PLAYER_PROFILE_SET_ITEM 0x316F7E8u
 #define RVA_ITEM_BY_NAME 0x32AC484u
 #define RVA_ITEM_MANAGER_CURRENT 0x32A917Cu
@@ -108,6 +116,8 @@
 #define FIGHT_PLAYER_PROFILE_OFFSET 0x98u
 #define FIGHT_OPPONENT_PROFILE_OFFSET 0xA0u
 #define FIGHT_CONFIG_MODE_OFFSET 0x18u
+#define FIGHT_CONFIG_BASE_EQUIPMENT_RULE_OFFSET 0x30u
+#define FIGHT_CONFIG_EQUIPMENT_RULE_OFFSET 0x150u
 #define FIGHTER_PROFILE_OFFSET 0x148u
 #define FIGHTER_OPPONENT_OFFSET 0x130u
 #define FIGHTER_AI_PLANNER_OFFSET 0x298u
@@ -162,6 +172,8 @@ typedef void *(*GetFightConfigByNameMethod)(void *, void *, const void *);
 typedef void (*ConfigInstanceMethod)(void *, const void *);
 typedef void (*ConfigProfileMethod)(void *, void *, const void *);
 typedef void (*ProfileCopyCtorMethod)(void *, void *, const void *);
+typedef void *(*ProfileItemBySlotMethod)(void *, void *, const void *);
+typedef void *(*ProfileItemGetMethod)(void *, void *, void *, const void *);
 typedef void (*ProfileSetItemMethod)(void *, void *, void *, const void *);
 typedef void *(*ItemByNameMethod)(void *, const void *);
 typedef void *(*ItemManagerByNameMethod)(void *, void *, const void *);
@@ -169,6 +181,13 @@ typedef void (*GcWbarrierSetFieldMethod)(void *, void **, void *);
 typedef int32_t (*IntInstanceMethod)(void *, const void *);
 typedef float (*FighterFloatMethod)(void *, const void *);
 typedef void (*FighterSetFloatMethod)(void *, float, const void *);
+typedef void (*FighterApplyEquipmentItemMethod)(
+    void *, void *, bool, bool, bool, const void *);
+typedef void (*FighterApplyConfigItemMethod)(
+    void *, void *, void *, const void *);
+typedef void *(*RandomFighterProfileCreateMethod)(const void *);
+typedef void (*CreateFightProfilesMethod)(
+    void *, void **, void **, const void *);
 typedef struct { float x; float y; float z; } Vector3Value;
 typedef void *(*ObjectGetterMethod)(void *, const void *);
 typedef void (*VectorSetMethod)(void *, float, float, float, const void *);
@@ -193,6 +212,10 @@ static ConfigProfileMethod ai_planner_initialize;
 static InstanceMethod ai_planner_cancel;
 static PlannerSelectActionMethod original_ai_planner_select_action;
 static ConfigProfileMethod original_fighter_ctor;
+static FighterApplyConfigItemMethod original_fighter_apply_config_item;
+static RandomFighterProfileCreateMethod original_random_fighter_profile_create;
+static CreateFightProfilesMethod original_create_fight_profiles;
+static FighterApplyEquipmentItemMethod original_fighter_apply_equipment_item;
 static GetCurrentMethod gamepad_controller_current;
 static SetBoolMethod set_gamepad_dual_mode;
 static ObjectNewMethod il2cpp_object_new;
@@ -212,7 +235,10 @@ static ConfigInstanceMethod fight_config_clear_player;
 static ConfigProfileMethod fight_config_set_player;
 static ConfigInstanceMethod fight_config_clear_opponent;
 static ConfigProfileMethod fight_config_set_opponent;
+static ObjectGetterMethod original_fight_config_equipment_rule_get;
 static ProfileCopyCtorMethod player_profile_copy_ctor;
+static ProfileItemBySlotMethod original_player_profile_item_by_slot;
+static ProfileItemGetMethod original_player_profile_item_get;
 static ProfileSetItemMethod player_profile_set_item;
 static ItemByNameMethod item_by_name;
 static GetSingletonMethod item_manager_current;
@@ -300,6 +326,7 @@ static _Atomic uintptr_t lan_remote_profile;
 static _Atomic uintptr_t lan_local_fighter;
 static _Atomic uintptr_t lan_remote_fighter;
 static _Atomic uintptr_t lan_remote_ai_planner;
+static _Atomic uintptr_t lan_active_scene;
 static _Atomic uintptr_t lan_active_fight;
 static _Atomic uint32_t lan_fight_generation;
 static _Atomic int64_t fight_created_at_ms;
@@ -336,11 +363,18 @@ static _Thread_local bool dispatching_remote_control;
 static _Thread_local bool forwarding_remote_ai_initialization;
 static _Thread_local bool constructing_lan_fight;
 static _Thread_local bool applying_remote_damage;
+static _Atomic uint32_t profile_item_trace_count;
+static _Atomic bool profile_item_trace_enabled;
+static _Atomic uint32_t profile_item_set_override_count;
+static _Atomic uint32_t fighter_item_override_count;
+static _Atomic uint32_t fighter_config_item_block_count;
+static _Atomic uint32_t random_profile_override_count;
 
 static pthread_mutex_t fight_config_identity_mutex = PTHREAD_MUTEX_INITIALIZER;
 static char lan_original_fight_identity[FIGHT_CONFIG_IDENTITY_MAX + 1];
 
 static bool should_hold_lan_fight(void);
+static void hooked_fight_scene_start_fight(void *self, const void *method);
 
 static int64_t now_ms(void);
 static uint32_t float_bits(float value);
@@ -479,9 +513,9 @@ static struct remote_fighter_profile canonical_shadow_profile(void) {
     struct remote_fighter_profile profile = {
         .available = true,
         .level = 52,
-        .armor = "Body",
-        .helm = "Head",
-        .weapon = "Fists",
+        .armor = "ARMOR_OLD_LEATHER",
+        .helm = "HELM_LIGHT",
+        .weapon = "WEAPON_KNUCKLES",
         .ranged = "NoRanged",
         .magic = "NoMagic",
     };
@@ -543,7 +577,8 @@ static bool resolve_profile_appearance(
     const char **avatar,
     const char **skeleton
 ) {
-    if (strcmp(snapshot.armor, "Body") == 0) {
+    if (strcmp(snapshot.armor, "Body") == 0 ||
+        strcmp(snapshot.armor, "ARMOR_OLD_LEATHER") == 0) {
         *avatar = "avatar_hero";
         *skeleton = "Skeleton";
     } else if (strcmp(snapshot.armor, "BODY_LYNX") == 0) {
@@ -695,6 +730,34 @@ static void *clone_shadow_profile(void *source, const char *label) {
     return clone;
 }
 
+// RANDOM_EQUIPMENT cria um perfil temporario e alguns consumidores guardam os
+// itens escolhidos antes que o setter virtual possa substitui-los. Durante uma
+// luta LAN, entregue diretamente uma copia independente do Shadow canonico.
+// Fora dessa janela, preserve integralmente a fabrica original do jogo.
+static void *hooked_random_fighter_profile_create(const void *method) {
+    bool lan_active = atomic_load_explicit(
+        &session_ready, memory_order_acquire) &&
+        (constructing_lan_fight || atomic_load_explicit(
+            &lan_fight_active, memory_order_acquire));
+    if (lan_active) {
+        void *source = (void *)atomic_load_explicit(
+            &lan_remote_profile, memory_order_acquire);
+        void *clone = clone_shadow_profile(source, "perfil-aleatorio-LAN");
+        if (clone != NULL) {
+            uint32_t index = atomic_fetch_add_explicit(
+                &random_profile_override_count, 1u, memory_order_relaxed);
+            if (index < 16u) {
+                LOGI(
+                    "Fabrica RANDOM_EQUIPMENT substituida por Shadow canonico: source=%p clone=%p.",
+                    source, clone);
+            }
+            return clone;
+        }
+        LOGE("Fabrica RANDOM_EQUIPMENT: falha ao clonar perfil canonico; usando original.");
+    }
+    return original_random_fighter_profile_create(method);
+}
+
 static void log_profile_equipment(const char *label, void *profile) {
     if (profile == NULL) {
         LOGI("Perfil %s: nulo.", label);
@@ -724,6 +787,46 @@ static int32_t replace_all_list_items(void *list, void *value) {
     return size;
 }
 
+// Esta fabrica e executada antes da FightScene e alimenta os modelos visuais
+// de PreFight/Viewer. Padronizar apenas a FightScene deixa esses modelos com o
+// equipamento RANDOM_EQUIPMENT que ja havia sido materializado. Substitua as
+// duas saidas no primeiro ponto comum, mantendo a rotina original fora do LAN.
+static void hooked_create_fight_profiles(
+    void *fight_config,
+    void **player_output,
+    void **opponents_output,
+    const void *method
+) {
+    original_create_fight_profiles(
+        fight_config, player_output, opponents_output, method);
+    if (!atomic_load_explicit(&session_ready, memory_order_acquire) ||
+        player_output == NULL || opponents_output == NULL) return;
+
+    void *original_player = *player_output;
+    void *opponents = *opponents_output;
+    void *original_opponent = first_list_item(opponents);
+    if (original_opponent == NULL) original_opponent = original_player;
+    // Preserve duas bases independentes. Clonar os dois lados da mesma base
+    // faz o jogo compartilhar estruturas internas de animacao e StartFight
+    // deixa de retornar. O preset canonico aplicado abaixo continua igualando
+    // nome e equipamento sem fundir o estado de cada lutador.
+    void *player_shadow = clone_shadow_profile(
+        original_player, "fabrica-visual-esquerda");
+    void *opponent_shadow = clone_shadow_profile(
+        original_opponent, "fabrica-visual-direita");
+    if (player_shadow == NULL || opponent_shadow == NULL) {
+        LOGE(
+            "Fabrica visual LAN: clones indisponiveis player=%p opponent=%p.",
+            player_shadow, opponent_shadow);
+        return;
+    }
+    int32_t replaced = replace_all_list_items(opponents, opponent_shadow);
+    *player_output = player_shadow;
+    LOGI(
+        "Fabrica visual LAN padronizada: config=%p player=%p opponent=%p adversarios=%d.",
+        fight_config, player_shadow, opponent_shadow, replaced);
+}
+
 static void *prepare_pvp_fight_config(
     void *fight_config,
     void *player_profile,
@@ -750,6 +853,24 @@ static void *prepare_pvp_fight_config(
             player_profile, original_opponent);
         return NULL;
     }
+
+    // Duel usa o sentinela RANDOM_EQUIPMENT neste campo. Ele materializa um
+    // conjunto aleatorio em caches visuais depois que os perfis Shadow ja
+    // foram preparados, fazendo cada processo escolher armas diferentes.
+    // Com a regra vazia, o getter nativo deixa de solicitar esse override e
+    // os dois lados conservam o equipamento canonico dos perfis clonados.
+    void **base_equipment_rule = (void **)((uint8_t *)config +
+        FIGHT_CONFIG_BASE_EQUIPMENT_RULE_OFFSET);
+    void **equipment_rule = (void **)((uint8_t *)config +
+        FIGHT_CONFIG_EQUIPMENT_RULE_OFFSET);
+    void *original_base_equipment_rule = *base_equipment_rule;
+    void *original_equipment_rule = *equipment_rule;
+    set_managed_field(config, base_equipment_rule, NULL);
+    set_managed_field(config, equipment_rule, NULL);
+    LOGI(
+        "FightLAN Duel: regras RANDOM_EQUIPMENT removidas config=%p baseOriginal=%p overrideOriginal=%p.",
+        config, original_base_equipment_rule, original_equipment_rule);
+
     LOGI(
         "FightLAN Duel: quatro modelos fixados no Shadow humano basico, sem encantamentos, ranged ou magia.");
     atomic_store_explicit(
@@ -774,6 +895,230 @@ static void *prepare_pvp_fight_config(
         *(int32_t *)((uint8_t *)config + FIGHT_CONFIG_MODE_OFFSET), config,
         player_shadow, opponent_shadow, original_opponent, replaced_opponents);
     return config;
+}
+
+// O Duel consulta esta regra ainda na preparacao da tela, antes de
+// FightScene.CreateFight. Bloquear somente dentro de prepare_pvp_fight_config
+// era tarde demais: os modelos ja podiam carregar o conjunto aleatorio.
+// O getter nativo admite retorno nulo (ele proprio usa um campo opcional de
+// fallback), portanto durante a sessao LAN fazemos a luta conservar os itens
+// Body/Head/Fists dos perfis Shadow canonicos desde a primeira leitura.
+static void *hooked_fight_config_equipment_rule_get(
+    void *self,
+    const void *method
+) {
+    if (atomic_load_explicit(&session_ready, memory_order_acquire)) {
+        return NULL;
+    }
+    return original_fight_config_equipment_rule_get(self, method);
+}
+
+static void managed_string_to_ascii(
+    void *managed_string,
+    char *destination,
+    size_t capacity
+) {
+    if (destination == NULL || capacity == 0) return;
+    destination[0] = '\0';
+    if (managed_string == NULL) return;
+
+    int32_t length = *(int32_t *)((uint8_t *)managed_string + 0x10u);
+    if (length < 0 || length > 4096) return;
+    const uint16_t *characters = (const uint16_t *)((uint8_t *)managed_string + 0x14u);
+    size_t count = (size_t)length;
+    if (count >= capacity) count = capacity - 1;
+    for (size_t index = 0; index < count; index++) {
+        uint16_t character = characters[index];
+        destination[index] = character >= 0x20u && character <= 0x7Eu
+            ? (char)character : '?';
+    }
+    destination[count] = '\0';
+}
+
+static bool managed_string_equals_ascii(void *managed_string, const char *ascii) {
+    if (managed_string == NULL || ascii == NULL) return false;
+    int32_t length = *(int32_t *)((uint8_t *)managed_string + 0x10u);
+    size_t ascii_length = strlen(ascii);
+    if (length < 0 || (size_t)length != ascii_length) return false;
+    const uint16_t *characters = (const uint16_t *)((uint8_t *)managed_string + 0x14u);
+    for (size_t index = 0; index < ascii_length; index++) {
+        if (characters[index] != (uint8_t)ascii[index]) return false;
+    }
+    return true;
+}
+
+static void *canonical_profile_item_for_slot(void *slot) {
+    if (!atomic_load_explicit(&session_ready, memory_order_acquire) ||
+        (!constructing_lan_fight && !atomic_load_explicit(
+            &lan_fight_active, memory_order_acquire))) {
+        return NULL;
+    }
+    void *profile = (void *)atomic_load_explicit(
+        &lan_remote_profile, memory_order_acquire);
+    if (profile == NULL) return NULL;
+
+    size_t offset = 0;
+    if (managed_string_equals_ascii(slot, "Skeleton")) {
+        offset = PROFILE_SKELETON_OFFSET;
+    } else if (managed_string_equals_ascii(slot, "Weapon")) {
+        offset = PROFILE_WEAPON_OFFSET;
+    } else if (managed_string_equals_ascii(slot, "Armor")) {
+        offset = PROFILE_ARMOR_OFFSET;
+    } else if (managed_string_equals_ascii(slot, "Helm")) {
+        offset = PROFILE_HELM_OFFSET;
+    } else if (managed_string_equals_ascii(slot, "Ranged")) {
+        offset = PROFILE_RANGED_OFFSET;
+    } else if (managed_string_equals_ascii(slot, "Magic")) {
+        offset = PROFILE_MAGIC_OFFSET;
+    }
+    return offset == 0 ? NULL : *(void **)((uint8_t *)profile + offset);
+}
+
+static bool should_trace_profile_item_get(void) {
+    if (!atomic_load_explicit(&session_ready, memory_order_acquire) ||
+        !atomic_load_explicit(&profile_item_trace_enabled, memory_order_acquire)) {
+        return false;
+    }
+    uint32_t index = atomic_fetch_add_explicit(
+        &profile_item_trace_count, 1u, memory_order_relaxed);
+    if (index >= 96u) {
+        atomic_store_explicit(
+            &profile_item_trace_enabled, false, memory_order_release);
+        return false;
+    }
+    return true;
+}
+
+// Diagnostico temporario: o perfil ja contem os seis ponteiros canonicos, mas
+// a cena ainda desenha armas diferentes. Estes dois acessores revelam quais
+// slots o construtor visual consulta e qual objeto ele realmente recebe.
+static void *hooked_player_profile_item_by_slot(
+    void *profile,
+    void *slot,
+    const void *method
+) {
+    void *original_item = original_player_profile_item_by_slot(
+        profile, slot, method);
+    void *canonical_item = canonical_profile_item_for_slot(slot);
+    void *item = canonical_item == NULL ? original_item : canonical_item;
+    if (should_trace_profile_item_get()) {
+        char slot_name[96];
+        managed_string_to_ascii(slot, slot_name, sizeof(slot_name));
+        LOGI("Perfil getter privado: profile=%p slot=%s original=%p retorno=%p override=%d.",
+            profile, slot_name, original_item, item,
+            canonical_item != NULL ? 1 : 0);
+    }
+    return item;
+}
+
+static void *hooked_player_profile_item_get(
+    void *profile,
+    void *slot,
+    void *fallback,
+    const void *method
+) {
+    void *original_item = original_player_profile_item_get(
+        profile, slot, fallback, method);
+    void *canonical_item = canonical_profile_item_for_slot(slot);
+    void *item = canonical_item == NULL ? original_item : canonical_item;
+    if (should_trace_profile_item_get()) {
+        char slot_name[96];
+        char fallback_name[96];
+        managed_string_to_ascii(slot, slot_name, sizeof(slot_name));
+        managed_string_to_ascii(fallback, fallback_name, sizeof(fallback_name));
+        LOGI("Perfil getter virtual: profile=%p slot=%s fallback=%s original=%p retorno=%p override=%d.",
+            profile, slot_name, fallback_name, original_item, item,
+            canonical_item != NULL ? 1 : 0);
+    }
+    return item;
+}
+
+static void hooked_player_profile_set_item(
+    void *profile,
+    void *slot,
+    void *item,
+    const void *method
+) {
+    void *canonical_item = canonical_profile_item_for_slot(slot);
+    void *effective_item = canonical_item == NULL ? item : canonical_item;
+    if (canonical_item != NULL && canonical_item != item) {
+        uint32_t index = atomic_fetch_add_explicit(
+            &profile_item_set_override_count, 1u, memory_order_relaxed);
+        if (index < 48u) {
+            char slot_name[96];
+            void *caller = __builtin_return_address(0);
+            Dl_info caller_info;
+            memset(&caller_info, 0, sizeof(caller_info));
+            uintptr_t caller_rva = 0u;
+            if (caller != NULL && dladdr(caller, &caller_info) != 0 &&
+                caller_info.dli_fbase != NULL) {
+                caller_rva = (uintptr_t)caller -
+                    (uintptr_t)caller_info.dli_fbase;
+            }
+            managed_string_to_ascii(slot, slot_name, sizeof(slot_name));
+            LOGI(
+                "Perfil setter LAN: profile=%p slot=%s solicitado=%p canonico=%p callerRva=0x%" PRIxPTR ".",
+                profile, slot_name, item, canonical_item, caller_rva);
+        }
+    }
+    player_profile_set_item(profile, slot, effective_item, method);
+}
+
+static void hooked_fighter_apply_equipment_item(
+    void *fighter,
+    void *item,
+    bool equip,
+    bool refresh,
+    bool update_effects,
+    const void *method
+) {
+    void *slot = item == NULL ? NULL : *(void **)((uint8_t *)item + 0x30u);
+    void *canonical_item = canonical_profile_item_for_slot(slot);
+    void *effective_item = canonical_item == NULL ? item : canonical_item;
+    if (canonical_item != NULL && canonical_item != item) {
+        uint32_t index = atomic_fetch_add_explicit(
+            &fighter_item_override_count, 1u, memory_order_relaxed);
+        if (index < 48u) {
+            char slot_name[96];
+            managed_string_to_ascii(slot, slot_name, sizeof(slot_name));
+            LOGI("Fighter item LAN: fighter=%p slot=%s solicitado=%p canonico=%p.",
+                fighter, slot_name, item, canonical_item);
+        }
+    }
+    original_fighter_apply_equipment_item(
+        fighter, effective_item, equip, refresh, update_effects, method);
+}
+
+// O duelo materializa cada item sorteado diretamente no modelo do Fighter
+// antes de gravá-lo no PlayerProfile. Os hooks do perfil garantem que ambas as
+// instâncias concordem sobre o save, mas chegam tarde demais para impedir essa
+// aparência divergente. Na luta LAN, o perfil já contém o conjunto canônico
+// completo; portanto ignore somente essa etapa de materialização aleatória.
+static void hooked_fighter_apply_config_item(
+    void *fighter,
+    void *config_item,
+    void *profile,
+    const void *method
+) {
+    bool lan_active = atomic_load_explicit(
+        &session_ready, memory_order_acquire) &&
+        (constructing_lan_fight || atomic_load_explicit(
+            &lan_fight_active, memory_order_acquire));
+    if (lan_active) {
+        uint32_t index = atomic_fetch_add_explicit(
+            &fighter_config_item_block_count, 1u, memory_order_relaxed);
+        if (index < 48u) {
+            void *item_id = config_item == NULL ? NULL :
+                *(void **)((uint8_t *)config_item + 0x18u);
+            char item_name[96];
+            managed_string_to_ascii(item_id, item_name, sizeof(item_name));
+            LOGI(
+                "Fighter config item LAN bloqueado: fighter=%p profile=%p item=%s config=%p.",
+                fighter, profile, item_name, config_item);
+        }
+        return;
+    }
+    original_fighter_apply_config_item(fighter, config_item, profile, method);
 }
 
 // O Fighter copia arma, esqueleto e dados de animacao para caches internos no
@@ -815,6 +1160,9 @@ static void hooked_pre_fight_viewer_init(
     bool session_active = atomic_load_explicit(
         &session_ready, memory_order_acquire);
     if (session_active) {
+        atomic_store_explicit(&profile_item_trace_count, 0u, memory_order_release);
+        atomic_store_explicit(
+            &profile_item_trace_enabled, true, memory_order_release);
         int32_t role = atomic_load_explicit(
             &lan_player_role, memory_order_acquire);
         struct remote_fighter_profile canonical_profile = canonical_shadow_profile();
@@ -964,6 +1312,20 @@ static void hooked_fighter_ai_animation_event(
     original_fighter_ai_animation_event(fighter, animation, method);
     return;
 #endif
+    // StartFight pode ser chamado uma unica vez durante a apresentacao e ser
+    // adiado enquanto os dois peers aguardam o mesmo START. Nessa situacao a
+    // FightScene ainda nao recebe FixedUpdate, portanto nao existe uma segunda
+    // oportunidade natural para liberar a luta. Os eventos de animacao rodam
+    // na thread principal durante a intro e servem como ponto seguro para
+    // repetir o StartFight depois do instante negociado.
+    if (atomic_load_explicit(&lan_fight_active, memory_order_acquire) &&
+        !atomic_load_explicit(&fight_start_method_invoked, memory_order_acquire)) {
+        void *scene = (void *)atomic_load_explicit(
+            &lan_active_scene, memory_order_acquire);
+        if (scene != NULL && !should_hold_lan_fight()) {
+            hooked_fight_scene_start_fight(scene, NULL);
+        }
+    }
     if (!is_lan_fighter(fighter)) {
         original_fighter_ai_animation_event(fighter, animation, method);
         return;
@@ -1247,6 +1609,9 @@ static void hooked_fight_scene_create_fight(
         &lan_remote_fighter, lan_configured ? (uintptr_t)opponent : 0,
         memory_order_release);
     atomic_store_explicit(
+        &lan_active_scene, lan_configured ? (uintptr_t)self : 0,
+        memory_order_release);
+    atomic_store_explicit(
         &lan_active_fight, lan_configured ? (uintptr_t)fight : 0,
         memory_order_release);
     if (!lan_configured) {
@@ -1327,6 +1692,13 @@ static bool should_hold_lan_fight(void) {
         }
         return false;
     }
+
+    // O pacing compara quadros de uma simulacao que ja esta em andamento.
+    // Antes de StartFight, os snapshots de preparacao podem incrementar o tick
+    // enquanto framesPassed continua em zero; trata-los como atraso remoto
+    // impediria justamente a primeira chamada que inicia a luta.
+    if (!atomic_load_explicit(
+        &fight_start_method_invoked, memory_order_acquire)) return false;
 
     int64_t remote_received = atomic_load_explicit(
         &remote_fight_state_received_at_ms, memory_order_acquire);
@@ -2385,6 +2757,30 @@ Java_com_sf2_lan_LanNativeBridge_nativeInstall(JNIEnv *env, jclass type) {
             (void **)&original_fighter_ai_animation_event},
         {RVA_AI_PLANNER_SELECT_ACTION, hooked_ai_planner_select_action,
             (void **)&original_ai_planner_select_action},
+        {RVA_FIGHT_CONFIG_EQUIPMENT_RULE_GET,
+            hooked_fight_config_equipment_rule_get,
+            (void **)&original_fight_config_equipment_rule_get},
+        {RVA_RANDOM_FIGHTER_PROFILE_CREATE,
+            hooked_random_fighter_profile_create,
+            (void **)&original_random_fighter_profile_create},
+        {RVA_CREATE_FIGHT_PROFILES,
+            hooked_create_fight_profiles,
+            (void **)&original_create_fight_profiles},
+        {RVA_PLAYER_PROFILE_ITEM_BY_SLOT,
+            hooked_player_profile_item_by_slot,
+            (void **)&original_player_profile_item_by_slot},
+        {RVA_PLAYER_PROFILE_ITEM_GET,
+            hooked_player_profile_item_get,
+            (void **)&original_player_profile_item_get},
+        {RVA_PLAYER_PROFILE_SET_ITEM,
+            hooked_player_profile_set_item,
+            (void **)&player_profile_set_item},
+        {RVA_FIGHTER_APPLY_CONFIG_ITEM,
+            hooked_fighter_apply_config_item,
+            (void **)&original_fighter_apply_config_item},
+        {RVA_FIGHTER_APPLY_EQUIPMENT_ITEM,
+            hooked_fighter_apply_equipment_item,
+            (void **)&original_fighter_apply_equipment_item},
         {RVA_FIGHTER_CTOR, hooked_fighter_ctor,
             (void **)&original_fighter_ctor},
         {RVA_PRE_FIGHT_VIEWER_INIT, hooked_pre_fight_viewer_init,
@@ -2564,6 +2960,7 @@ Java_com_sf2_lan_LanNativeBridge_nativeSetSessionReady(
         atomic_store_explicit(&lan_local_fighter, 0, memory_order_release);
         atomic_store_explicit(&lan_remote_fighter, 0, memory_order_release);
         atomic_store_explicit(&lan_remote_ai_planner, 0, memory_order_release);
+        atomic_store_explicit(&lan_active_scene, 0, memory_order_release);
         atomic_store_explicit(&lan_active_fight, 0, memory_order_release);
         atomic_store_explicit(&fight_state_tick, 0, memory_order_release);
         atomic_store_explicit(&remote_time_passed_bits, float_bits(0.0f), memory_order_release);
