@@ -276,3 +276,50 @@ Pendencias visuais preservadas de proposito neste checkpoint:
 
 Capturas locais deste teste ficaram fora do repositorio em
 `%TEMP%\sf2-lan-p123` e `%TEMP%\sf2-lan-p123-controls`.
+
+## Observacoes adicionais do teste de 27/11/2026
+
+### Pose permanece desacoplada da arma
+
+- O lutador da direita pode receber facas, mas continua usando a pose de
+  soco-ingles.
+- O lutador da esquerda pode aparecer com espada e armadura do Tita, mas usa a
+  pose de combate sem arma/apenas punhos.
+- Portanto, o item exibido na mao e o controlador de animacao ainda nascem de
+  fontes ou caches diferentes. Sortear ou sobrescrever somente o ID da arma nao
+  corrige a postura.
+
+### Orientacao e preset de diagnostico
+
+- Depois da padronizacao visual, os dois lutadores voltaram a ficar de costas um
+  para o outro.
+- A postura tambem nao corresponde ao armamento, repetindo o caso anterior do
+  sai exibido com a pose dos cutelos do Acougueiro.
+- Foi sugerido usar temporariamente a katana inicial nos dois lados. A silhueta
+  e a postura da katana tornam mais facil distinguir arma correta, pose correta
+  e orientacao correta. Esta sugestao esta apenas registrada; ainda nao foi
+  implementada.
+
+### Experimento de troca do save para Shadow: resultado invalido
+
+Em 27/11 foi aplicado por engano o perfil `fresh-start-cheats` completo nas duas
+instancias. Embora ele use `NAME_SHADOW`, `avatar_hero`, corpo humano e punhos,
+ele tambem possui `Tutorial=MOVE` e `CurrentZone=ZONE_1`. O resultado foi:
+
+- retorno das duas instancias ao tutorial/inicio da campanha;
+- personagem invisivel durante parte da apresentacao do tutorial;
+- na luta contra Carlos, nome e retrato do adversario tambem apareceram como
+  Shadow, produzindo visualmente `Shadow vs. Shadow`;
+- o experimento nao serve como base de teste do modulo LAN.
+
+Os saves anteriores foram preservados antes dessa troca. A correcao deve partir
+deles, mantendo `Tutorial=END`, zonas, batalhas e desbloqueios, e alterando
+somente o equipamento/identidade visual do jogador de Tita para Shadow normal.
+Nao se deve substituir novamente o save inteiro por um perfil de campanha nova.
+
+A correcao foi aplicada em seguida nas duas instancias a partir de seus backups
+independentes. A verificacao posterior confirmou `Tutorial=END`,
+`CurrentZone=ZONE_2`, Duelo disponivel e o mapa anterior restaurado. Nos dois
+saves ativos, somente a apresentacao do jogador foi normalizada para
+`NAME_SHADOW`, `avatar_hero`, `Skeleton`, `Body`, `Head`, `Fists`, `NoRanged` e
+`NoMagic`. O progresso, as batalhas e os desbloqueios nao foram reiniciados.
