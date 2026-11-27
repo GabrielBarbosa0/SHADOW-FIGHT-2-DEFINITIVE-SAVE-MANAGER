@@ -513,9 +513,9 @@ static struct remote_fighter_profile canonical_shadow_profile(void) {
     struct remote_fighter_profile profile = {
         .available = true,
         .level = 52,
-        .armor = "ARMOR_OLD_LEATHER",
-        .helm = "HELM_LIGHT",
-        .weapon = "WEAPON_KNUCKLES",
+        .armor = "Body",
+        .helm = "Head",
+        .weapon = "WEAPON_NINJA_SWORD",
         .ranged = "NoRanged",
         .magic = "NoMagic",
     };
@@ -858,7 +858,7 @@ static void *prepare_pvp_fight_config(
     // conjunto aleatorio em caches visuais depois que os perfis Shadow ja
     // foram preparados, fazendo cada processo escolher armas diferentes.
     // Com a regra vazia, o getter nativo deixa de solicitar esse override e
-    // os dois lados conservam o equipamento canonico dos perfis clonados.
+// os dois lados conservam o equipamento canonico dos perfis clonados.
     void **base_equipment_rule = (void **)((uint8_t *)config +
         FIGHT_CONFIG_BASE_EQUIPMENT_RULE_OFFSET);
     void **equipment_rule = (void **)((uint8_t *)config +
@@ -902,7 +902,9 @@ static void *prepare_pvp_fight_config(
 // era tarde demais: os modelos ja podiam carregar o conjunto aleatorio.
 // O getter nativo admite retorno nulo (ele proprio usa um campo opcional de
 // fallback), portanto durante a sessao LAN fazemos a luta conservar os itens
-// Body/Head/Fists dos perfis Shadow canonicos desde a primeira leitura.
+// Body/Head/WEAPON_NINJA_SWORD dos perfis Shadow canonicos desde a primeira
+// leitura. O ID da espada precisa chegar antes da criacao do controlador de
+// animacao; trocar somente o modelo visual mantem a pose de soco-ingles.
 static void *hooked_fight_config_equipment_rule_get(
     void *self,
     const void *method

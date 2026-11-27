@@ -323,3 +323,46 @@ independentes. A verificacao posterior confirmou `Tutorial=END`,
 saves ativos, somente a apresentacao do jogador foi normalizada para
 `NAME_SHADOW`, `avatar_hero`, `Skeleton`, `Body`, `Head`, `Fists`, `NoRanged` e
 `NoMagic`. O progresso, as batalhas e os desbloqueios nao foram reiniciados.
+
+### Espada Ninja visivel com moveset de soco-ingles
+
+Depois da recuperacao, `WEAPON_NINJA_SWORD` foi equipado manualmente nos dois
+saves. A espada passou a aparecer corretamente na mao do Shadow nas duas
+instancias, mas a pose e os ataques continuaram sendo os de soco-ingles. O log
+explicou a divergencia: o save ativo informava `WEAPON_NINJA_SWORD`, enquanto o
+preset `initial` do protocolo e o perfil canonico nativo ainda injetavam
+`Fists`/`WEAPON_KNUCKLES` durante a criacao do controlador de animacao.
+
+A proxima build deve usar `WEAPON_NINJA_SWORD` de forma identica no preset
+Python, no preset Java e no perfil canonico nativo. Essa alteracao e um teste
+direto da hipotese do cache de moveset; ela nao declara a pose corrigida antes
+da validacao visual nas duas instancias.
+
+### Validacao p124: Espada Ninja e moveset coerentes
+
+O prototipo p124 unificou o preset `initial` em `Body`, `Head` e
+`WEAPON_NINJA_SWORD` nas camadas Python, Java e nativa. A biblioteca foi
+instalada diretamente nas duas VMs, preservando a p123 antes da troca.
+
+Resultados observados somente em `emulator-5554` e `emulator-5556`:
+
+- o log registrou `WEAPON_NINJA_SWORD` durante a fabrica visual, construcao da
+  luta e consultas posteriores dos perfis;
+- os quatro modelos da luta apareceram com a Espada Ninja;
+- os lutadores passaram a usar guarda de espada e ficaram voltados um para o
+  outro;
+- o comando de ataque do jogador 1 produziu um golpe de espada visivel, em vez
+  da pose/ataque de soco-ingles;
+- `StartFight` retornou, os relogios correram e as selecoes autonomas da IA
+  continuaram suprimidas;
+- nao ocorreu `SIGSEGV` durante o teste.
+
+Este resultado valida somente a coerencia entre arma e moveset. As capturas das
+duas VMs ainda ocorreram em instantes diferentes e nao provam sincronizacao
+completa de animacao, vida, rounds ou resultado.
+
+Biblioteca experimental testada sem substituir o APK-base:
+
+`%TEMP%\libsf2lanhook-p124-ninja-sword.so`
+
+SHA-256: `C5B7F1F2EE7796CAD73B9D06DF6034940398835DA047881E26E25C0CC29A3B31`.

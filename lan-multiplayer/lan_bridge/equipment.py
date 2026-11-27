@@ -4,7 +4,7 @@ import random
 
 
 EQUIPMENT_PRESETS = {
-    "initial": {"Avatar": "avatar_hero", "Skeleton": "Skeleton", "Armor": "Body", "Helm": "Head", "Weapon": "Fists", "Ranged": "NoRanged", "Magic": "NoMagic"},
+    "initial": {"Avatar": "avatar_hero", "Skeleton": "Skeleton", "Armor": "Body", "Helm": "Head", "Weapon": "WEAPON_NINJA_SWORD", "Ranged": "NoRanged", "Magic": "NoMagic"},
     "lynx": {"Avatar": "boss_lynx", "Skeleton": "Skeleton", "Armor": "BODY_LYNX", "Helm": "HEAD_LYNX", "Weapon": "WEAPON_LYNX_CLAWS", "Ranged": "NoRanged", "Magic": "NoMagic"},
     "hermit": {"Avatar": "boss_hermit", "Skeleton": "Skeleton", "Armor": "ARMOR_ROBE", "Helm": "HEAD_HERMIT", "Weapon": "WEAPON_HERMIT_SWORDS", "Ranged": "NoRanged", "Magic": "NoMagic"},
     "butcher": {"Avatar": "boss_butcher", "Skeleton": "SkeletonHeavy", "Armor": "BODY_BUTCHER", "Helm": "HEAD_BUTCHER", "Weapon": "WEAPON_BUTCHER_KNIVES", "Ranged": "NoRanged", "Magic": "NoMagic"},

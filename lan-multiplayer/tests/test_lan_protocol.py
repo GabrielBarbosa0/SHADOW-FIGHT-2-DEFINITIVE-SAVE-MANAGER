@@ -4,7 +4,7 @@ import socket
 import unittest
 
 from lan_bridge.__main__ import mirror_fight_state, profile_with_equipment, pulse_buttons
-from lan_bridge.equipment import EQUIPMENT_PRESET_NAMES, select_match_presets
+from lan_bridge.equipment import EQUIPMENT_PRESETS, EQUIPMENT_PRESET_NAMES, select_match_presets
 from lan_bridge.peer import LanPeer, PeerMode
 from lan_bridge.protocol import (
     Button,
@@ -109,6 +109,9 @@ class ProtocolTests(unittest.TestCase):
         selected = select_match_presets(duplicate_seed)
         self.assertEqual(selected[0], selected[1])
         self.assertIn(selected[0], EQUIPMENT_PRESET_NAMES)
+
+    def test_initial_preset_uses_ninja_sword_for_visual_and_moveset_diagnostics(self) -> None:
+        self.assertEqual(EQUIPMENT_PRESETS["initial"]["Weapon"], "WEAPON_NINJA_SWORD")
 
     def test_fight_start_rejects_unsafe_delay(self) -> None:
         with self.assertRaisesRegex(ProtocolError, "Atraso"):

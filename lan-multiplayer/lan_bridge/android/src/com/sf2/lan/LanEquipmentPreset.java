@@ -32,7 +32,7 @@ final class LanEquipmentPreset {
         switch (name) {
             case "initial":
                 return new LanEquipmentPreset(name, "avatar_hero", "Skeleton", "Body", "Head",
-                    "Fists", "NoRanged", "NoMagic");
+                    "WEAPON_NINJA_SWORD", "NoRanged", "NoMagic");
             case "lynx":
                 return new LanEquipmentPreset(name, "boss_lynx", "Skeleton", "BODY_LYNX", "HEAD_LYNX",
                     "WEAPON_LYNX_CLAWS", "NoRanged", "NoMagic");
