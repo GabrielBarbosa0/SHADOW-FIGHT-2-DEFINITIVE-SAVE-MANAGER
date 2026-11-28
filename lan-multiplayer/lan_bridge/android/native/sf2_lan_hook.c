@@ -72,6 +72,9 @@
 #define RVA_FIGHTER_APPLY_EQUIPMENT_ITEM 0x339BA2Cu
 #define RVA_FIGHT_INPUT_PRESS 0x34E94C4u
 #define RVA_FIGHT_INPUT_RELEASE 0x34EC58Cu
+#define RVA_FIGHTER_INPUT_CONTROLLER_ACTIVATE 0x31D0CF8u
+#define RVA_FIGHTER_ACTION_EVENT 0x33A64A4u
+#define RVA_FIGHTER_ACCEPTS_HUMAN_INPUT 0x339FA94u
 #define RVA_IL2CPP_ASSEMBLY_GET_IMAGE 0x1A6DF98u
 #define RVA_IL2CPP_CLASS_FROM_NAME 0x1A6DFD0u
 #define RVA_IL2CPP_DOMAIN_GET 0x1A6E4C8u
@@ -113,15 +116,18 @@
 #define FIGHT_SCENE_PRE_FIGHT_OFFSET 0x98u
 #define FIGHT_PLAYER_OFFSET 0xB0u
 #define FIGHT_OPPONENT_OFFSET 0xB8u
-#define FIGHT_PLAYER_PROFILE_OFFSET 0x98u
-#define FIGHT_OPPONENT_PROFILE_OFFSET 0xA0u
 #define FIGHT_CONFIG_MODE_OFFSET 0x18u
+#define FIGHT_MODE_PVP 17
 #define FIGHT_CONFIG_BASE_EQUIPMENT_RULE_OFFSET 0x30u
 #define FIGHT_CONFIG_EQUIPMENT_RULE_OFFSET 0x150u
 #define FIGHTER_PROFILE_OFFSET 0x148u
 #define FIGHTER_OPPONENT_OFFSET 0x130u
 #define FIGHTER_AI_PLANNER_OFFSET 0x298u
 #define FIGHTER_POSITION_MODEL_OFFSET 0x250u
+#define FIGHTER_ACTIVE_CONTROL_OFFSET 0x220u
+#define FIGHTER_INPUT_ENABLED_OFFSET 0x160u
+#define FIGHTER_INPUT_CONTROLLER_OFFSET 0x258u
+#define FIGHT_STAGE_OFFSET 0x190u
 #define POSITION_MODEL_ROOT_NODE_OFFSET 0x30u
 
 #define PRE_FIGHT_VIEWER_OFFSET 0x80u
@@ -132,6 +138,7 @@
 #define LIFE_BAR_HIT_VALUE_OFFSET 0x84u
 
 #define PROFILE_SKELETON_OFFSET 0xB8u
+#define PROFILE_AI_CONTROLLED_OFFSET 0x68u
 #define PROFILE_WEAPON_OFFSET 0xC0u
 #define PROFILE_ARMOR_OFFSET 0xC8u
 #define PROFILE_HELM_OFFSET 0xD0u
@@ -165,6 +172,8 @@ typedef void (*PreFightViewerInitMethod)(
 typedef void (*PreFightCreateVSMethod)(
     void *, void *, void *, int32_t, bool, bool, bool, bool, const void *);
 typedef void (*FightInputMethod)(void *, void *, const void *);
+typedef void (*FighterInputControllerMethod)(void *, int32_t, const void *);
+typedef bool (*FighterHumanInputMethod)(void *, const void *);
 typedef void *(*PlannerSelectActionMethod)(
     void *, void *, int32_t, const void *);
 typedef void *(*GetSingletonMethod)(const void *);
@@ -229,6 +238,9 @@ static PreFightViewerInitMethod original_pre_fight_viewer_init;
 static PreFightCreateVSMethod original_pre_fight_create_vs;
 static FightInputMethod original_fight_input_activate;
 static FightInputMethod original_fight_input_deactivate;
+static FighterInputControllerMethod original_fighter_input_controller_activate;
+static FightInputMethod original_fighter_action_event;
+static FighterHumanInputMethod original_fighter_accepts_human_input;
 static GetSingletonMethod fight_config_manager_current;
 static GetFightConfigByNameMethod fight_config_by_name;
 static ConfigInstanceMethod fight_config_clear_player;
@@ -317,6 +329,9 @@ static _Atomic uint32_t input_route_log_count;
 static _Atomic uint32_t injected_input_log_count;
 static _Atomic uint32_t local_input_reroute_log_count;
 static _Atomic uint32_t fight_input_source_log_count;
+static _Atomic uint32_t input_controller_activate_log_count;
+static _Atomic uint32_t remote_controller_activate_log_count;
+static _Atomic uint32_t fighter_action_event_log_count;
 static _Atomic uint32_t suppressed_remote_ai_log_count;
 static _Atomic bool remote_ai_initialization_forwarded;
 static _Atomic uint32_t suppressed_remote_ai_input_count;
@@ -837,9 +852,11 @@ static void *prepare_pvp_fight_config(
         fight_config_clear_opponent == NULL || fight_config_set_opponent == NULL ||
         fight_config == NULL) return NULL;
 
-    // Mantem Duel para preservar os lados Player/Opponent e a virada nativa.
-    // A inicializacao de entrada e separada dos eventos de decisao da IA no
-    // hook do Fighter, abaixo.
+    // O Duel materializa o lado direito como Opponent. Embora FightInput
+    // consiga resolver esse Fighter, seu controlador continua pertencendo ao
+    // caminho de IA e ignora a entrada humana. FightPVP cria dois Fighters
+    // controlaveis; a identidade visual e os equipamentos continuam vindo dos
+    // perfis Shadow canonicos preparados abaixo.
     void *config = fight_config;
     void *original_opponent = first_list_item(opponents);
     void *player_shadow = clone_shadow_profile(
@@ -885,6 +902,7 @@ static void *prepare_pvp_fight_config(
 
     fight_config_clear_player(config, NULL);
     fight_config_clear_opponent(config, NULL);
+    *(int32_t *)((uint8_t *)config + FIGHT_CONFIG_MODE_OFFSET) = FIGHT_MODE_PVP;
     fight_config_set_player(config, player_shadow, NULL);
     fight_config_set_opponent(config, opponent_shadow, NULL);
     if (effective_player_profile != NULL) {
@@ -1241,9 +1259,20 @@ static void *hooked_resolve_input_fighter(void *input, const void *method) {
     if (log_number <= 40) {
         int32_t control = input == NULL ? -1 : *(int32_t *)((uint8_t *)input + 0x10u);
         int32_t index = input == NULL ? -1 : *(int32_t *)((uint8_t *)input + 0x14u);
+        int32_t active_control = fighter == NULL ? -2
+            : *(int32_t *)((uint8_t *)fighter + FIGHTER_ACTIVE_CONTROL_OFFSET);
+        int32_t input_enabled = fighter == NULL ? -1
+            : *(uint8_t *)((uint8_t *)fighter + FIGHTER_INPUT_ENABLED_OFFSET);
+        void *input_controller = fighter == NULL ? NULL
+            : *(void **)((uint8_t *)fighter + FIGHTER_INPUT_CONTROLLER_OFFSET);
+        void *fight = (void *)atomic_load_explicit(
+            &lan_active_fight, memory_order_acquire);
+        int32_t stage = fight == NULL ? -1
+            : *(int32_t *)((uint8_t *)fight + FIGHT_STAGE_OFFSET);
         LOGI(
-            "Input route #%u: input=%p control=%d index=%d fighter=%p.",
-            log_number, input, control, index, fighter);
+            "Input route #%u: control=%d index=%d fighter=%p stage=%d enabled=%d controller=%p active=%d.",
+            log_number, control, index, fighter, stage, input_enabled,
+            input_controller, active_control);
     } else if (log_number == 41) {
         LOGI("Input route: limite diagnostico de 40 eventos atingido.");
     }
@@ -1274,6 +1303,18 @@ static bool is_lan_fighter(void *fighter) {
             &lan_local_fighter, memory_order_acquire) ||
         candidate == atomic_load_explicit(
             &lan_remote_fighter, memory_order_acquire);
+}
+
+// ILPMDKNIEFN reads profile.NLOEHLKMDGO (ObscuredBool at +0x6C).
+// Both FightInput press/release and the Fighter's per-frame controller update
+// use this predicate. Enqueuing input alone cannot move a Duel opponent whose
+// predicate stays false: GFPBHHBHBMA.NAKIMBDKMKM never consumes that input.
+// Keep native profile/side identity intact and enable only the two live LAN
+// fighters. AI action selection remains blocked separately.
+static bool hooked_fighter_accepts_human_input(void *fighter, const void *method) {
+    if (atomic_load_explicit(&lan_fight_active, memory_order_acquire) &&
+        is_lan_fighter(fighter)) return true;
+    return original_fighter_accepts_human_input(fighter, method);
 }
 
 static void *hooked_ai_planner_select_action(
@@ -1452,6 +1493,102 @@ static bool dispatch_local_control_as_player_two(
     bool pressed
 );
 
+static int32_t controller_action_active(void *controller, int32_t control) {
+    if (controller == NULL) return -2;
+    void *list = *(void **)((uint8_t *)controller + 0x18u);
+    if (list == NULL) return -3;
+    void *items = *(void **)((uint8_t *)list + 0x10u);
+    int32_t size = *(int32_t *)((uint8_t *)list + 0x18u);
+    if (items == NULL || size < 0 || size > 512) return -4;
+    for (int32_t i = 0; i < size; i++) {
+        void *entry = *(void **)((uint8_t *)items + 0x20u + (size_t)i * sizeof(void *));
+        if (entry == NULL) continue;
+        if (*(int32_t *)((uint8_t *)entry + 0x10u) == control) {
+            return *(uint8_t *)((uint8_t *)entry + 0x18u) ? 1 : 0;
+        }
+    }
+    return -5;
+}
+
+static void hooked_fighter_input_controller_activate(
+    void *controller,
+    int32_t control,
+    const void *method
+) {
+    uint32_t number = atomic_fetch_add_explicit(
+        &input_controller_activate_log_count, 1, memory_order_relaxed) + 1;
+    uintptr_t local_fighter = atomic_load_explicit(
+        &lan_local_fighter, memory_order_acquire);
+    uintptr_t remote_fighter = atomic_load_explicit(
+        &lan_remote_fighter, memory_order_acquire);
+    void *local_controller = local_fighter == 0 ? NULL
+        : *(void **)((uint8_t *)local_fighter + FIGHTER_INPUT_CONTROLLER_OFFSET);
+    void *remote_controller = remote_fighter == 0 ? NULL
+        : *(void **)((uint8_t *)remote_fighter + FIGHTER_INPUT_CONTROLLER_OFFSET);
+    bool is_local = controller != NULL && controller == local_controller;
+    bool is_remote = controller != NULL && controller == remote_controller;
+    uint32_t remote_number = is_remote ? atomic_fetch_add_explicit(
+        &remote_controller_activate_log_count, 1, memory_order_relaxed) + 1 : 0;
+    int32_t before = controller_action_active(controller, control);
+    void *queue_before = controller == NULL ? NULL
+        : *(void **)((uint8_t *)controller + 0x28u);
+
+    if (number <= 12 || (remote_number > 0 && remote_number <= 40)) {
+        LOGI(
+            "Controller activate enter #%u: control=%d controller=%p local=%d remote=%d active=%d queue=%p.",
+            number, control, controller, is_local ? 1 : 0, is_remote ? 1 : 0,
+            before, queue_before);
+    }
+
+    original_fighter_input_controller_activate(controller, control, method);
+
+    if (number <= 12 || (remote_number > 0 && remote_number <= 40)) {
+        int32_t after = controller_action_active(controller, control);
+        void *queue_after = controller == NULL ? NULL
+            : *(void **)((uint8_t *)controller + 0x28u);
+        LOGI(
+            "Controller activate #%u: control=%d controller=%p local=%d remote=%d active=%d->%d queue=%p->%p.",
+            number, control, controller, is_local ? 1 : 0, is_remote ? 1 : 0,
+            before, after, queue_before, queue_after);
+    } else if (remote_number == 41) {
+        LOGI("Controller remoto: limite diagnostico de 40 eventos atingido.");
+    } else if (number == 13) {
+        LOGI("Controller activate: limite geral de 12 eventos atingido; diagnostico remoto continua ativo.");
+    }
+}
+
+static void hooked_fighter_action_event(
+    void *fighter,
+    void *action,
+    const void *method
+) {
+    uintptr_t local = atomic_load_explicit(&lan_local_fighter, memory_order_acquire);
+    uintptr_t remote = atomic_load_explicit(&lan_remote_fighter, memory_order_acquire);
+    bool tracked = (uintptr_t)fighter == local || (uintptr_t)fighter == remote;
+    if (tracked) {
+        void *first = action == NULL ? NULL : *(void **)((uint8_t *)action + 0x10u);
+        void *second = action == NULL ? NULL : *(void **)((uint8_t *)action + 0x18u);
+        void *third = action == NULL ? NULL : *(void **)((uint8_t *)action + 0x20u);
+        int32_t first_size = first == NULL ? -1
+            : *(int32_t *)((uint8_t *)first + 0x18u);
+        int32_t second_size = second == NULL ? -1
+            : *(int32_t *)((uint8_t *)second + 0x18u);
+        int32_t third_size = third == NULL ? -1
+            : *(int32_t *)((uint8_t *)third + 0x18u);
+        uint32_t number = atomic_fetch_add_explicit(
+            &fighter_action_event_log_count, 1, memory_order_relaxed) + 1;
+        if (number <= 40) {
+            LOGI(
+                "Fighter action event #%u: fighter=%p lado=%s action=%p listas=%d/%d/%d state=%p dispatcher=%p.",
+                number, fighter, (uintptr_t)fighter == remote ? "direito" : "esquerdo",
+                action, first_size, second_size, third_size,
+                fighter == NULL ? NULL : *(void **)((uint8_t *)fighter + 0xD8u),
+                fighter == NULL ? NULL : *(void **)((uint8_t *)fighter + 0x70u));
+        }
+    }
+    original_fighter_action_event(fighter, action, method);
+}
+
 // 0x34EC58C recebe o inicio/atualizacao do toque; 0x34E94C4 recebe o fim.
 // Os nomes anteriores estavam invertidos, o que enviava a sequencia remota ao contrario.
 static void hooked_fight_input_activate(void *fight, void *input, const void *method) {
@@ -1591,11 +1728,26 @@ static void hooked_fight_scene_create_fight(
     void *fight = self == NULL ? NULL : *(void **)((uint8_t *)self + FIGHT_SCENE_FIGHT_OFFSET);
     void *player = fight == NULL ? NULL : *(void **)((uint8_t *)fight + FIGHT_PLAYER_OFFSET);
     void *opponent = fight == NULL ? NULL : *(void **)((uint8_t *)fight + FIGHT_OPPONENT_OFFSET);
-    void *fight_player_profile = fight == NULL ? NULL
-        : *(void **)((uint8_t *)fight + FIGHT_PLAYER_PROFILE_OFFSET);
-    void *fight_opponent_profile = fight == NULL ? NULL
-        : *(void **)((uint8_t *)fight + FIGHT_OPPONENT_PROFILE_OFFSET);
+    // Os perfis efetivos pertencem aos Fighters em +0x148. Os campos +0x98
+    // e +0xA0 do objeto Fight nao formam um par de PlayerProfile; tratar o
+    // segundo como perfil fazia a padronizacao escrever em outro tipo de
+    // objeto e deixava o cache visual do lado direito divergente.
+    void *fight_player_profile = player == NULL ? NULL
+        : *(void **)((uint8_t *)player + FIGHTER_PROFILE_OFFSET);
+    void *fight_opponent_profile = opponent == NULL ? NULL
+        : *(void **)((uint8_t *)opponent + FIGHTER_PROFILE_OFFSET);
     if (lan_configured) {
+        // Native animation conditions read DJBANNILPGA directly, not only
+        // through the human-input predicate. These are the independent,
+        // transient Fighter profiles, not save data. Preserve +0x5C, which
+        // identifies each fighter's side/facing.
+        if (fight_player_profile != NULL) {
+            *(uint8_t *)((uint8_t *)fight_player_profile + PROFILE_AI_CONTROLLED_OFFSET) = 0;
+        }
+        if (fight_opponent_profile != NULL) {
+            *(uint8_t *)((uint8_t *)fight_opponent_profile + PROFILE_AI_CONTROLLED_OFFSET) = 0;
+        }
+        LOGI("Perfis da luta LAN: controle de IA desativado nos dois lados; entrada humana nativa habilitada.");
         bool player_weapon_refreshed = refresh_fighter_weapon_visual(
             player, fight_player_profile, "esquerdo");
         bool opponent_weapon_refreshed = refresh_fighter_weapon_visual(
@@ -2056,7 +2208,8 @@ static bool prepare_remote_fight_authority(
     int64_t received = atomic_load_explicit(
         &remote_authority_received_at_ms, memory_order_acquire);
     int64_t age = now_ms() - received;
-    if (fight == NULL || role != 2 || !remote_authority_is_fresh()) {
+    if (fight == NULL || (role != 1 && role != 2) ||
+        !remote_authority_is_fresh()) {
         uint32_t log_index = atomic_fetch_add_explicit(
             &spatial_rejection_log_count, 1, memory_order_relaxed);
         if (log_index < 4) {
@@ -2067,80 +2220,75 @@ static bool prepare_remote_fight_authority(
         return false;
     }
 
-    // O jogador 1 define a composicao canonica da arena: jogador 1 sempre a
-    // esquerda (indice 0) e jogador 2 sempre a direita (indice 1), inclusive
-    // no segundo aparelho. A troca dos comandos no jogador 2 preserva essa
-    // mesma ordem de Fighter nos dois processos.
-    fighters[0] = *(void **)((uint8_t *)fight + FIGHT_PLAYER_OFFSET);
-    fighters[1] = *(void **)((uint8_t *)fight + FIGHT_OPPONENT_OFFSET);
-    const size_t authority_index[] = {0, 1};
-    Vector3Value local_positions[2];
-    Vector3Value remote_positions[2];
-    for (size_t local_index = 0; local_index < 2; local_index++) {
-        void *fighter = fighters[local_index];
-        if (!read_fighter_position(fighter, &local_positions[local_index])) {
-            uint32_t log_index = atomic_fetch_add_explicit(
-                &spatial_rejection_log_count, 1, memory_order_relaxed);
-            if (log_index < 8) {
-                LOGI(
-                    "Autoridade espacial sem posicao #%u: indice=%u fighter=%p.",
-                    log_index + 1, (unsigned)local_index, fighter);
-            }
-            return false;
+    // Autoridade dividida: P1 e dono apenas do Fighter esquerdo (indice 0),
+    // P2 apenas do direito (indice 1). Cada processo aplica exclusivamente a
+    // posicao recebida do lutador que pertence ao outro aparelho. A regra
+    // anterior fazia P1 mandar os dois lados e, por isso, sobrescrevia o
+    // movimento valido do jogador 2 com a posicao parada da tela superior.
+    const size_t remote_index = role == 1 ? 1u : 0u;
+    fighters[0] = NULL;
+    fighters[1] = NULL;
+    fighters[remote_index] = *(void **)((uint8_t *)fight +
+        (remote_index == 0 ? FIGHT_PLAYER_OFFSET : FIGHT_OPPONENT_OFFSET));
+
+    Vector3Value local_position;
+    if (!read_fighter_position(fighters[remote_index], &local_position)) {
+        uint32_t log_index = atomic_fetch_add_explicit(
+            &spatial_rejection_log_count, 1, memory_order_relaxed);
+        if (log_index < 8) {
+            LOGI(
+                "Autoridade espacial sem posicao #%u: indice=%u fighter=%p.",
+                log_index + 1, (unsigned)remote_index,
+                fighters[remote_index]);
         }
-        size_t source = authority_index[local_index];
-        remote_positions[local_index].x = bits_float(atomic_load_explicit(
-            &remote_authority_position_bits[source * 3], memory_order_relaxed));
-        remote_positions[local_index].y = bits_float(atomic_load_explicit(
-            &remote_authority_position_bits[source * 3 + 1], memory_order_relaxed));
-        remote_positions[local_index].z = bits_float(atomic_load_explicit(
-            &remote_authority_position_bits[source * 3 + 2], memory_order_relaxed));
-        if (!isfinite(remote_positions[local_index].x) ||
-            !isfinite(remote_positions[local_index].y) ||
-            !isfinite(remote_positions[local_index].z)) return false;
+        return false;
     }
+    Vector3Value remote_position = {
+        bits_float(atomic_load_explicit(
+            &remote_authority_position_bits[remote_index * 3],
+            memory_order_relaxed)),
+        bits_float(atomic_load_explicit(
+            &remote_authority_position_bits[remote_index * 3 + 1],
+            memory_order_relaxed)),
+        bits_float(atomic_load_explicit(
+            &remote_authority_position_bits[remote_index * 3 + 2],
+            memory_order_relaxed)),
+    };
+    if (!isfinite(remote_position.x) || !isfinite(remote_position.y) ||
+        !isfinite(remote_position.z)) return false;
 
     uint32_t generation = atomic_load_explicit(
         &lan_fight_generation, memory_order_acquire);
     if (atomic_load_explicit(
         &spatial_calibration_generation, memory_order_acquire) != generation) {
-        for (size_t local_index = 0; local_index < 2; local_index++) {
-            const float remote[] = {
-                remote_positions[local_index].x,
-                remote_positions[local_index].y,
-                remote_positions[local_index].z,
-            };
-            const float visual_anchor[] = {
-                local_positions[local_index].x,
-                local_positions[local_index].y,
-                local_positions[local_index].z,
-            };
-            for (size_t axis = 0; axis < 3; axis++) {
-                spatial_anchor_local[local_index * 3 + axis] = visual_anchor[axis];
-                spatial_anchor_remote[local_index * 3 + axis] = remote[axis];
-            }
+        const float remote[] = {
+            remote_position.x, remote_position.y, remote_position.z,
+        };
+        const float visual_anchor[] = {
+            local_position.x, local_position.y, local_position.z,
+        };
+        for (size_t axis = 0; axis < 3; axis++) {
+            spatial_anchor_local[remote_index * 3 + axis] = visual_anchor[axis];
+            spatial_anchor_remote[remote_index * 3 + axis] = remote[axis];
         }
         atomic_store_explicit(
             &spatial_calibration_generation, generation, memory_order_release);
         LOGI(
-            "Sincronismo espacial calibrado: geracao=%u localP=(%.2f,%.2f,%.2f) localO=(%.2f,%.2f,%.2f).",
-            generation,
-            local_positions[0].x, local_positions[0].y, local_positions[0].z,
-            local_positions[1].x, local_positions[1].y, local_positions[1].z);
+            "Sincronismo espacial dividido: geracao=%u role=%d indiceRemoto=%u local=(%.2f,%.2f,%.2f).",
+            generation, role, (unsigned)remote_index,
+            local_position.x, local_position.y, local_position.z);
         return false;
     }
 
-    for (size_t local_index = 0; local_index < 2; local_index++) {
-        size_t base = local_index * 3;
-        targets[local_index] = (Vector3Value){
-            spatial_anchor_local[base] +
-                (remote_positions[local_index].x - spatial_anchor_remote[base]),
-            spatial_anchor_local[base + 1] +
-                (remote_positions[local_index].y - spatial_anchor_remote[base + 1]),
-            spatial_anchor_local[base + 2] +
-                (remote_positions[local_index].z - spatial_anchor_remote[base + 2]),
-        };
-    }
+    size_t base = remote_index * 3;
+    targets[remote_index] = (Vector3Value){
+        spatial_anchor_local[base] +
+            (remote_position.x - spatial_anchor_remote[base]),
+        spatial_anchor_local[base + 1] +
+            (remote_position.y - spatial_anchor_remote[base + 1]),
+        spatial_anchor_local[base + 2] +
+            (remote_position.z - spatial_anchor_remote[base + 2]),
+    };
     return true;
 }
 
@@ -2220,20 +2368,19 @@ static void hooked_node_position_copy(
     if (node != fighter_root_position_node(player) &&
         node != fighter_root_position_node(opponent)) return;
 
-    if (atomic_load_explicit(&lan_player_role, memory_order_acquire) != 2) {
-        return;
-    }
-
     void *authority_fighters[2] = {NULL, NULL};
     Vector3Value authority_targets[2];
     if (!prepare_remote_fight_authority(
         fight, authority_fighters, authority_targets)) return;
 
     // LODMPBBLOPJ acabou de copiar a posicao calculada para o no apresentado.
-    // Sobrescrever os dois vetores neste ponto faz a renderizacao observar a
-    // autoridade antes de devolver o controle ao atualizador visual.
-    set_fighter_position(authority_fighters[0], authority_targets[0]);
-    set_fighter_position(authority_fighters[1], authority_targets[1]);
+    // Sobrescrever apenas o Fighter remoto neste ponto faz a renderizacao
+    // observar a autoridade dividida sem apagar o movimento do jogador local.
+    for (size_t index = 0; index < 2; index++) {
+        if (authority_fighters[index] != NULL) {
+            set_fighter_position(authority_fighters[index], authority_targets[index]);
+        }
+    }
     apply_remote_combat_authority(authority_fighters);
     uint32_t hook_log_index = atomic_fetch_add_explicit(
         &spatial_hook_log_count, 1, memory_order_relaxed);
@@ -2836,6 +2983,13 @@ Java_com_sf2_lan_LanNativeBridge_nativeInstall(JNIEnv *env, jclass type) {
             (void **)&original_fight_input_deactivate},
         {RVA_FIGHT_INPUT_RELEASE, hooked_fight_input_activate,
             (void **)&original_fight_input_activate},
+        {RVA_FIGHTER_INPUT_CONTROLLER_ACTIVATE,
+            hooked_fighter_input_controller_activate,
+            (void **)&original_fighter_input_controller_activate},
+        {RVA_FIGHTER_ACCEPTS_HUMAN_INPUT, hooked_fighter_accepts_human_input,
+            (void **)&original_fighter_accepts_human_input},
+        {RVA_FIGHTER_ACTION_EVENT, hooked_fighter_action_event,
+            (void **)&original_fighter_action_event},
     };
     const size_t count = sizeof(hooks) / sizeof(hooks[0]);
     for (size_t i = 0; i < count; i++) {

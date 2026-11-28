@@ -407,3 +407,100 @@ Biblioteca experimental testada:
 `%TEMP%\libsf2lanhook-p125-weapon-refresh.so`
 
 SHA-256: `AE379E8E13284D533AB96FE075C7C327BA4F946720BED3D83B3ADD4866C9B7E9`.
+
+### Diagnostico p129-p137: comando do jogador 2 chega ao Fighter
+
+Esta etapa manteve os dois Shadow com Espada Ninja, IA autonoma bloqueada e
+orientacao frente a frente. O modo da configuracao foi alterado para
+`FightPVP` (`17`), o que tambem ativou a barra de vida azul do jogador 1 sem
+regredir os perfis ou as armas.
+
+O rastreio demonstrou, nas duas VMs, que o comando do jogador 2:
+
+- chega pela ponte LAN com indice `1` na tela do jogador 1;
+- resolve o `Fighter` direito correto;
+- encontra `stage=2`, entrada habilitada e um controlador nao nulo;
+- era recusado antes de entrar na lista de acoes, enquanto o mesmo soco do
+  jogador esquerdo mudava o estado da acao de `0` para `1`;
+- com o fallback restrito as rotas `rede` e `local-p2`, passa a mudar o estado
+  do controlador direito de `0` para `1` nas duas VMs;
+- dispara `GFPBHHBHBMA` e chega a `HPDIKFPFIEI.FIOGOHHINKH` no `Fighter`
+  direito com um objeto de acao valido (`listas=1/1/0`).
+
+Apesar disso, a animacao visivel do lutador direito ainda nao inicia. Logo, o
+bloqueio restante esta depois de `FIOGOHHINKH`, no despachante de animacao do
+`Fighter` direito. Nao se deve voltar a investigar UDP, indices, resolucao do
+lutador ou criacao da fila antes de concluir esse ponto.
+
+Build com fallback de roteamento testada nas duas VMs:
+
+`%TEMP%\libsf2lanhook-p135-routed-fallback.so`
+
+SHA-256: `683E48C51AFE2F5A88DB171D74860B66466879AFC71AD9F2858EA8A6CF8E5FBB`.
+
+Build diagnostica mais recente, instalada somente em `emulator-5556` para
+confirmar o evento final (a `emulator-5554` permaneceu na p135):
+
+`%TEMP%\libsf2lanhook-p137-action-lists.so`
+
+SHA-256: `264CFF851D18A31D67E8EF560044F89CDC5D7AE114BCF6FC675F8EA899690BC8`.
+
+Nenhum teste desta etapa acessou ou instalou arquivos no Poco X7 Pro. O APK e
+os saves originais continuam preservados.
+
+### Marco p138-p141: controle independente e autoridade espacial dividida
+
+A analise ARM64 mostrou que `HPDIKFPFIEI.ILPMDKNIEFN` (`0x339FA94`) nao e
+apenas uma validacao na entrada. O mesmo predicado decide, a cada frame, se
+`GFPBHHBHBMA.NAKIMBDKMKM` (`0x31D09F0`) atualiza o controlador do `Fighter`.
+Por isso, inserir o comando diretamente na fila nao era suficiente. O hook
+agora retorna humano somente para os dois `Fighter` vivos da luta LAN, sem
+copiar o perfil completo nem alterar o identificador de lado em `+0x5C`.
+
+O teste p139 confirmou que o analogico inferior passou a movimentar e fazer o
+lutador direito saltar na propria VM. O evento tambem chegava ao controlador
+direito da VM superior, mas sua posicao permanecia parada. A causa seguinte
+nao estava no roteamento: o sincronizador tratava P1 como autoridade dos dois
+lutadores e a ponte Java enviava `FIGHT_AUTHORITY` somente de P1 para P2.
+
+Na p140/p141 a autoridade foi dividida:
+
+- P1 controla e publica somente o lutador esquerdo, indice `0`;
+- P2 controla e publica somente o lutador direito, indice `1`;
+- os dois Androids enviam e recebem `FIGHT_AUTHORITY`;
+- cada processo aplica apenas a posicao, dano e rounds do lutador pertencente
+  ao peer, sem sobrescrever o lutador local;
+- os perfis transitorios efetivos agora sao obtidos de `Fighter+0x148`; os
+  antigos campos `Fight+0x98/+0xA0` nao sao tratados como um par de perfis.
+
+Validacao visual em `emulator-5554` e `emulator-5556`:
+
+- o analogico inferior moveu o lutador direito para a esquerda nas duas telas;
+- o analogico superior moveu o lutador esquerdo para a direita nas duas telas;
+- os relogios observados durante os testes ficaram iguais ou com um segundo de
+  diferenca (`95/95`, `71/71`, `125/124`);
+- depois da liberacao dos analogicos, nenhum lutador continuou andando sozinho;
+- nao houve falha nova do processo, `SIGSEGV` ou `FATAL EXCEPTION`;
+- os 33 testes Python passaram;
+- o Poco X7 Pro nao foi acessado;
+- APK original e saves nao foram substituidos.
+
+Limitacoes ainda visiveis: a posicao horizontal esta replicada, mas o salto
+remoto ainda nao reproduz a mesma pose na outra tela. A geometria/moveset da
+arma direita tambem continua divergente em alguns inicios de luta. Animacao,
+camera, vida, rounds e resultado ainda nao formam um multiplayer final.
+
+APK completo p141, gerado e assinado depois da validacao nas duas VMs:
+
+`dist/Shadow-Fight-2-Definitive-Edition-LAN-prototype-141.apk`
+
+SHA-256: `C9C9C7AF1235BB5BF2B42A16B376946D75655016EE32DB53F7EBEE74594CEE5C`.
+
+A p140 intermediaria foi removida depois da geracao da p141 para nao manter
+duas copias de 1,12 GB. A p141 e o unico APK completo desta etapa.
+
+Biblioteca p141 testada nas duas VMs:
+
+`tmp/libsf2lanhook-p141-fighter-profiles.so`
+
+SHA-256: `302282AF2C52208F5280792A7987E44B694219FFD79E2EBDBE0C4207AD7A8C0B`.

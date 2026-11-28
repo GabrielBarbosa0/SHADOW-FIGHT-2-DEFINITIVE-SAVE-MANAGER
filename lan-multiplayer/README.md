@@ -32,6 +32,16 @@ inferior moveu o lutador direito nas duas telas. O equipamento visual ainda dive
 porque a regra nativa `RANDOM_EQUIPMENT` do Duelo cria caches antes da substituicao
 dos perfis; p104 e um checkpoint funcional de controle/IA, nao um multiplayer final.
 
+O marco p141 restaura esse controle bidirecional sobre uma base mais previsivel.
+O predicado humano nativo do `Fighter` e liberado somente para os dois lutadores
+LAN, e a autoridade espacial passa a ser dividida: P1 publica somente o Shadow
+esquerdo e P2 publica somente o Shadow direito. O pacote `FIGHT_AUTHORITY` agora
+circula nos dois sentidos. Em duas VMs MuMu, o analogico superior moveu a esquerda
+nas duas telas e o analogico inferior moveu a direita nas duas telas, sem movimento
+autonomo durante a pausa. Relogio, posicao horizontal e lados ficaram alinhados no
+teste. A pose/animacao completa de salto, a geometria da arma direita, vida, rounds e
+resultado ainda precisam de sincronizacao propria; p141 continua experimental.
+
 A configuracao de partida agora tambem e autoritativa. No modo direto, o host
 sorteia um preset para P1 e outro para P2; no modo relay, o computador faz o
 sorteio. Os dois Androids recebem o mesmo seed, tier e pares de presets e precisam

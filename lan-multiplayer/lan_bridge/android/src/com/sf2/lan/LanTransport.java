@@ -770,24 +770,25 @@ public final class LanTransport implements Runnable {
         localFightAuthority = LanNativeBridge.readLocalFightAuthority(
             activeRoundId & 0xffffffffL
         );
-        if (localPlayerRole == 1) {
-            if (localFightAuthority.isAvailable()) {
-                ByteBuffer authority = ByteBuffer.allocate(FIGHT_AUTHORITY_SIZE)
-                    .order(ByteOrder.BIG_ENDIAN)
-                    .putInt((int) localFightAuthority.roundId)
-                    .putInt((int) localFightAuthority.tick)
-                    .putFloat(localFightAuthority.playerDamage)
-                    .putFloat(localFightAuthority.opponentDamage)
-                    .putInt(localFightAuthority.playerRoundsLost)
-                    .putInt(localFightAuthority.opponentRoundsLost)
-                    .putFloat(localFightAuthority.playerX)
-                    .putFloat(localFightAuthority.playerY)
-                    .putFloat(localFightAuthority.playerZ)
-                    .putFloat(localFightAuthority.opponentX)
-                    .putFloat(localFightAuthority.opponentY)
-                    .putFloat(localFightAuthority.opponentZ);
-                send(TYPE_FIGHT_AUTHORITY, authority.array(), peer);
-            }
+        // A autoridade e dividida por lutador: P1 publica a esquerda e P2 a
+        // direita. O pacote mantem os dois indices para preservar o protocolo;
+        // o receptor nativo aplica somente o indice pertencente ao peer.
+        if (localFightAuthority.isAvailable()) {
+            ByteBuffer authority = ByteBuffer.allocate(FIGHT_AUTHORITY_SIZE)
+                .order(ByteOrder.BIG_ENDIAN)
+                .putInt((int) localFightAuthority.roundId)
+                .putInt((int) localFightAuthority.tick)
+                .putFloat(localFightAuthority.playerDamage)
+                .putFloat(localFightAuthority.opponentDamage)
+                .putInt(localFightAuthority.playerRoundsLost)
+                .putInt(localFightAuthority.opponentRoundsLost)
+                .putFloat(localFightAuthority.playerX)
+                .putFloat(localFightAuthority.playerY)
+                .putFloat(localFightAuthority.playerZ)
+                .putFloat(localFightAuthority.opponentX)
+                .putFloat(localFightAuthority.opponentY)
+                .putFloat(localFightAuthority.opponentZ);
+            send(TYPE_FIGHT_AUTHORITY, authority.array(), peer);
         }
     }
 
@@ -819,7 +820,8 @@ public final class LanTransport implements Runnable {
     }
 
     private void handleFightAuthority(byte[] payload) {
-        if (controllerMode || localPlayerRole != 2 || !isSessionReady()
+        if (controllerMode || (localPlayerRole != 1 && localPlayerRole != 2)
+            || !isSessionReady()
             || payload.length != FIGHT_AUTHORITY_SIZE) {
             Log.w(TAG, "FIGHT_AUTHORITY rejeitado: papel, estado ou tamanho invalido.");
             return;
