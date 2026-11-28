@@ -1,0 +1,21 @@
+11-28 10:10:45.072 17248 17279 I SF2LAN-NATIVE: Perfis da luta LAN: controle de IA desativado nos dois lados; entrada humana nativa habilitada.
+11-28 10:10:45.074 17248 17279 I SF2LAN-NATIVE: Action audit LAN: match=1 left=7 right=7.
+11-28 10:10:48.800 17248 17279 I SF2LAN-NATIVE: IA LAN suprimida #1: lado=remoto fighter=0x759f51be2540 profile=0x759f52243320 animation=0x759f86a66d80.
+11-28 10:10:48.803 17248 17279 I SF2LAN-NATIVE: LAN action selected: role=2 player=1 seq=1 tick=102 name=KatanaStartStance-Left animation=katana_stance.bytes.
+11-28 10:10:48.803 17248 17279 I SF2LAN-NATIVE: LAN action selected: role=2 player=2 seq=1 tick=102 name=KatanaStartStance-Right animation=katana_stance.bytes.
+11-28 10:10:50.219 17248 17279 I SF2LAN-NATIVE: LAN action selected: role=2 player=2 seq=2 tick=187 name=KatanaStartStanceIdle animation=katana_stance_idle.bytes.
+11-28 10:10:50.319 17248 17279 I SF2LAN-NATIVE: LAN action selected: role=2 player=1 seq=2 tick=193 name=KatanaStartStanceIdle animation=katana_stance_idle.bytes.
+11-28 10:10:52.485 17248 17279 I SF2LAN-NATIVE: LAN action selected: role=2 player=1 seq=3 tick=323 name=JumpUp animation=jump.bytes.
+11-28 10:10:53.852 17248 17279 I SF2LAN-NATIVE: LAN action selected: role=2 player=1 seq=4 tick=405 name=KatanaTransition animation=katana_transition.bytes.
+11-28 10:10:54.119 17248 17279 I SF2LAN-NATIVE: LAN action selected: role=2 player=1 seq=5 tick=421 name=KatanaIdle animation=katana_idle.bytes.
+11-28 10:10:54.719 17248 17279 I SF2LAN-NATIVE: LAN action selected: role=2 player=1 seq=6 tick=457 name=KatanaSlash animation=katana_slash.bytes.
+11-28 10:10:55.935 17248 17279 I SF2LAN-NATIVE: LAN action selected: role=2 player=1 seq=7 tick=530 name=KatanaIdle animation=katana_idle.bytes.
+11-28 10:10:57.436 17248 17279 I SF2LAN-NATIVE: LAN action selected: role=2 player=2 seq=3 tick=620 name=KatanaStepBack animation=katana_step_back.bytes.
+11-28 10:10:58.201 17248 17279 I SF2LAN-NATIVE: LAN action selected: role=2 player=2 seq=4 tick=666 name=KatanaIdle animation=katana_idle.bytes.
+11-28 10:10:59.102 17248 17279 I SF2LAN-NATIVE: LAN action selected: role=2 player=2 seq=5 tick=720 name=JumpUp animation=jump.bytes.
+11-28 10:11:00.468 17248 17279 I SF2LAN-NATIVE: LAN action selected: role=2 player=2 seq=6 tick=802 name=KatanaTransition animation=katana_transition.bytes.
+11-28 10:11:00.735 17248 17279 I SF2LAN-NATIVE: LAN action selected: role=2 player=2 seq=7 tick=818 name=KatanaIdle animation=katana_idle.bytes.
+11-28 10:11:01.369 17248 17279 I SF2LAN-NATIVE: LAN action selected: role=2 player=2 seq=8 tick=856 name=KatanaSlash animation=katana_slash.bytes.
+11-28 10:11:02.586 17248 17279 I SF2LAN-NATIVE: LAN action selected: role=2 player=2 seq=9 tick=929 name=KatanaIdle animation=katana_idle.bytes.
+11-28 10:11:19.256 17248 17279 I SF2LAN-NATIVE: LAN action selected: role=2 player=1 seq=8 tick=1929 name=KatanaStepBack animation=katana_step_back.bytes.
+11-28 10:11:20.018 17248 17279 I SF2LAN-NATIVE: LAN action selected: role=2 player=1 seq=9 tick=1975 name=KatanaIdle animation=katana_idle.bytes.

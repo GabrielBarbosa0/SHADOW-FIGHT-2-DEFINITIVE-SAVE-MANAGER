@@ -12,6 +12,17 @@ marco funcional.
 
 ## Ponto de partida confirmado
 
+Atualizações verificadas:
+
+- Equipamentos canônicos: `77a710f`, p146; ver
+  [relatório de equipamentos](EQUIPMENT-CANONICALIZATION-P146.md).
+- p147: [observação das ações reais](ACTION-OBSERVATION-P147.md). Recuo, salto
+  e ataque simples coincidiram em ensaio isolado, com diferença de até dois
+  frames. Há comparador reproduzível, mas a autoridade de ações da etapa 1
+  continua pendente. O observador não muda a simulação nem resolve a deriva.
+
+Referência anterior à padronização de equipamentos:
+
 - Commit de referência: `57e06ae` (`Restore split LAN fighter authority`).
 - APK de referência: `dist/Shadow-Fight-2-Definitive-Edition-LAN-prototype-141.apk`.
 - SHA-256: `C9C9C7AF1235BB5BF2B42A16B376946D75655016EE32DB53F7EBEE74594CEE5C`.

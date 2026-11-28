@@ -2628,6 +2628,8 @@ static void trace_hud_state(void *scene) {
 }
 #endif
 
+static void trace_selected_fighter_actions(void);
+
 static void hooked_fight_scene_fixed_update(void *self, const void *method) {
     void *fight = self == NULL ? NULL
         : *(void **)((uint8_t *)self + FIGHT_SCENE_FIGHT_OFFSET);
@@ -2646,12 +2648,49 @@ static void hooked_fight_scene_fixed_update(void *self, const void *method) {
     }
 
     original_fight_scene_fixed_update(self, method);
+    if (lan_active) trace_selected_fighter_actions();
 }
 
 static void hooked_fight_fixed_update(void *fight, const void *method) {
     // Mantem chamadas diretas externas intactas. A cena LAN usa explicitamente
     // o trampoline acima para poder executar trabalho depois da simulacao.
     original_fight_fixed_update(fight, method);
+}
+
+// FOEDLNHCMNF.ICGMKPFLAKM (0x347E334) clears +0x88 and installs the
+// selected action at +0x158 (store at 0x347E608), before preparing its frames.
+// Read only: observing transitions must not alter the validated control path.
+static void trace_selected_fighter_actions(void) {
+    static void *previous_fighters[2];
+    static void *previous_actions[2];
+    static uint32_t sequences[2];
+    void *fighters[2] = {
+        (void *)atomic_load_explicit(&lan_local_fighter, memory_order_acquire),
+        (void *)atomic_load_explicit(&lan_remote_fighter, memory_order_acquire)
+    };
+    for (int side = 0; side < 2; ++side) {
+        void *fighter = fighters[side];
+        if (fighter == NULL) continue;
+        if (previous_fighters[side] != fighter) {
+            previous_fighters[side] = fighter;
+            previous_actions[side] = NULL;
+            sequences[side] = 0;
+        }
+        void *controller = *(void **)((uint8_t *)fighter + 0x290u);
+        if (controller == NULL) continue;
+        void *action = *(void **)((uint8_t *)controller + 0x158u);
+        if (action == previous_actions[side]) continue;
+        previous_actions[side] = action;
+        char name[128] = "<none>", animation[128] = "<none>";
+        if (action != NULL) {
+            managed_string_to_ascii(*(void **)((uint8_t *)action + 0x68u), name, sizeof(name));
+            managed_string_to_ascii(*(void **)((uint8_t *)action + 0x70u), animation, sizeof(animation));
+        }
+        LOGI("LAN action selected: role=%d player=%d seq=%u tick=%u name=%s animation=%s.",
+            atomic_load_explicit(&lan_player_role, memory_order_acquire), side + 1,
+            ++sequences[side], atomic_load_explicit(&fight_state_tick, memory_order_acquire),
+            name, animation);
+    }
 }
 
 static void hooked_fight_simulation_step(void *fight, const void *method) {
