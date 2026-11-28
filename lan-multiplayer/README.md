@@ -68,5 +68,6 @@ Execute dentro desta pasta:
 python -m unittest discover -s tests -v
 ```
 
-Consulte `docs/LAN-MODE-DEVELOPMENT.md` antes de gerar uma nova build. O APK
-original e os artefatos locais permanecem fora do Git.
+Consulte `docs/LAN-MODE-DEVELOPMENT.md` antes de gerar uma nova build e siga os
+marcos e prompts de `docs/MULTIPLAYER-COMPLETION-PLAYBOOK.md`. O APK original e
+os artefatos locais permanecem fora do Git.

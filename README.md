@@ -64,6 +64,10 @@ A Definitive Edition valida internamente o pacote `com.sf2.de` e a versão `2.41
 
 O processo, as regras de backup e as limitações da build atual estão em [`lan-multiplayer/docs/LAN-MODE-DEVELOPMENT.md`](lan-multiplayer/docs/LAN-MODE-DEVELOPMENT.md). O protocolo e sua configuração estão em [`lan-multiplayer/docs/LAN-PROTOCOL.md`](lan-multiplayer/docs/LAN-PROTOCOL.md). O APK de teste fica somente em `dist/` e não é publicado no GitHub.
 
+As oito etapas restantes, os critérios de conclusão e os prompts delimitados para
+alternar entre engenharia reversa e integração estão no
+[`playbook de conclusão do multiplayer`](lan-multiplayer/docs/MULTIPLAYER-COMPLETION-PLAYBOOK.md).
+
 Como cada APK completo ocupa aproximadamente 1,05 GiB, `lan-multiplayer/scripts/cleanup-lan-builds.ps1`
 faz uma simulação da limpeza e, com `-Apply`, mantém apenas a build mais recente em
 `dist/` e remove cópias antigas de instalação. O APK original, o backup original e
