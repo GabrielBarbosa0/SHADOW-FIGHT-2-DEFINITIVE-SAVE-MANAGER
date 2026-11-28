@@ -363,6 +363,23 @@ class RelayTests(unittest.TestCase):
         expected_role = PlayerRole.PLAYER_ONE if player is self.player_one else PlayerRole.PLAYER_TWO
         self.assertEqual(role_event.player_role, expected_role)
 
+    def test_action_retry_and_ack_are_forwarded_unchanged(self) -> None:
+        self.connect(self.player_one)
+        self.connect(self.player_two)
+        payload = (91).to_bytes(4, "big") + b"1,322,0,1,0,-1,JumpUp"
+        # An unacknowledged action is sent again with a new transport sequence.
+        # Deduplication is by action sequence at the native recipient, not relay.
+        for _ in range(2):
+            self.player_one._send(PacketType.ACTION, payload, self.player_one.peer_address)
+            self.assertEqual(self.relay.poll(1.0)[0].detail, "ACTION")
+            received = self.player_two.poll(1.0)[0].packet
+            self.assertEqual(received.kind, PacketType.ACTION)
+            self.assertEqual(received.payload, payload)
+        ack = (91).to_bytes(4, "big") + (1).to_bytes(4, "big")
+        self.player_two._send(PacketType.ACTION_ACK, ack, self.player_two.peer_address)
+        self.assertEqual(self.relay.poll(1.0)[0].detail, "ACTION_ACK")
+        self.assertEqual(self.player_one.poll(1.0)[0].packet.payload, ack)
+
     def test_forwards_profiles_ready_and_input_between_two_clients(self) -> None:
         self.connect(self.player_one)
         self.connect(self.player_two)

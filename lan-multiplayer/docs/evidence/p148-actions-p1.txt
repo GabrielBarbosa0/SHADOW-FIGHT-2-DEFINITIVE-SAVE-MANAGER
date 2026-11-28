@@ -1,0 +1,547 @@
+﻿--------- beginning of main
+11-28 10:21:52.395 18694 18714 I SF2LAN-NATIVE: Injecao LAN na FightScene e tabela de vinculos instrumentadas; base libil2cpp=0x400022a00000.
+11-28 10:21:52.395 18694 18714 I SF2LAN-NATIVE: Perfil local nativo: carregado nivel=52.
+11-28 10:21:52.395 18694 18714 I SF2LAN-NATIVE: Perfil remoto nativo: carregado nivel=52.
+11-28 10:21:52.396 18694 18714 I SF2LAN-NATIVE: Papel LAN nativo: jogador 1.
+11-28 10:21:52.760 18694 18715 I SF2LAN-NATIVE: Sessao LAN nativa: pronta.
+11-28 10:22:17.769 18694 18719 I SF2LAN-NATIVE: FightPVP: classe de perfil localizada: 0x7e5722181380.
+11-28 10:22:17.769 18694 18719 I SF2LAN-NATIVE: Perfil fabrica-visual-esquerda: nome=Shadow avatar=avatar_hero skeletonCatalogo=Skeleton.
+11-28 10:22:17.769 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Skeleton id=Skeleton item=0x7e562e263540 resolver=item-manager.
+11-28 10:22:17.769 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Armor id=Body item=0x7e562fcd1a80 resolver=item-manager.
+11-28 10:22:17.769 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Helm id=Head item=0x7e562fccc000 resolver=item-manager.
+11-28 10:22:17.769 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Weapon id=WEAPON_NINJA_SWORD item=0x7e5661372a80 resolver=item-manager.
+11-28 10:22:17.769 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Ranged id=NoRanged item=0x7e564347d540 resolver=item-manager.
+11-28 10:22:17.769 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Magic id=NoMagic item=0x7e562f669540 resolver=item-manager.
+11-28 10:22:17.769 18694 18719 I SF2LAN-NATIVE: Perfil fabrica-visual-esquerda: avatar=1 itens=6/6 nivel=52.
+11-28 10:22:17.769 18694 18719 I SF2LAN-NATIVE: Perfil fabrica-visual-esquerda: encantamentos removidos weapon=0 armor=0 helm=35 ok=1.
+11-28 10:22:17.769 18694 18719 I SF2LAN-NATIVE: Perfil fabrica-visual-direita: nome=Shadow avatar=avatar_hero skeletonCatalogo=Skeleton.
+11-28 10:22:17.769 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Skeleton id=Skeleton item=0x7e562e263540 resolver=item-manager.
+11-28 10:22:17.769 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Armor id=Body item=0x7e562fcd1a80 resolver=item-manager.
+11-28 10:22:17.769 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Helm id=Head item=0x7e562fccc000 resolver=item-manager.
+11-28 10:22:17.769 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Weapon id=WEAPON_NINJA_SWORD item=0x7e5661372a80 resolver=item-manager.
+11-28 10:22:17.769 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Ranged id=NoRanged item=0x7e564347d540 resolver=item-manager.
+11-28 10:22:17.769 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Magic id=NoMagic item=0x7e562f669540 resolver=item-manager.
+11-28 10:22:17.769 18694 18719 I SF2LAN-NATIVE: Perfil fabrica-visual-direita: avatar=1 itens=6/6 nivel=52.
+11-28 10:22:17.769 18694 18719 I SF2LAN-NATIVE: Perfil fabrica-visual-direita: encantamentos removidos weapon=0 armor=0 helm=0 ok=1.
+11-28 10:22:17.769 18694 18719 I SF2LAN-NATIVE: Fabrica visual LAN padronizada: config=0x7e5859b38000 player=0x7e5854e10c80 opponent=0x7e5854e10960 adversarios=1.
+11-28 10:22:17.899 18694 18719 I SF2LAN-NATIVE: Model audit list: ctor-profile+28 count=4.
+11-28 10:22:17.899 18694 18719 I SF2LAN-NATIVE: Model audit: ctor-profile+28[0]=mdl_skeleton.xml.
+11-28 10:22:17.899 18694 18719 I SF2LAN-NATIVE: Model audit: ctor-profile+28[1]=mdl_weapon_ninja_sword.xml.
+11-28 10:22:17.899 18694 18719 I SF2LAN-NATIVE: Model audit: ctor-profile+28[2]=mdl_body.xml.
+11-28 10:22:17.899 18694 18719 I SF2LAN-NATIVE: Model audit: ctor-profile+28[3]=mdl_head.xml.
+11-28 10:22:17.900 18694 18719 I SF2LAN-NATIVE: Model audit build: fighter=0x7e5854e23000 profile=0x7e5854e10c80 resources=0x7e5859193c00.
+11-28 10:22:17.900 18694 18719 I SF2LAN-NATIVE: Model audit list: physical-resources count=4.
+11-28 10:22:17.900 18694 18719 I SF2LAN-NATIVE: Model audit: physical-resources[0]=mdl_skeleton.xml.
+11-28 10:22:17.900 18694 18719 I SF2LAN-NATIVE: Model audit: physical-resources[1]=mdl_weapon_ninja_sword.xml.
+11-28 10:22:17.900 18694 18719 I SF2LAN-NATIVE: Model audit: physical-resources[2]=mdl_body.xml.
+11-28 10:22:17.900 18694 18719 I SF2LAN-NATIVE: Model audit: physical-resources[3]=mdl_head.xml.
+11-28 10:22:18.131 18694 18719 I SF2LAN-NATIVE: Model audit list: ctor-profile+28 count=4.
+11-28 10:22:18.131 18694 18719 I SF2LAN-NATIVE: Model audit: ctor-profile+28[0]=mdl_skeleton.xml.
+11-28 10:22:18.131 18694 18719 I SF2LAN-NATIVE: Model audit: ctor-profile+28[1]=mdl_weapon_ninja_sword.xml.
+11-28 10:22:18.131 18694 18719 I SF2LAN-NATIVE: Model audit: ctor-profile+28[2]=mdl_body.xml.
+11-28 10:22:18.131 18694 18719 I SF2LAN-NATIVE: Model audit: ctor-profile+28[3]=mdl_head.xml.
+11-28 10:22:18.131 18694 18719 I SF2LAN-NATIVE: Model audit build: fighter=0x7e562d0d6a80 profile=0x7e5854e10960 resources=0x7e5859196de0.
+11-28 10:22:18.131 18694 18719 I SF2LAN-NATIVE: Model audit list: physical-resources count=4.
+11-28 10:22:18.131 18694 18719 I SF2LAN-NATIVE: Model audit: physical-resources[0]=mdl_skeleton.xml.
+11-28 10:22:18.131 18694 18719 I SF2LAN-NATIVE: Model audit: physical-resources[1]=mdl_weapon_ninja_sword.xml.
+11-28 10:22:18.131 18694 18719 I SF2LAN-NATIVE: Model audit: physical-resources[2]=mdl_body.xml.
+11-28 10:22:18.131 18694 18719 I SF2LAN-NATIVE: Model audit: physical-resources[3]=mdl_head.xml.
+11-28 10:22:18.184 18694 18719 I SF2LAN-NATIVE: Model audit list: ctor-profile+28 count=4.
+11-28 10:22:18.184 18694 18719 I SF2LAN-NATIVE: Model audit: ctor-profile+28[0]=mdl_punch_bag_anniversity_skelet.xml.
+11-28 10:22:18.185 18694 18719 I SF2LAN-NATIVE: Model audit: ctor-profile+28[1]=mdl_weapon_ninja_sword.xml.
+11-28 10:22:18.185 18694 18719 I SF2LAN-NATIVE: Model audit: ctor-profile+28[2]=mdl_punch_bag_anniversity.xml.
+11-28 10:22:18.185 18694 18719 I SF2LAN-NATIVE: Model audit: ctor-profile+28[3]=mdl_head.xml.
+11-28 10:22:18.185 18694 18719 I SF2LAN-NATIVE: Model audit build: fighter=0x7e562d1ea540 profile=0x7e5854e10960 resources=0x7e5859196de0.
+11-28 10:22:18.185 18694 18719 I SF2LAN-NATIVE: Model audit list: physical-resources count=4.
+11-28 10:22:18.185 18694 18719 I SF2LAN-NATIVE: Model audit: physical-resources[0]=mdl_punch_bag_anniversity_skelet.xml.
+11-28 10:22:18.185 18694 18719 I SF2LAN-NATIVE: Model audit: physical-resources[1]=mdl_weapon_ninja_sword.xml.
+11-28 10:22:18.185 18694 18719 I SF2LAN-NATIVE: Model audit: physical-resources[2]=mdl_punch_bag_anniversity.xml.
+11-28 10:22:18.185 18694 18719 I SF2LAN-NATIVE: Model audit: physical-resources[3]=mdl_head.xml.
+11-28 10:24:44.748 18694 18719 I SF2LAN-NATIVE: Perfil fabrica-visual-esquerda: nome=Shadow avatar=avatar_hero skeletonCatalogo=Skeleton.
+11-28 10:24:44.748 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Skeleton id=Skeleton item=0x7e562e263540 resolver=item-manager.
+11-28 10:24:44.748 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Armor id=Body item=0x7e562fcd1a80 resolver=item-manager.
+11-28 10:24:44.748 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Helm id=Head item=0x7e562fccc000 resolver=item-manager.
+11-28 10:24:44.748 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Weapon id=WEAPON_NINJA_SWORD item=0x7e5661372a80 resolver=item-manager.
+11-28 10:24:44.748 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Ranged id=NoRanged item=0x7e564347d540 resolver=item-manager.
+11-28 10:24:44.748 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Magic id=NoMagic item=0x7e562f669540 resolver=item-manager.
+11-28 10:24:44.748 18694 18719 I SF2LAN-NATIVE: Perfil fabrica-visual-esquerda: avatar=1 itens=6/6 nivel=52.
+11-28 10:24:44.748 18694 18719 I SF2LAN-NATIVE: Perfil fabrica-visual-esquerda: encantamentos removidos weapon=0 armor=0 helm=35 ok=1.
+11-28 10:24:44.748 18694 18719 I SF2LAN-NATIVE: Perfil fabrica-visual-direita: nome=Shadow avatar=avatar_hero skeletonCatalogo=Skeleton.
+11-28 10:24:44.748 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Skeleton id=Skeleton item=0x7e562e263540 resolver=item-manager.
+11-28 10:24:44.748 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Armor id=Body item=0x7e562fcd1a80 resolver=item-manager.
+11-28 10:24:44.748 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Helm id=Head item=0x7e562fccc000 resolver=item-manager.
+11-28 10:24:44.748 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Weapon id=WEAPON_NINJA_SWORD item=0x7e5661372a80 resolver=item-manager.
+11-28 10:24:44.749 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Ranged id=NoRanged item=0x7e564347d540 resolver=item-manager.
+11-28 10:24:44.749 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Magic id=NoMagic item=0x7e562f669540 resolver=item-manager.
+11-28 10:24:44.749 18694 18719 I SF2LAN-NATIVE: Perfil fabrica-visual-direita: avatar=1 itens=6/6 nivel=52.
+11-28 10:24:44.749 18694 18719 I SF2LAN-NATIVE: Perfil fabrica-visual-direita: encantamentos removidos weapon=0 armor=5 helm=0 ok=1.
+11-28 10:24:44.749 18694 18719 I SF2LAN-NATIVE: Fabrica visual LAN padronizada: config=0x7e5660ef0540 player=0x7e55f5e1a320 opponent=0x7e55f5e1a000 adversarios=1.
+11-28 10:24:46.466 18694 18719 I SF2LAN-NATIVE: FightConfig original: mode=7 fingerprint=3401fdfdb6168bd0 identity=038=mountain;048=1;118=samurai_spirit;150=RANDOM_EQUIPMENT;.
+11-28 10:24:46.466 18694 18719 I SF2LAN-NATIVE: Perfil Shadow-esquerda: nome=Shadow avatar=avatar_hero skeletonCatalogo=Skeleton.
+11-28 10:24:46.466 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Skeleton id=Skeleton item=0x7e562e263540 resolver=item-manager.
+11-28 10:24:46.466 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Armor id=Body item=0x7e562fcd1a80 resolver=item-manager.
+11-28 10:24:46.466 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Helm id=Head item=0x7e562fccc000 resolver=item-manager.
+11-28 10:24:46.466 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Weapon id=WEAPON_NINJA_SWORD item=0x7e5661372a80 resolver=item-manager.
+11-28 10:24:46.466 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Ranged id=NoRanged item=0x7e564347d540 resolver=item-manager.
+11-28 10:24:46.466 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Magic id=NoMagic item=0x7e562f669540 resolver=item-manager.
+11-28 10:24:46.466 18694 18719 I SF2LAN-NATIVE: Perfil Shadow-esquerda: avatar=1 itens=6/6 nivel=52.
+11-28 10:24:46.466 18694 18719 I SF2LAN-NATIVE: Perfil Shadow-esquerda: encantamentos removidos weapon=0 armor=0 helm=0 ok=1.
+11-28 10:24:46.466 18694 18719 I SF2LAN-NATIVE: Perfil Shadow-direita: nome=Shadow avatar=avatar_hero skeletonCatalogo=Skeleton.
+11-28 10:24:46.466 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Skeleton id=Skeleton item=0x7e562e263540 resolver=item-manager.
+11-28 10:24:46.467 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Armor id=Body item=0x7e562fcd1a80 resolver=item-manager.
+11-28 10:24:46.467 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Helm id=Head item=0x7e562fccc000 resolver=item-manager.
+11-28 10:24:46.467 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Weapon id=WEAPON_NINJA_SWORD item=0x7e5661372a80 resolver=item-manager.
+11-28 10:24:46.467 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Ranged id=NoRanged item=0x7e564347d540 resolver=item-manager.
+11-28 10:24:46.467 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Magic id=NoMagic item=0x7e562f669540 resolver=item-manager.
+11-28 10:24:46.467 18694 18719 I SF2LAN-NATIVE: Perfil Shadow-direita: avatar=1 itens=6/6 nivel=52.
+11-28 10:24:46.467 18694 18719 I SF2LAN-NATIVE: Perfil Shadow-direita: encantamentos removidos weapon=0 armor=0 helm=0 ok=1.
+11-28 10:24:46.467 18694 18719 I SF2LAN-NATIVE: FightLAN Duel: regras RANDOM_EQUIPMENT removidas config=0x7e5660ef0540 baseOriginal=0x7e5b278abf40 overrideOriginal=0x7e585b32d940.
+11-28 10:24:46.467 18694 18719 I SF2LAN-NATIVE: FightLAN Duel: quatro modelos fixados no Shadow humano basico, sem encantamentos, ranged ou magia.
+11-28 10:24:46.467 18694 18719 I SF2LAN-NATIVE: Perfil Shadow-esquerda=0x7e55ca4c8c80 itens skeleton=0x7e562e263540 armor=0x7e562fcd1a80 helm=0x7e562fccc000 weapon=0x7e5661372a80 ranged=0x7e564347d540 magic=0x7e562f669540.
+11-28 10:24:46.467 18694 18719 I SF2LAN-NATIVE: Perfil Shadow-direita=0x7e55ca4c8960 itens skeleton=0x7e562e263540 armor=0x7e562fcd1a80 helm=0x7e562fccc000 weapon=0x7e5661372a80 ranged=0x7e564347d540 magic=0x7e562f669540.
+11-28 10:24:46.467 18694 18719 I SF2LAN-NATIVE: FightLAN Duel humano: mode=17 config=0x7e5660ef0540 playerProfile=0x7e55ca4c8c80 opponentClone=0x7e55ca4c8960 originalOpponent=0x7e55f5e1a000 adversariosSubstituidos=1.
+11-28 10:24:46.467 18694 18719 I SF2LAN-NATIVE: FightScene: sessaoPronta=1 modo original=7 configOriginal=0x7e5660ef0540 configEfetiva=0x7e5660ef0540.
+11-28 10:24:46.471 18694 18719 I SF2LAN-NATIVE: FightScene: DualMode ativo e vinculos Player -> Touch 0 / Enemy -> Touch 1 solicitados.
+11-28 10:24:46.515 18694 18719 I SF2LAN-NATIVE: Perfil construtor-do-Fighter: nome=Shadow avatar=avatar_hero skeletonCatalogo=Skeleton.
+11-28 10:24:46.515 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Skeleton id=Skeleton item=0x7e562e263540 resolver=item-manager.
+11-28 10:24:46.515 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Armor id=Body item=0x7e562fcd1a80 resolver=item-manager.
+11-28 10:24:46.515 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Helm id=Head item=0x7e562fccc000 resolver=item-manager.
+11-28 10:24:46.515 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Weapon id=WEAPON_NINJA_SWORD item=0x7e5661372a80 resolver=item-manager.
+11-28 10:24:46.515 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Ranged id=NoRanged item=0x7e564347d540 resolver=item-manager.
+11-28 10:24:46.515 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Magic id=NoMagic item=0x7e562f669540 resolver=item-manager.
+11-28 10:24:46.515 18694 18719 I SF2LAN-NATIVE: Perfil construtor-do-Fighter: avatar=1 itens=6/6 nivel=52.
+11-28 10:24:46.515 18694 18719 I SF2LAN-NATIVE: Fighter.ctor LAN: fighter=0x7e55ca283a80 profile=0x7e55ca4c8c80 presetHumano=1 role=1.
+11-28 10:24:46.516 18694 18719 I SF2LAN-NATIVE: Model audit list: ctor-profile+28 count=4.
+11-28 10:24:46.516 18694 18719 I SF2LAN-NATIVE: Model audit: ctor-profile+28[0]=mdl_skeleton.xml.
+11-28 10:24:46.516 18694 18719 I SF2LAN-NATIVE: Model audit: ctor-profile+28[1]=mdl_weapon_ninja_sword.xml.
+11-28 10:24:46.516 18694 18719 I SF2LAN-NATIVE: Model audit: ctor-profile+28[2]=mdl_body.xml.
+11-28 10:24:46.516 18694 18719 I SF2LAN-NATIVE: Model audit: ctor-profile+28[3]=mdl_head.xml.
+11-28 10:24:46.516 18694 18719 I SF2LAN-NATIVE: Model audit build: fighter=0x7e55ca283a80 profile=0x7e55ca4c8c80 resources=0x7e5605fc6930.
+11-28 10:24:46.516 18694 18719 I SF2LAN-NATIVE: Model audit list: physical-resources count=4.
+11-28 10:24:46.516 18694 18719 I SF2LAN-NATIVE: Model audit: physical-resources[0]=mdl_skeleton.xml.
+11-28 10:24:46.516 18694 18719 I SF2LAN-NATIVE: Model audit: physical-resources[1]=mdl_weapon_ninja_sword.xml.
+11-28 10:24:46.516 18694 18719 I SF2LAN-NATIVE: Model audit: physical-resources[2]=mdl_body.xml.
+11-28 10:24:46.516 18694 18719 I SF2LAN-NATIVE: Model audit: physical-resources[3]=mdl_head.xml.
+11-28 10:24:46.590 18694 18719 I SF2LAN-NATIVE: Perfil construtor-do-Fighter: nome=Shadow avatar=avatar_hero skeletonCatalogo=Skeleton.
+11-28 10:24:46.590 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Skeleton id=Skeleton item=0x7e562e263540 resolver=item-manager.
+11-28 10:24:46.590 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Armor id=Body item=0x7e562fcd1a80 resolver=item-manager.
+11-28 10:24:46.590 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Helm id=Head item=0x7e562fccc000 resolver=item-manager.
+11-28 10:24:46.590 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Weapon id=WEAPON_NINJA_SWORD item=0x7e5661372a80 resolver=item-manager.
+11-28 10:24:46.590 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Ranged id=NoRanged item=0x7e564347d540 resolver=item-manager.
+11-28 10:24:46.590 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Magic id=NoMagic item=0x7e562f669540 resolver=item-manager.
+11-28 10:24:46.591 18694 18719 I SF2LAN-NATIVE: Perfil construtor-do-Fighter: avatar=1 itens=6/6 nivel=52.
+11-28 10:24:46.591 18694 18719 I SF2LAN-NATIVE: Fighter.ctor LAN: fighter=0x7e562d6e3540 profile=0x7e55ca4c8960 presetHumano=1 role=1.
+11-28 10:24:46.591 18694 18719 I SF2LAN-NATIVE: Model audit list: ctor-profile+28 count=4.
+11-28 10:24:46.591 18694 18719 I SF2LAN-NATIVE: Model audit: ctor-profile+28[0]=mdl_skeleton.xml.
+11-28 10:24:46.591 18694 18719 I SF2LAN-NATIVE: Model audit: ctor-profile+28[1]=mdl_weapon_ninja_sword.xml.
+11-28 10:24:46.591 18694 18719 I SF2LAN-NATIVE: Model audit: ctor-profile+28[2]=mdl_body.xml.
+11-28 10:24:46.591 18694 18719 I SF2LAN-NATIVE: Model audit: ctor-profile+28[3]=mdl_head.xml.
+11-28 10:24:46.591 18694 18719 I SF2LAN-NATIVE: Model audit build: fighter=0x7e562d6e3540 profile=0x7e55ca4c8960 resources=0x7e5605fc65a0.
+11-28 10:24:46.591 18694 18719 I SF2LAN-NATIVE: Model audit list: physical-resources count=4.
+11-28 10:24:46.591 18694 18719 I SF2LAN-NATIVE: Model audit: physical-resources[0]=mdl_skeleton.xml.
+11-28 10:24:46.591 18694 18719 I SF2LAN-NATIVE: Model audit: physical-resources[1]=mdl_weapon_ninja_sword.xml.
+11-28 10:24:46.591 18694 18719 I SF2LAN-NATIVE: Model audit: physical-resources[2]=mdl_body.xml.
+11-28 10:24:46.591 18694 18719 I SF2LAN-NATIVE: Model audit: physical-resources[3]=mdl_head.xml.
+11-28 10:24:48.306 18694 18719 I SF2LAN-NATIVE: Perfis da luta LAN: controle de IA desativado nos dois lados; entrada humana nativa habilitada.
+11-28 10:24:48.306 18694 18719 I SF2LAN-NATIVE: Equipment audit fighter: side=esquerdo fighter=0x7e55ca283a80 profile=0x7e55ca4c8c80.
+11-28 10:24:48.307 18694 18719 I SF2LAN-NATIVE: Ninja Sword action: side=esquerdo i=107 name=KatanaSlash animation=katana_slash.bytes config=0x7e56413d85c0.
+11-28 10:24:48.307 18694 18719 I SF2LAN-NATIVE: Ninja Sword action: side=esquerdo i=108 name=KatanaDoubleSlash animation=katana_double_slash.bytes config=0x7e5640e2d000.
+11-28 10:24:48.307 18694 18719 I SF2LAN-NATIVE: Ninja Sword action: side=esquerdo i=109 name=KatanaHeavySlash animation=katana_heavy_slash.bytes config=0x7e564090a640.
+11-28 10:24:48.307 18694 18719 I SF2LAN-NATIVE: Ninja Sword action: side=esquerdo i=110 name=KatanaSpinningSlash animation=katana_spinning_slash.bytes config=0x7e5640bf6280.
+11-28 10:24:48.307 18694 18719 I SF2LAN-NATIVE: Ninja Sword action: side=esquerdo i=111 name=KatanaUpperSlash animation=katana_upper_slash.bytes config=0x7e564062ec40.
+11-28 10:24:48.307 18694 18719 I SF2LAN-NATIVE: Ninja Sword action: side=esquerdo i=112 name=KatanaLowSlash animation=katana_low_slash.bytes config=0x7e5640775480.
+11-28 10:24:48.307 18694 18719 I SF2LAN-NATIVE: Ninja Sword action: side=esquerdo i=115 name=NinjaSwordSuperSlash animation=ninja_sword_super_slash.bytes config=0x7e5640e22900.
+11-28 10:24:48.307 18694 18719 I SF2LAN-NATIVE: Action audit: side=esquerdo total=153 ninjaSword=7 forbidden=0 names=131a58b906869c06 configs=18a4ae963e802455.
+11-28 10:24:48.307 18694 18719 I SF2LAN-NATIVE: Equipment audit fighter: side=direito fighter=0x7e562d6e3540 profile=0x7e55ca4c8960.
+11-28 10:24:48.307 18694 18719 I SF2LAN-NATIVE: Ninja Sword action: side=direito i=107 name=KatanaSlash animation=katana_slash.bytes config=0x7e56413d85c0.
+11-28 10:24:48.307 18694 18719 I SF2LAN-NATIVE: Ninja Sword action: side=direito i=108 name=KatanaDoubleSlash animation=katana_double_slash.bytes config=0x7e5640e2d000.
+11-28 10:24:48.307 18694 18719 I SF2LAN-NATIVE: Ninja Sword action: side=direito i=109 name=KatanaHeavySlash animation=katana_heavy_slash.bytes config=0x7e564090a640.
+11-28 10:24:48.308 18694 18719 I SF2LAN-NATIVE: Ninja Sword action: side=direito i=110 name=KatanaSpinningSlash animation=katana_spinning_slash.bytes config=0x7e5640bf6280.
+11-28 10:24:48.308 18694 18719 I SF2LAN-NATIVE: Ninja Sword action: side=direito i=111 name=KatanaUpperSlash animation=katana_upper_slash.bytes config=0x7e564062ec40.
+11-28 10:24:48.308 18694 18719 I SF2LAN-NATIVE: Ninja Sword action: side=direito i=112 name=KatanaLowSlash animation=katana_low_slash.bytes config=0x7e5640775480.
+11-28 10:24:48.308 18694 18719 I SF2LAN-NATIVE: Ninja Sword action: side=direito i=115 name=NinjaSwordSuperSlash animation=ninja_sword_super_slash.bytes config=0x7e5640e22900.
+11-28 10:24:48.308 18694 18719 I SF2LAN-NATIVE: Action audit: side=direito total=153 ninjaSword=7 forbidden=0 names=131a58b906869c06 configs=18a4ae963e802455.
+11-28 10:24:48.308 18694 18719 I SF2LAN-NATIVE: Action audit LAN: match=1 left=7 right=7.
+11-28 10:24:48.308 18694 18719 I SF2LAN-NATIVE: Arena LAN carregada: generation=1; aguardando START.
+11-28 10:24:48.308 18694 18719 I SF2LAN-NATIVE: FightScene.CreateFight #1: scene=0x7e56043b2a50 fight=0x7e55fe46e900 player=0x7e55ca283a80 opponent=0x7e562d6e3540 config=0x7e5660ef0540 profiles=0x7e55f5e1a320/0x7e5605e513f0.
+11-28 10:24:48.308 18694 18719 I SF2LAN-NATIVE: Perfil jogador-na-luta=0x7e55ca4c8c80 itens skeleton=0x7e562e263540 armor=0x7e562fcd1a80 helm=0x7e562fccc000 weapon=0x7e5661372a80 ranged=0x7e564347d540 magic=0x7e562f669540.
+11-28 10:24:48.308 18694 18719 I SF2LAN-NATIVE: Perfil adversario-na-luta=0x7e55ca4c8960 itens skeleton=0x7e562e263540 armor=0x7e562fcd1a80 helm=0x7e562fccc000 weapon=0x7e5661372a80 ranged=0x7e564347d540 magic=0x7e562f669540.
+11-28 10:24:48.605 18694 18715 I SF2LAN-NATIVE: START nativo agendado para +1999ms.
+11-28 10:24:50.000 18694 18719 I SF2LAN-NATIVE: FightScene.StartFight adiado ate o START sincronizado.
+11-28 10:24:50.615 18694 18719 I SF2LAN-NATIVE: Simulacao LAN liberada no START: atraso=11ms.
+11-28 10:24:50.616 18694 18719 I SF2LAN-NATIVE: Perfil ViewerInit-esquerda: nome=Shadow avatar=avatar_hero skeletonCatalogo=Skeleton.
+11-28 10:24:50.616 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Skeleton id=Skeleton item=0x7e562e263540 resolver=item-manager.
+11-28 10:24:50.616 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Armor id=Body item=0x7e562fcd1a80 resolver=item-manager.
+11-28 10:24:50.616 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Helm id=Head item=0x7e562fccc000 resolver=item-manager.
+11-28 10:24:50.616 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Weapon id=WEAPON_NINJA_SWORD item=0x7e5661372a80 resolver=item-manager.
+11-28 10:24:50.616 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Ranged id=NoRanged item=0x7e564347d540 resolver=item-manager.
+11-28 10:24:50.616 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Magic id=NoMagic item=0x7e562f669540 resolver=item-manager.
+11-28 10:24:50.616 18694 18719 I SF2LAN-NATIVE: Perfil ViewerInit-esquerda: avatar=1 itens=6/6 nivel=52.
+11-28 10:24:50.616 18694 18719 I SF2LAN-NATIVE: Perfil ViewerInit-direita: nome=Shadow avatar=avatar_hero skeletonCatalogo=Skeleton.
+11-28 10:24:50.616 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Skeleton id=Skeleton item=0x7e562e263540 resolver=item-manager.
+11-28 10:24:50.616 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Armor id=Body item=0x7e562fcd1a80 resolver=item-manager.
+11-28 10:24:50.616 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Helm id=Head item=0x7e562fccc000 resolver=item-manager.
+11-28 10:24:50.616 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Weapon id=WEAPON_NINJA_SWORD item=0x7e5661372a80 resolver=item-manager.
+11-28 10:24:50.616 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Ranged id=NoRanged item=0x7e564347d540 resolver=item-manager.
+11-28 10:24:50.616 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Magic id=NoMagic item=0x7e562f669540 resolver=item-manager.
+11-28 10:24:50.616 18694 18719 I SF2LAN-NATIVE: Perfil ViewerInit-direita: avatar=1 itens=6/6 nivel=52.
+11-28 10:24:50.616 18694 18719 I SF2LAN-NATIVE: PreFight.ViewerInit LAN: config=0x7e562d4614c0 player=0x7e55ca4c8c80 opponent=0x7e55ca4c8960 humanoEsquerda=1 humanoDireita=1 role=1.
+11-28 10:24:50.627 18694 18719 I SF2LAN-NATIVE: Perfil CreateVS-Shadow-esquerda: nome=Shadow avatar=avatar_hero skeletonCatalogo=Skeleton.
+11-28 10:24:50.627 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Skeleton id=Skeleton item=0x7e562e263540 resolver=item-manager.
+11-28 10:24:50.627 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Armor id=Body item=0x7e562fcd1a80 resolver=item-manager.
+11-28 10:24:50.627 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Helm id=Head item=0x7e562fccc000 resolver=item-manager.
+11-28 10:24:50.627 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Weapon id=WEAPON_NINJA_SWORD item=0x7e5661372a80 resolver=item-manager.
+11-28 10:24:50.627 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Ranged id=NoRanged item=0x7e564347d540 resolver=item-manager.
+11-28 10:24:50.627 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Magic id=NoMagic item=0x7e562f669540 resolver=item-manager.
+11-28 10:24:50.627 18694 18719 I SF2LAN-NATIVE: Perfil CreateVS-Shadow-esquerda: avatar=1 itens=6/6 nivel=52.
+11-28 10:24:50.627 18694 18719 I SF2LAN-NATIVE: Perfil CreateVS-Shadow-esquerda: encantamentos removidos weapon=0 armor=0 helm=0 ok=1.
+11-28 10:24:50.627 18694 18719 I SF2LAN-NATIVE: Perfil CreateVS-Shadow-direita: nome=Shadow avatar=avatar_hero skeletonCatalogo=Skeleton.
+11-28 10:24:50.627 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Skeleton id=Skeleton item=0x7e562e263540 resolver=item-manager.
+11-28 10:24:50.628 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Armor id=Body item=0x7e562fcd1a80 resolver=item-manager.
+11-28 10:24:50.628 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Helm id=Head item=0x7e562fccc000 resolver=item-manager.
+11-28 10:24:50.628 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Weapon id=WEAPON_NINJA_SWORD item=0x7e5661372a80 resolver=item-manager.
+11-28 10:24:50.628 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Ranged id=NoRanged item=0x7e564347d540 resolver=item-manager.
+11-28 10:24:50.628 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Magic id=NoMagic item=0x7e562f669540 resolver=item-manager.
+11-28 10:24:50.628 18694 18719 I SF2LAN-NATIVE: Perfil CreateVS-Shadow-direita: avatar=1 itens=6/6 nivel=52.
+11-28 10:24:50.628 18694 18719 I SF2LAN-NATIVE: Perfil CreateVS-Shadow-direita: encantamentos removidos weapon=0 armor=0 helm=0 ok=1.
+11-28 10:24:50.628 18694 18719 I SF2LAN-NATIVE: PreFight.CreateVS LAN: round=0 playerOriginal=0x7e55ca4c8c80 playerShadow=0x7e586694dc80 opponentShadow=0x7e586694d640 adversariosSubstituidos=1 role=1.
+11-28 10:24:50.791 18694 18719 I SF2LAN-NATIVE: Perfil perfil-aleatorio-LAN: nome=Shadow avatar=avatar_hero skeletonCatalogo=Skeleton.
+11-28 10:24:50.791 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Skeleton id=Skeleton item=0x7e562e263540 resolver=item-manager.
+11-28 10:24:50.791 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Armor id=Body item=0x7e562fcd1a80 resolver=item-manager.
+11-28 10:24:50.791 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Helm id=Head item=0x7e562fccc000 resolver=item-manager.
+11-28 10:24:50.791 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Weapon id=WEAPON_NINJA_SWORD item=0x7e5661372a80 resolver=item-manager.
+11-28 10:24:50.791 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Ranged id=NoRanged item=0x7e564347d540 resolver=item-manager.
+11-28 10:24:50.792 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Magic id=NoMagic item=0x7e562f669540 resolver=item-manager.
+11-28 10:24:50.792 18694 18719 I SF2LAN-NATIVE: Perfil perfil-aleatorio-LAN: avatar=1 itens=6/6 nivel=52.
+11-28 10:24:50.792 18694 18719 I SF2LAN-NATIVE: Perfil perfil-aleatorio-LAN: encantamentos removidos weapon=0 armor=0 helm=0 ok=1.
+11-28 10:24:50.792 18694 18719 I SF2LAN-NATIVE: Fabrica RANDOM_EQUIPMENT substituida por Shadow canonico: source=0x7e55ca4c8960 clone=0x7e58662ea000.
+11-28 10:24:50.792 18694 18719 I SF2LAN-NATIVE: Perfil getter virtual: profile=0x7e58662ea000 slot=Weapon fallback= original=0x7e5661372a80 retorno=0x7e5661372a80 override=1.
+11-28 10:24:50.792 18694 18719 I SF2LAN-NATIVE: Perfil setter LAN: profile=0x7e55ca4c8c80 slot=Weapon solicitado=0x7e5604783540 canonico=0x7e5661372a80 callerRva=0x316b624.
+11-28 10:24:50.792 18694 18719 I SF2LAN-NATIVE: Perfil perfil-aleatorio-LAN: nome=Shadow avatar=avatar_hero skeletonCatalogo=Skeleton.
+11-28 10:24:50.792 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Skeleton id=Skeleton item=0x7e562e263540 resolver=item-manager.
+11-28 10:24:50.792 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Armor id=Body item=0x7e562fcd1a80 resolver=item-manager.
+11-28 10:24:50.792 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Helm id=Head item=0x7e562fccc000 resolver=item-manager.
+11-28 10:24:50.792 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Weapon id=WEAPON_NINJA_SWORD item=0x7e5661372a80 resolver=item-manager.
+11-28 10:24:50.792 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Ranged id=NoRanged item=0x7e564347d540 resolver=item-manager.
+11-28 10:24:50.792 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Magic id=NoMagic item=0x7e562f669540 resolver=item-manager.
+11-28 10:24:50.792 18694 18719 I SF2LAN-NATIVE: Perfil perfil-aleatorio-LAN: avatar=1 itens=6/6 nivel=52.
+11-28 10:24:50.792 18694 18719 I SF2LAN-NATIVE: Perfil perfil-aleatorio-LAN: encantamentos removidos weapon=0 armor=0 helm=0 ok=1.
+11-28 10:24:50.792 18694 18719 I SF2LAN-NATIVE: Fabrica RANDOM_EQUIPMENT substituida por Shadow canonico: source=0x7e55ca4c8960 clone=0x7e5865d1c960.
+11-28 10:24:50.792 18694 18719 I SF2LAN-NATIVE: Perfil getter virtual: profile=0x7e5865d1c960 slot=Helm fallback= original=0x7e562fccc000 retorno=0x7e562fccc000 override=1.
+11-28 10:24:50.794 18694 18719 I SF2LAN-NATIVE: Perfil setter LAN: profile=0x7e55ca4c8c80 slot=Helm solicitado=0x7e585ca29000 canonico=0x7e562fccc000 callerRva=0x316b624.
+11-28 10:24:50.794 18694 18719 I SF2LAN-NATIVE: Perfil perfil-aleatorio-LAN: nome=Shadow avatar=avatar_hero skeletonCatalogo=Skeleton.
+11-28 10:24:50.795 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Skeleton id=Skeleton item=0x7e562e263540 resolver=item-manager.
+11-28 10:24:50.795 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Armor id=Body item=0x7e562fcd1a80 resolver=item-manager.
+11-28 10:24:50.795 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Helm id=Head item=0x7e562fccc000 resolver=item-manager.
+11-28 10:24:50.795 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Weapon id=WEAPON_NINJA_SWORD item=0x7e5661372a80 resolver=item-manager.
+11-28 10:24:50.795 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Ranged id=NoRanged item=0x7e564347d540 resolver=item-manager.
+11-28 10:24:50.795 18694 18719 I SF2LAN-NATIVE: Perfil LAN: slot=Magic id=NoMagic item=0x7e562f669540 resolver=item-manager.
+11-28 10:24:50.795 18694 18719 I SF2LAN-NATIVE: Perfil perfil-aleatorio-LAN: avatar=1 itens=6/6 nivel=52.
+11-28 10:24:50.795 18694 18719 I SF2LAN-NATIVE: Perfil perfil-aleatorio-LAN: encantamentos removidos weapon=0 armor=0 helm=0 ok=1.
+11-28 10:24:50.795 18694 18719 I SF2LAN-NATIVE: Fabrica RANDOM_EQUIPMENT substituida por Shadow canonico: source=0x7e55ca4c8960 clone=0x7e5865583320.
+11-28 10:24:50.795 18694 18719 I SF2LAN-NATIVE: Perfil getter virtual: profile=0x7e5865583320 slot=Armor fallback= original=0x7e562fcd1a80 retorno=0x7e562fcd1a80 override=1.
+11-28 10:24:50.796 18694 18719 I SF2LAN-NATIVE: Perfil setter LAN: profile=0x7e55ca4c8c80 slot=Armor solicitado=0x7e585ca4fa80 canonico=0x7e562fcd1a80 callerRva=0x316b624.
+11-28 10:24:50.797 18694 18719 I SF2LAN-NATIVE: Perfil getter virtual: profile=0x7e55ca4c8c80 slot=Skeleton fallback= original=0x7e562e263540 retorno=0x7e562e263540 override=1.
+11-28 10:24:50.797 18694 18719 I SF2LAN-NATIVE: Perfil getter virtual: profile=0x7e55ca4c8c80 slot=Weapon fallback= original=0x7e5661372a80 retorno=0x7e5661372a80 override=1.
+11-28 10:24:50.797 18694 18719 I SF2LAN-NATIVE: Perfil getter virtual: profile=0x7e55ca4c8c80 slot=Ranged fallback= original=0x7e564347d540 retorno=0x7e564347d540 override=1.
+11-28 10:24:50.797 18694 18719 I SF2LAN-NATIVE: Perfil getter virtual: profile=0x7e55ca4c8c80 slot=Magic fallback= original=0x7e562f669540 retorno=0x7e562f669540 override=1.
+11-28 10:24:50.797 18694 18719 I SF2LAN-NATIVE: Perfil getter virtual: profile=0x7e55ca4c8c80 slot=RaidConsumable fallback= original=0x0 retorno=0x0 override=0.
+11-28 10:24:50.798 18694 18719 I SF2LAN-NATIVE: Perfil getter virtual: profile=0x7e55ca4c8c80 slot=Armor fallback= original=0x7e562fcd1a80 retorno=0x7e562fcd1a80 override=1.
+11-28 10:24:50.798 18694 18719 I SF2LAN-NATIVE: Perfil getter virtual: profile=0x7e55ca4c8c80 slot=Helm fallback= original=0x7e562fccc000 retorno=0x7e562fccc000 override=1.
+11-28 10:24:50.798 18694 18719 I SF2LAN-NATIVE: Perfil getter virtual: profile=0x7e55ca4c8c80 slot=Cheat fallback= original=0x0 retorno=0x0 override=0.
+11-28 10:24:50.801 18694 18719 I SF2LAN-NATIVE: Perfil getter virtual: profile=0x7e55ca4c8960 slot=Skeleton fallback= original=0x7e562e263540 retorno=0x7e562e263540 override=1.
+11-28 10:24:50.801 18694 18719 I SF2LAN-NATIVE: Perfil getter virtual: profile=0x7e55ca4c8960 slot=Weapon fallback= original=0x7e5661372a80 retorno=0x7e5661372a80 override=1.
+11-28 10:24:50.801 18694 18719 I SF2LAN-NATIVE: Perfil getter virtual: profile=0x7e55ca4c8960 slot=Ranged fallback= original=0x7e564347d540 retorno=0x7e564347d540 override=1.
+11-28 10:24:50.801 18694 18719 I SF2LAN-NATIVE: Perfil getter virtual: profile=0x7e55ca4c8960 slot=Magic fallback= original=0x7e562f669540 retorno=0x7e562f669540 override=1.
+11-28 10:24:50.801 18694 18719 I SF2LAN-NATIVE: Perfil getter virtual: profile=0x7e55ca4c8960 slot=RaidConsumable fallback= original=0x0 retorno=0x0 override=0.
+11-28 10:24:50.801 18694 18719 I SF2LAN-NATIVE: Perfil getter virtual: profile=0x7e55ca4c8960 slot=Armor fallback= original=0x7e562fcd1a80 retorno=0x7e562fcd1a80 override=1.
+11-28 10:24:50.801 18694 18719 I SF2LAN-NATIVE: Perfil getter virtual: profile=0x7e55ca4c8960 slot=Helm fallback= original=0x7e562fccc000 retorno=0x7e562fccc000 override=1.
+11-28 10:24:50.801 18694 18719 I SF2LAN-NATIVE: Perfil getter virtual: profile=0x7e55ca4c8960 slot=Cheat fallback= original=0x0 retorno=0x0 override=0.
+11-28 10:24:50.953 18694 18719 I SF2LAN-NATIVE: Autoridade espacial ignorada #1: fight=0x7e55fe46e900 role=1 received=0 age=1795872290953ms.
+11-28 10:24:50.954 18694 18719 I SF2LAN-NATIVE: Autoridade espacial ignorada #2: fight=0x7e55fe46e900 role=1 received=0 age=1795872290954ms.
+11-28 10:24:50.955 18694 18719 I SF2LAN-NATIVE: FightScene.StartFight executado sem liberar planejadores de IA.
+11-28 10:24:50.955 18694 18719 I SF2LAN-NATIVE: Autoridade espacial ignorada #3: fight=0x7e55fe46e900 role=1 received=0 age=1795872290955ms.
+11-28 10:24:50.955 18694 18719 I SF2LAN-NATIVE: Autoridade espacial ignorada #4: fight=0x7e55fe46e900 role=1 received=0 age=1795872290955ms.
+11-28 10:24:51.049 18694 18719 I SF2LAN-NATIVE: Sincronismo espacial dividido: geracao=1 role=1 indiceRemoto=1 local=(1067.85,-113.94,15.23).
+11-28 10:24:51.049 18694 18719 I SF2LAN-NATIVE: Autoridade espacial escrita #1: fighter=0x7e562d6e3540 target=(1067.85,-113.94,15.23) readback=(1067.85,-113.94,15.23).
+11-28 10:24:51.049 18694 18719 I SF2LAN-NATIVE: No espacial autoritativo #1: fight=0x7e55fe46e900 node=0x7e562d423340.
+11-28 10:24:51.065 18694 18719 I SF2LAN-NATIVE: Autoridade espacial escrita #2: fighter=0x7e562d6e3540 target=(1067.85,-113.94,15.23) readback=(1067.85,-113.94,15.23).
+11-28 10:24:51.065 18694 18719 I SF2LAN-NATIVE: No espacial autoritativo #2: fight=0x7e55fe46e900 node=0x7e562d1610d0.
+11-28 10:24:51.065 18694 18719 I SF2LAN-NATIVE: Autoridade espacial escrita #3: fighter=0x7e562d6e3540 target=(1067.85,-113.94,15.23) readback=(1067.85,-113.94,15.23).
+11-28 10:24:51.065 18694 18719 I SF2LAN-NATIVE: No espacial autoritativo #3: fight=0x7e55fe46e900 node=0x7e562d423340.
+11-28 10:24:51.082 18694 18719 I SF2LAN-NATIVE: Autoridade espacial escrita #4: fighter=0x7e562d6e3540 target=(1067.85,-113.94,15.23) readback=(1067.85,-113.94,15.23).
+11-28 10:24:51.082 18694 18719 I SF2LAN-NATIVE: No espacial autoritativo #4: fight=0x7e55fe46e900 node=0x7e562d1610d0.
+11-28 10:24:52.300 18694 18719 I SF2LAN-NATIVE: Planejador remoto inicializado e cancelado somente para liberar a intro: planner=0x7e585937f6e0 opponent=0x7e55ca283a80; selecao autonoma bloqueada.
+11-28 10:24:52.300 18694 18719 I SF2LAN-NATIVE: IA LAN suprimida #1: lado=remoto fighter=0x7e562d6e3540 profile=0x7e55ca4c8960 animation=0x7e5640c65d80.
+11-28 10:24:52.300 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=1 tick=102 name=KatanaStartStance-Left args=1/0/0/-1.
+11-28 10:24:52.303 18694 18719 I SF2LAN-NATIVE: IA LAN suprimida #2: lado=local fighter=0x7e55ca283a80 profile=0x7e55ca4c8c80 animation=0x7e5640c65c00.
+11-28 10:24:52.307 18694 18719 I SF2LAN-NATIVE: LAN action selected: role=1 player=1 seq=1 tick=102 name=KatanaStartStance-Left animation=katana_stance.bytes.
+11-28 10:24:52.307 18694 18719 I SF2LAN-NATIVE: LAN action selected: role=1 player=2 seq=1 tick=102 name=KatanaStartStance-Right animation=katana_stance.bytes.
+11-28 10:24:52.366 18694 18719 I SF2LAN-NATIVE: IA LAN suprimida #3: lado=local fighter=0x7e55ca283a80 profile=0x7e55ca4c8c80 animation=0x7e5640c65c00.
+11-28 10:24:52.366 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=1 sourceTick=102 localTick=106 name=KatanaStartStance-Right.
+11-28 10:24:53.784 18694 18719 I SF2LAN-NATIVE: IA LAN suprimida #4: lado=local fighter=0x7e55ca283a80 profile=0x7e55ca4c8c80 animation=0x7e564081d180.
+11-28 10:24:53.784 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=2 sourceTick=187 localTick=191 name=KatanaStartStanceIdle.
+11-28 10:24:53.786 18694 18719 I SF2LAN-NATIVE: LAN action selected: role=1 player=2 seq=2 tick=191 name=KatanaStartStanceIdle animation=katana_stance_idle.bytes.
+11-28 10:24:53.820 18694 18719 I SF2LAN-NATIVE: IA LAN suprimida #5: lado=remoto fighter=0x7e562d6e3540 profile=0x7e55ca4c8960 animation=0x7e564081d180.
+11-28 10:24:53.820 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=2 tick=193 name=KatanaStartStanceIdle args=1/1/0/-1.
+11-28 10:24:53.821 18694 18719 I SF2LAN-NATIVE: LAN action selected: role=1 player=1 seq=2 tick=193 name=KatanaStartStanceIdle animation=katana_stance_idle.bytes.
+11-28 10:24:55.134 18694 18719 I SF2LAN-NATIVE: Frame pacing LAN: hold=1 local=9 remoto=0 lead=9.
+11-28 10:24:56.949 18694 18719 I SF2LAN-NATIVE: IA LAN suprimida #6: lado=local fighter=0x7e55ca283a80 profile=0x7e55ca4c8c80 animation=0x7e564081d180.
+11-28 10:24:56.949 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=3 sourceTick=302 localTick=272 name=KatanaStartStanceIdle.
+11-28 10:24:57.584 18694 18719 I SF2LAN-NATIVE: IA LAN suprimida #7: lado=remoto fighter=0x7e562d6e3540 profile=0x7e55ca4c8960 animation=0x7e564081d180.
+11-28 10:24:57.584 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=3 tick=308 name=KatanaStartStanceIdle args=1/1/0/-1.
+11-28 10:24:57.634 18694 18719 I SF2LAN-NATIVE: IA LAN suprimida #8: lado=local fighter=0x7e55ca283a80 profile=0x7e55ca4c8c80 animation=0x7e564081d180.
+11-28 10:24:57.634 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=4 sourceTick=417 localTick=311 name=KatanaStartStanceIdle.
+11-28 10:24:59.503 18694 18719 I SF2LAN-NATIVE: IA LAN suprimida #9: lado=remoto fighter=0x7e562d6e3540 profile=0x7e55ca4c8960 animation=0x7e564081d180.
+11-28 10:24:59.503 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=4 tick=423 name=KatanaStartStanceIdle args=1/1/0/-1.
+11-28 10:24:59.554 18694 18719 I SF2LAN-NATIVE: IA LAN suprimida #10: lado=local fighter=0x7e55ca283a80 profile=0x7e55ca4c8c80 animation=0x7e564081d180.
+11-28 10:24:59.554 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=5 sourceTick=532 localTick=426 name=KatanaStartStanceIdle.
+11-28 10:25:01.417 18694 18719 I SF2LAN-NATIVE: IA LAN suprimida #11: lado=remoto fighter=0x7e562d6e3540 profile=0x7e55ca4c8960 animation=0x7e564081d180.
+11-28 10:25:01.417 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=5 tick=538 name=KatanaStartStanceIdle args=1/1/0/-1.
+11-28 10:25:01.434 18694 18719 I SF2LAN-NATIVE: IA LAN suprimida #12: lado=local fighter=0x7e55ca283a80 profile=0x7e55ca4c8c80 animation=0x7e564081d180.
+11-28 10:25:01.434 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=6 sourceTick=647 localTick=539 name=KatanaStartStanceIdle.
+11-28 10:25:03.334 18694 18719 I SF2LAN-NATIVE: IA LAN suprimida #13: lado=remoto fighter=0x7e562d6e3540 profile=0x7e55ca4c8960 animation=0x7e564081d180.
+11-28 10:25:03.334 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=6 tick=653 name=KatanaStartStanceIdle args=1/1/0/-1.
+11-28 10:25:03.350 18694 18719 I SF2LAN-NATIVE: IA LAN suprimida #14: lado=local fighter=0x7e55ca283a80 profile=0x7e55ca4c8c80 animation=0x7e564081d180.
+11-28 10:25:03.350 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=7 sourceTick=762 localTick=654 name=KatanaStartStanceIdle.
+11-28 10:25:04.101 18694 18719 I SF2LAN-NATIVE: Fight input source #1: remote=0 pressed=0 control=0 index=0 input=0x7e5866965fa0 fight=0x7e55fe46e900.
+11-28 10:25:04.101 18694 18719 I SF2LAN-NATIVE: Input route #1: control=0 index=0 fighter=0x7e55ca283a80 stage=2 enabled=1 controller=0x7e5856646780 active=-1.
+11-28 10:25:04.101 18694 18719 I SF2LAN-NATIVE: Fight input source #2: remote=0 pressed=1 control=7 index=0 input=0x7e5866965f40 fight=0x7e55fe46e900.
+11-28 10:25:04.101 18694 18719 I SF2LAN-NATIVE: Input route #2: control=7 index=0 fighter=0x7e55ca283a80 stage=2 enabled=1 controller=0x7e5856646780 active=-1.
+11-28 10:25:04.101 18694 18719 I SF2LAN-NATIVE: Controller activate enter #1: control=7 controller=0x7e5856646780 local=1 remote=0 active=0 queue=0x7e58569bbac0.
+11-28 10:25:04.101 18694 18719 I SF2LAN-NATIVE: Fighter action event #1: fighter=0x7e55ca283a80 lado=esquerdo action=0x7e58569bbac0 listas=1/1/0 state=0x7e58564e4d00 dispatcher=0x7e562d7e7d80.
+11-28 10:25:04.101 18694 18719 I SF2LAN-NATIVE: Controller activate #1: control=7 controller=0x7e5856646780 local=1 remote=0 active=0->1 queue=0x7e58569bbac0->0x7e58569bbac0.
+11-28 10:25:04.117 18694 18719 I SF2LAN-NATIVE: Fight input source #3: remote=0 pressed=1 control=7 index=0 input=0x7e5866965560 fight=0x7e55fe46e900.
+11-28 10:25:04.117 18694 18719 I SF2LAN-NATIVE: Input route #3: control=7 index=0 fighter=0x7e55ca283a80 stage=2 enabled=1 controller=0x7e5856646780 active=-1.
+11-28 10:25:04.117 18694 18719 I SF2LAN-NATIVE: Controller activate enter #2: control=7 controller=0x7e5856646780 local=1 remote=0 active=1 queue=0x7e58569bbac0.
+11-28 10:25:04.117 18694 18719 I SF2LAN-NATIVE: Controller activate #2: control=7 controller=0x7e5856646780 local=1 remote=0 active=1->1 queue=0x7e58569bbac0->0x7e58569bbac0.
+11-28 10:25:04.133 18694 18719 I SF2LAN-NATIVE: IA LAN suprimida #15: lado=remoto fighter=0x7e562d6e3540 profile=0x7e55ca4c8960 animation=0x7e562f0c3180.
+11-28 10:25:04.133 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=7 tick=701 name=KatanaStepBack args=1/1/0/-1.
+11-28 10:25:04.135 18694 18719 I SF2LAN-NATIVE: LAN action selected: role=1 player=1 seq=3 tick=701 name=KatanaStepBack animation=katana_step_back.bytes.
+11-28 10:25:04.135 18694 18719 I SF2LAN-NATIVE: Fight input source #4: remote=0 pressed=1 control=7 index=0 input=0x7e58669654c0 fight=0x7e55fe46e900.
+11-28 10:25:04.135 18694 18719 I SF2LAN-NATIVE: Input route #4: control=7 index=0 fighter=0x7e55ca283a80 stage=2 enabled=1 controller=0x7e5856646780 active=-1.
+11-28 10:25:04.135 18694 18719 I SF2LAN-NATIVE: Controller activate enter #3: control=7 controller=0x7e5856646780 local=1 remote=0 active=1 queue=0x7e58569bbac0.
+11-28 10:25:04.135 18694 18719 I SF2LAN-NATIVE: Controller activate #3: control=7 controller=0x7e5856646780 local=1 remote=0 active=1->1 queue=0x7e58569bbac0->0x7e58569bbac0.
+11-28 10:25:04.151 18694 18719 I SF2LAN-NATIVE: Fight input source #5: remote=0 pressed=1 control=7 index=0 input=0x7e5866965420 fight=0x7e55fe46e900.
+11-28 10:25:04.151 18694 18719 I SF2LAN-NATIVE: Input route #5: control=7 index=0 fighter=0x7e55ca283a80 stage=2 enabled=1 controller=0x7e5856646780 active=-1.
+11-28 10:25:04.151 18694 18719 I SF2LAN-NATIVE: Controller activate enter #4: control=7 controller=0x7e5856646780 local=1 remote=0 active=1 queue=0x7e58569bbac0.
+11-28 10:25:04.151 18694 18719 I SF2LAN-NATIVE: Controller activate #4: control=7 controller=0x7e5856646780 local=1 remote=0 active=1->1 queue=0x7e58569bbac0->0x7e58569bbac0.
+11-28 10:25:04.167 18694 18719 I SF2LAN-NATIVE: Fight input source #6: remote=0 pressed=1 control=7 index=0 input=0x7e5866965360 fight=0x7e55fe46e900.
+11-28 10:25:04.167 18694 18719 I SF2LAN-NATIVE: Input route #6: control=7 index=0 fighter=0x7e55ca283a80 stage=2 enabled=1 controller=0x7e5856646780 active=-1.
+11-28 10:25:04.167 18694 18719 I SF2LAN-NATIVE: Controller activate enter #5: control=7 controller=0x7e5856646780 local=1 remote=0 active=1 queue=0x7e58569bbac0.
+11-28 10:25:04.167 18694 18719 I SF2LAN-NATIVE: Controller activate #5: control=7 controller=0x7e5856646780 local=1 remote=0 active=1->1 queue=0x7e58569bbac0->0x7e58569bbac0.
+11-28 10:25:04.185 18694 18719 I SF2LAN-NATIVE: Fight input source #7: remote=0 pressed=1 control=7 index=0 input=0x7e5866965260 fight=0x7e55fe46e900.
+11-28 10:25:04.185 18694 18719 I SF2LAN-NATIVE: Input route #7: control=7 index=0 fighter=0x7e55ca283a80 stage=2 enabled=1 controller=0x7e5856646780 active=-1.
+11-28 10:25:04.185 18694 18719 I SF2LAN-NATIVE: Controller activate enter #6: control=7 controller=0x7e5856646780 local=1 remote=0 active=1 queue=0x7e58569bbac0.
+11-28 10:25:04.185 18694 18719 I SF2LAN-NATIVE: Controller activate #6: control=7 controller=0x7e5856646780 local=1 remote=0 active=1->1 queue=0x7e58569bbac0->0x7e58569bbac0.
+11-28 10:25:04.200 18694 18719 I SF2LAN-NATIVE: Fight input source #8: remote=0 pressed=1 control=7 index=0 input=0x7e58669650c0 fight=0x7e55fe46e900.
+11-28 10:25:04.200 18694 18719 I SF2LAN-NATIVE: Input route #8: control=7 index=0 fighter=0x7e55ca283a80 stage=2 enabled=1 controller=0x7e5856646780 active=-1.
+11-28 10:25:04.200 18694 18719 I SF2LAN-NATIVE: Controller activate enter #7: control=7 controller=0x7e5856646780 local=1 remote=0 active=1 queue=0x7e58569bbac0.
+11-28 10:25:04.200 18694 18719 I SF2LAN-NATIVE: Controller activate #7: control=7 controller=0x7e5856646780 local=1 remote=0 active=1->1 queue=0x7e58569bbac0->0x7e58569bbac0.
+11-28 10:25:04.217 18694 18719 I SF2LAN-NATIVE: Fight input source #9: remote=0 pressed=1 control=7 index=0 input=0x7e5866965000 fight=0x7e55fe46e900.
+11-28 10:25:04.217 18694 18719 I SF2LAN-NATIVE: Input route #9: control=7 index=0 fighter=0x7e55ca283a80 stage=2 enabled=1 controller=0x7e5856646780 active=-1.
+11-28 10:25:04.217 18694 18719 I SF2LAN-NATIVE: Controller activate enter #8: control=7 controller=0x7e5856646780 local=1 remote=0 active=1 queue=0x7e58569bbac0.
+11-28 10:25:04.218 18694 18719 I SF2LAN-NATIVE: Controller activate #8: control=7 controller=0x7e5856646780 local=1 remote=0 active=1->1 queue=0x7e58569bbac0->0x7e58569bbac0.
+11-28 10:25:04.234 18694 18719 I SF2LAN-NATIVE: Fight input source #10: remote=0 pressed=1 control=7 index=0 input=0x7e586699ce20 fight=0x7e55fe46e900.
+11-28 10:25:04.234 18694 18719 I SF2LAN-NATIVE: Input route #10: control=7 index=0 fighter=0x7e55ca283a80 stage=2 enabled=1 controller=0x7e5856646780 active=-1.
+11-28 10:25:04.234 18694 18719 I SF2LAN-NATIVE: Controller activate enter #9: control=7 controller=0x7e5856646780 local=1 remote=0 active=1 queue=0x7e58569bbac0.
+11-28 10:25:04.234 18694 18719 I SF2LAN-NATIVE: Controller activate #9: control=7 controller=0x7e5856646780 local=1 remote=0 active=1->1 queue=0x7e58569bbac0->0x7e58569bbac0.
+11-28 10:25:04.250 18694 18719 I SF2LAN-NATIVE: Fight input source #11: remote=0 pressed=1 control=7 index=0 input=0x7e586699cc60 fight=0x7e55fe46e900.
+11-28 10:25:04.250 18694 18719 I SF2LAN-NATIVE: Input route #11: control=7 index=0 fighter=0x7e55ca283a80 stage=2 enabled=1 controller=0x7e5856646780 active=-1.
+11-28 10:25:04.250 18694 18719 I SF2LAN-NATIVE: Controller activate enter #10: control=7 controller=0x7e5856646780 local=1 remote=0 active=1 queue=0x7e58569bbac0.
+11-28 10:25:04.251 18694 18719 I SF2LAN-NATIVE: Controller activate #10: control=7 controller=0x7e5856646780 local=1 remote=0 active=1->1 queue=0x7e58569bbac0->0x7e58569bbac0.
+11-28 10:25:04.267 18694 18719 I SF2LAN-NATIVE: Fight input source #12: remote=0 pressed=1 control=7 index=0 input=0x7e586699cba0 fight=0x7e55fe46e900.
+11-28 10:25:04.267 18694 18719 I SF2LAN-NATIVE: Input route #12: control=7 index=0 fighter=0x7e55ca283a80 stage=2 enabled=1 controller=0x7e5856646780 active=-1.
+11-28 10:25:04.267 18694 18719 I SF2LAN-NATIVE: Controller activate enter #11: control=7 controller=0x7e5856646780 local=1 remote=0 active=1 queue=0x7e58569bbac0.
+11-28 10:25:04.267 18694 18719 I SF2LAN-NATIVE: Controller activate #11: control=7 controller=0x7e5856646780 local=1 remote=0 active=1->1 queue=0x7e58569bbac0->0x7e58569bbac0.
+11-28 10:25:04.284 18694 18719 I SF2LAN-NATIVE: Fight input source #13: remote=0 pressed=1 control=7 index=0 input=0x7e586699ca80 fight=0x7e55fe46e900.
+11-28 10:25:04.284 18694 18719 I SF2LAN-NATIVE: Input route #13: control=7 index=0 fighter=0x7e55ca283a80 stage=2 enabled=1 controller=0x7e5856646780 active=-1.
+11-28 10:25:04.284 18694 18719 I SF2LAN-NATIVE: Controller activate enter #12: control=7 controller=0x7e5856646780 local=1 remote=0 active=1 queue=0x7e58569bbac0.
+11-28 10:25:04.284 18694 18719 I SF2LAN-NATIVE: Controller activate #12: control=7 controller=0x7e5856646780 local=1 remote=0 active=1->1 queue=0x7e58569bbac0->0x7e58569bbac0.
+11-28 10:25:04.301 18694 18719 I SF2LAN-NATIVE: Fight input source #14: remote=0 pressed=1 control=7 index=0 input=0x7e586699c8c0 fight=0x7e55fe46e900.
+11-28 10:25:04.301 18694 18719 I SF2LAN-NATIVE: Input route #14: control=7 index=0 fighter=0x7e55ca283a80 stage=2 enabled=1 controller=0x7e5856646780 active=-1.
+11-28 10:25:04.302 18694 18719 I SF2LAN-NATIVE: Controller activate: limite geral de 12 eventos atingido; diagnostico remoto continua ativo.
+11-28 10:25:04.317 18694 18719 I SF2LAN-NATIVE: Fight input source #15: remote=0 pressed=1 control=7 index=0 input=0x7e586699c800 fight=0x7e55fe46e900.
+11-28 10:25:04.317 18694 18719 I SF2LAN-NATIVE: Input route #15: control=7 index=0 fighter=0x7e55ca283a80 stage=2 enabled=1 controller=0x7e5856646780 active=-1.
+11-28 10:25:04.336 18694 18719 I SF2LAN-NATIVE: Fight input source #16: remote=0 pressed=1 control=7 index=0 input=0x7e586699c720 fight=0x7e55fe46e900.
+11-28 10:25:04.336 18694 18719 I SF2LAN-NATIVE: Input route #16: control=7 index=0 fighter=0x7e55ca283a80 stage=2 enabled=1 controller=0x7e5856646780 active=-1.
+11-28 10:25:04.352 18694 18719 I SF2LAN-NATIVE: Fight input source #17: remote=0 pressed=1 control=7 index=0 input=0x7e586699c680 fight=0x7e55fe46e900.
+11-28 10:25:04.352 18694 18719 I SF2LAN-NATIVE: Input route #17: control=7 index=0 fighter=0x7e55ca283a80 stage=2 enabled=1 controller=0x7e5856646780 active=-1.
+11-28 10:25:04.369 18694 18719 I SF2LAN-NATIVE: Fight input source #18: remote=0 pressed=0 control=7 index=0 input=0x7e586699c4e0 fight=0x7e55fe46e900.
+11-28 10:25:04.369 18694 18719 I SF2LAN-NATIVE: Input route #18: control=7 index=0 fighter=0x7e55ca283a80 stage=2 enabled=1 controller=0x7e5856646780 active=-1.
+11-28 10:25:04.899 18694 18719 I SF2LAN-NATIVE: IA LAN suprimida #16: lado=remoto fighter=0x7e562d6e3540 profile=0x7e55ca4c8960 animation=0x7e5642248c00.
+11-28 10:25:04.899 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=8 tick=747 name=KatanaIdle args=1/1/0/-1.
+11-28 10:25:04.901 18694 18719 I SF2LAN-NATIVE: LAN action selected: role=1 player=1 seq=4 tick=747 name=KatanaIdle animation=katana_idle.bytes.
+11-28 10:25:05.283 18694 18719 I SF2LAN-NATIVE: IA LAN suprimida #17: lado=local fighter=0x7e55ca283a80 profile=0x7e55ca4c8c80 animation=0x7e564081d180.
+11-28 10:25:05.283 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=8 sourceTick=877 localTick=770 name=KatanaStartStanceIdle.
+11-28 10:25:06.249 18694 18719 I SF2LAN-NATIVE: Classe ICEJFAAGIAG localizada via API IL2CPP: 0x7e56d0e3add0.
+11-28 10:25:06.250 18694 18719 I SF2LAN-NATIVE: Fight input source #19: remote=1 pressed=1 control=3 index=1 input=0x7e5866abdb00 fight=0x7e55fe46e900.
+11-28 10:25:06.250 18694 18719 I SF2LAN-NATIVE: Input route #19: control=3 index=1 fighter=0x7e562d6e3540 stage=2 enabled=1 controller=0x7e58537b8c30 active=-1.
+11-28 10:25:06.250 18694 18719 I SF2LAN-NATIVE: Controller activate enter #17: control=3 controller=0x7e58537b8c30 local=0 remote=1 active=0 queue=0x7e58564e4980.
+11-28 10:25:06.250 18694 18719 I SF2LAN-NATIVE: Fighter action event #2: fighter=0x7e562d6e3540 lado=direito action=0x7e58564e4980 listas=1/1/0 state=0x7e58564fb240 dispatcher=0x7e5605e052d0.
+11-28 10:25:06.250 18694 18719 I SF2LAN-NATIVE: Controller activate #17: control=3 controller=0x7e58537b8c30 local=0 remote=1 active=0->1 queue=0x7e58564e4980->0x7e58564e4980.
+11-28 10:25:06.250 18694 18719 I SF2LAN-NATIVE: Comando LAN #1: control=3 pressed=1 index=1 input=0x7e5866abdb00 fight=0x7e55fe46e900.
+11-28 10:25:06.284 18694 18719 I SF2LAN-NATIVE: IA LAN suprimida #18: lado=local fighter=0x7e55ca283a80 profile=0x7e55ca4c8c80 animation=0x7e562f0c3180.
+11-28 10:25:06.284 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=9 sourceTick=937 localTick=830 name=KatanaStepBack.
+11-28 10:25:06.286 18694 18719 I SF2LAN-NATIVE: LAN action selected: role=1 player=2 seq=3 tick=830 name=KatanaStepBack animation=katana_step_back.bytes.
+11-28 10:25:06.466 18694 18719 I SF2LAN-NATIVE: Fight input source #20: remote=1 pressed=0 control=3 index=1 input=0x7e5866afc860 fight=0x7e55fe46e900.
+11-28 10:25:06.467 18694 18719 I SF2LAN-NATIVE: Input route #20: control=3 index=1 fighter=0x7e562d6e3540 stage=2 enabled=1 controller=0x7e58537b8c30 active=-1.
+11-28 10:25:06.467 18694 18719 I SF2LAN-NATIVE: Comando LAN #2: control=3 pressed=0 index=1 input=0x7e5866afc860 fight=0x7e55fe46e900.
+11-28 10:25:06.867 18694 18719 I SF2LAN-NATIVE: IA LAN suprimida #19: lado=remoto fighter=0x7e562d6e3540 profile=0x7e55ca4c8960 animation=0x7e5642248c00.
+11-28 10:25:06.867 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=9 tick=865 name=KatanaIdle args=1/1/0/-1.
+11-28 10:25:07.033 18694 18719 I SF2LAN-NATIVE: IA LAN suprimida #20: lado=local fighter=0x7e55ca283a80 profile=0x7e55ca4c8c80 animation=0x7e5642248c00.
+11-28 10:25:07.033 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=10 sourceTick=983 localTick=875 name=KatanaIdle.
+11-28 10:25:07.034 18694 18719 I SF2LAN-NATIVE: LAN action selected: role=1 player=2 seq=4 tick=875 name=KatanaIdle animation=katana_idle.bytes.
+11-28 10:25:07.519 18694 18719 I SF2LAN-NATIVE: Fight input source #21: remote=0 pressed=1 control=9 index=0 input=0x7e5866b94000 fight=0x7e55fe46e900.
+11-28 10:25:07.520 18694 18719 I SF2LAN-NATIVE: Input route #21: control=9 index=0 fighter=0x7e55ca283a80 stage=2 enabled=1 controller=0x7e5856646780 active=-1.
+11-28 10:25:07.520 18694 18719 I SF2LAN-NATIVE: Fighter action event #3: fighter=0x7e55ca283a80 lado=esquerdo action=0x7e58569bbac0 listas=1/1/0 state=0x7e58564e4d00 dispatcher=0x7e562d7e7d80.
+11-28 10:25:07.535 18694 18719 I SF2LAN-NATIVE: Fight input source #22: remote=0 pressed=0 control=9 index=0 input=0x7e5866bcc880 fight=0x7e55fe46e900.
+11-28 10:25:07.535 18694 18719 I SF2LAN-NATIVE: Input route #22: control=9 index=0 fighter=0x7e55ca283a80 stage=2 enabled=1 controller=0x7e5856646780 active=-1.
+11-28 10:25:07.556 18694 18719 I SF2LAN-NATIVE: IA LAN: limite diagnostico de 20 eventos atingido.
+11-28 10:25:07.557 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=10 tick=906 name=KatanaSlash args=1/1/0/-1.
+11-28 10:25:07.560 18694 18719 I SF2LAN-NATIVE: LAN action selected: role=1 player=1 seq=5 tick=906 name=KatanaSlash animation=katana_slash.bytes.
+11-28 10:25:08.633 18694 18719 I SF2LAN-NATIVE: Fight input source #23: remote=1 pressed=1 control=9 index=1 input=0x7e58664cfec0 fight=0x7e55fe46e900.
+11-28 10:25:08.633 18694 18719 I SF2LAN-NATIVE: Input route #23: control=9 index=1 fighter=0x7e562d6e3540 stage=2 enabled=1 controller=0x7e58537b8c30 active=-1.
+11-28 10:25:08.633 18694 18719 I SF2LAN-NATIVE: Controller activate enter #19: control=9 controller=0x7e58537b8c30 local=0 remote=1 active=0 queue=0x7e58564e4980.
+11-28 10:25:08.633 18694 18719 I SF2LAN-NATIVE: Fighter action event #4: fighter=0x7e562d6e3540 lado=direito action=0x7e58564e4980 listas=1/1/0 state=0x7e58564fb240 dispatcher=0x7e5605e052d0.
+11-28 10:25:08.633 18694 18719 I SF2LAN-NATIVE: Controller activate #19: control=9 controller=0x7e58537b8c30 local=0 remote=1 active=0->1 queue=0x7e58564e4980->0x7e58564e4980.
+11-28 10:25:08.633 18694 18719 I SF2LAN-NATIVE: Comando LAN #3: control=9 pressed=1 index=1 input=0x7e58664cfec0 fight=0x7e55fe46e900.
+11-28 10:25:08.649 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=11 sourceTick=1080 localTick=972 name=KatanaSlash.
+11-28 10:25:08.651 18694 18719 I SF2LAN-NATIVE: LAN action selected: role=1 player=2 seq=5 tick=972 name=KatanaSlash animation=katana_slash.bytes.
+11-28 10:25:08.666 18694 18719 I SF2LAN-NATIVE: Fight input source #24: remote=1 pressed=0 control=9 index=1 input=0x7e58664cf1e0 fight=0x7e55fe46e900.
+11-28 10:25:08.666 18694 18719 I SF2LAN-NATIVE: Input route #24: control=9 index=1 fighter=0x7e562d6e3540 stage=2 enabled=1 controller=0x7e58537b8c30 active=-1.
+11-28 10:25:08.666 18694 18719 I SF2LAN-NATIVE: Comando LAN #4: control=9 pressed=0 index=1 input=0x7e58664cf1e0 fight=0x7e55fe46e900.
+11-28 10:25:08.766 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=11 tick=979 name=KatanaIdle args=1/1/0/-1.
+11-28 10:25:08.767 18694 18719 I SF2LAN-NATIVE: LAN action selected: role=1 player=1 seq=6 tick=979 name=KatanaIdle animation=katana_idle.bytes.
+11-28 10:25:09.916 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=12 sourceTick=1153 localTick=1048 name=KatanaIdle.
+11-28 10:25:09.917 18694 18719 I SF2LAN-NATIVE: LAN action selected: role=1 player=2 seq=6 tick=1048 name=KatanaIdle animation=katana_idle.bytes.
+11-28 10:25:10.733 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=12 tick=1097 name=KatanaIdle args=1/1/0/-1.
+11-28 10:25:11.866 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=13 sourceTick=1271 localTick=1165 name=KatanaIdle.
+11-28 10:25:12.701 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=13 tick=1215 name=KatanaIdle args=1/1/0/-1.
+11-28 10:25:13.801 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=14 sourceTick=1389 localTick=1281 name=KatanaIdle.
+11-28 10:25:14.666 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=14 tick=1333 name=KatanaIdle args=1/1/0/-1.
+11-28 10:25:15.816 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=15 sourceTick=1507 localTick=1402 name=KatanaIdle.
+11-28 10:25:16.633 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=15 tick=1451 name=KatanaIdle args=1/1/0/-1.
+11-28 10:25:17.749 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=16 sourceTick=1625 localTick=1518 name=KatanaIdle.
+11-28 10:25:18.599 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=16 tick=1569 name=KatanaIdle args=1/1/0/-1.
+11-28 10:25:19.733 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=17 sourceTick=1743 localTick=1637 name=KatanaIdle.
+11-28 10:25:20.566 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=17 tick=1687 name=KatanaIdle args=1/1/0/-1.
+11-28 10:25:21.368 18694 18719 I SF2LAN-NATIVE: Fight input source #25: remote=0 pressed=0 control=0 index=0 input=0x7e5866351f00 fight=0x7e55fe46e900.
+11-28 10:25:21.368 18694 18719 I SF2LAN-NATIVE: Input route #25: control=0 index=0 fighter=0x7e55ca283a80 stage=2 enabled=1 controller=0x7e5856646780 active=-1.
+11-28 10:25:21.369 18694 18719 I SF2LAN-NATIVE: Fight input source #26: remote=0 pressed=1 control=1 index=0 input=0x7e5866351ee0 fight=0x7e55fe46e900.
+11-28 10:25:21.369 18694 18719 I SF2LAN-NATIVE: Input route #26: control=1 index=0 fighter=0x7e55ca283a80 stage=2 enabled=1 controller=0x7e5856646780 active=-1.
+11-28 10:25:21.369 18694 18719 I SF2LAN-NATIVE: Fighter action event #5: fighter=0x7e55ca283a80 lado=esquerdo action=0x7e58569bbac0 listas=1/1/0 state=0x7e58564e4d00 dispatcher=0x7e562d7e7d80.
+11-28 10:25:21.385 18694 18719 I SF2LAN-NATIVE: Fight input source #27: remote=0 pressed=1 control=1 index=0 input=0x7e58663516a0 fight=0x7e55fe46e900.
+11-28 10:25:21.385 18694 18719 I SF2LAN-NATIVE: Input route #27: control=1 index=0 fighter=0x7e55ca283a80 stage=2 enabled=1 controller=0x7e5856646780 active=-1.
+11-28 10:25:21.402 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=18 tick=1737 name=JumpUp args=1/1/0/-1.
+11-28 10:25:21.404 18694 18719 I SF2LAN-NATIVE: LAN action selected: role=1 player=1 seq=7 tick=1737 name=JumpUp animation=jump.bytes.
+11-28 10:25:21.404 18694 18719 I SF2LAN-NATIVE: Fight input source #28: remote=0 pressed=1 control=1 index=0 input=0x7e58663515c0 fight=0x7e55fe46e900.
+11-28 10:25:21.404 18694 18719 I SF2LAN-NATIVE: Input route #28: control=1 index=0 fighter=0x7e55ca283a80 stage=2 enabled=1 controller=0x7e5856646780 active=-1.
+11-28 10:25:21.419 18694 18719 I SF2LAN-NATIVE: Fight input source #29: remote=0 pressed=1 control=1 index=0 input=0x7e5866351500 fight=0x7e55fe46e900.
+11-28 10:25:21.420 18694 18719 I SF2LAN-NATIVE: Input route #29: control=1 index=0 fighter=0x7e55ca283a80 stage=2 enabled=1 controller=0x7e5856646780 active=-1.
+11-28 10:25:21.435 18694 18719 I SF2LAN-NATIVE: Fight input source #30: remote=0 pressed=1 control=1 index=0 input=0x7e5866351440 fight=0x7e55fe46e900.
+11-28 10:25:21.435 18694 18719 I SF2LAN-NATIVE: Input route #30: control=1 index=0 fighter=0x7e55ca283a80 stage=2 enabled=1 controller=0x7e5856646780 active=-1.
+11-28 10:25:21.452 18694 18719 I SF2LAN-NATIVE: Fight input source #31: remote=0 pressed=1 control=1 index=0 input=0x7e5866351380 fight=0x7e55fe46e900.
+11-28 10:25:21.452 18694 18719 I SF2LAN-NATIVE: Input route #31: control=1 index=0 fighter=0x7e55ca283a80 stage=2 enabled=1 controller=0x7e5856646780 active=-1.
+11-28 10:25:21.468 18694 18719 I SF2LAN-NATIVE: Fight input source #32: remote=0 pressed=1 control=1 index=0 input=0x7e58663512e0 fight=0x7e55fe46e900.
+11-28 10:25:21.468 18694 18719 I SF2LAN-NATIVE: Input route #32: control=1 index=0 fighter=0x7e55ca283a80 stage=2 enabled=1 controller=0x7e5856646780 active=-1.
+11-28 10:25:21.485 18694 18719 I SF2LAN-NATIVE: Fight input source #33: remote=0 pressed=1 control=1 index=0 input=0x7e5866351240 fight=0x7e55fe46e900.
+11-28 10:25:21.485 18694 18719 I SF2LAN-NATIVE: Input route #33: control=1 index=0 fighter=0x7e55ca283a80 stage=2 enabled=1 controller=0x7e5856646780 active=-1.
+11-28 10:25:21.501 18694 18719 I SF2LAN-NATIVE: Fight input source #34: remote=0 pressed=1 control=1 index=0 input=0x7e58663511a0 fight=0x7e55fe46e900.
+11-28 10:25:21.501 18694 18719 I SF2LAN-NATIVE: Input route #34: control=1 index=0 fighter=0x7e55ca283a80 stage=2 enabled=1 controller=0x7e5856646780 active=-1.
+11-28 10:25:21.519 18694 18719 I SF2LAN-NATIVE: Fight input source #35: remote=0 pressed=0 control=1 index=0 input=0x7e58663510a0 fight=0x7e55fe46e900.
+11-28 10:25:21.519 18694 18719 I SF2LAN-NATIVE: Input route #35: control=1 index=0 fighter=0x7e55ca283a80 stage=2 enabled=1 controller=0x7e5856646780 active=-1.
+11-28 10:25:21.683 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=18 sourceTick=1861 localTick=1754 name=KatanaIdle.
+11-28 10:25:22.766 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=19 tick=1819 name=KatanaTransition args=1/1/0/-1.
+11-28 10:25:22.767 18694 18719 I SF2LAN-NATIVE: LAN action selected: role=1 player=1 seq=8 tick=1819 name=KatanaTransition animation=katana_transition.bytes.
+11-28 10:25:23.034 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=20 tick=1835 name=KatanaIdle args=1/1/0/-1.
+11-28 10:25:23.034 18694 18719 I SF2LAN-NATIVE: LAN action selected: role=1 player=1 seq=9 tick=1835 name=KatanaIdle animation=katana_idle.bytes.
+11-28 10:25:23.634 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=19 sourceTick=1979 localTick=1871 name=KatanaIdle.
+11-28 10:25:24.049 18694 18719 I SF2LAN-NATIVE: Fight input source #36: remote=1 pressed=1 control=1 index=1 input=0x7e58663fbc60 fight=0x7e55fe46e900.
+11-28 10:25:24.049 18694 18719 I SF2LAN-NATIVE: Input route #36: control=1 index=1 fighter=0x7e562d6e3540 stage=2 enabled=1 controller=0x7e58537b8c30 active=-1.
+11-28 10:25:24.049 18694 18719 I SF2LAN-NATIVE: Controller activate enter #29: control=1 controller=0x7e58537b8c30 local=0 remote=1 active=0 queue=0x7e58564e4980.
+11-28 10:25:24.049 18694 18719 I SF2LAN-NATIVE: Fighter action event #6: fighter=0x7e562d6e3540 lado=direito action=0x7e58564e4980 listas=1/1/0 state=0x7e58564fb240 dispatcher=0x7e5605e052d0.
+11-28 10:25:24.049 18694 18719 I SF2LAN-NATIVE: Controller activate #29: control=1 controller=0x7e58537b8c30 local=0 remote=1 active=0->1 queue=0x7e58564e4980->0x7e58564e4980.
+11-28 10:25:24.049 18694 18719 I SF2LAN-NATIVE: Comando LAN #5: control=1 pressed=1 index=1 input=0x7e58663fbc60 fight=0x7e55fe46e900.
+11-28 10:25:24.099 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=20 sourceTick=2005 localTick=1899 name=JumpUp.
+11-28 10:25:24.100 18694 18719 I SF2LAN-NATIVE: LAN action selected: role=1 player=2 seq=7 tick=1899 name=JumpUp animation=jump.bytes.
+11-28 10:25:24.232 18694 18719 I SF2LAN-NATIVE: Fight input source #37: remote=1 pressed=0 control=1 index=1 input=0x7e5865c35de0 fight=0x7e55fe46e900.
+11-28 10:25:24.232 18694 18719 I SF2LAN-NATIVE: Input route #37: control=1 index=1 fighter=0x7e562d6e3540 stage=2 enabled=1 controller=0x7e58537b8c30 active=-1.
+11-28 10:25:24.232 18694 18719 I SF2LAN-NATIVE: Comando LAN #6: control=1 pressed=0 index=1 input=0x7e5865c35de0 fight=0x7e55fe46e900.
+11-28 10:25:25.000 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=21 tick=1953 name=KatanaIdle args=1/1/0/-1.
+11-28 10:25:25.467 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=21 sourceTick=2087 localTick=1981 name=KatanaTransition.
+11-28 10:25:25.468 18694 18719 I SF2LAN-NATIVE: LAN action selected: role=1 player=2 seq=8 tick=1981 name=KatanaTransition animation=katana_transition.bytes.
+11-28 10:25:25.733 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=22 sourceTick=2103 localTick=1997 name=KatanaIdle.
+11-28 10:25:25.734 18694 18719 I SF2LAN-NATIVE: LAN action selected: role=1 player=2 seq=9 tick=1997 name=KatanaIdle animation=katana_idle.bytes.
+11-28 10:25:26.969 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=22 tick=2071 name=KatanaIdle args=1/1/0/-1.
+11-28 10:25:27.683 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=23 sourceTick=2221 localTick=2114 name=KatanaIdle.
+11-28 10:25:28.933 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=23 tick=2189 name=KatanaIdle args=1/1/0/-1.
+11-28 10:25:29.683 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=24 sourceTick=2339 localTick=2234 name=KatanaIdle.
+11-28 10:25:30.899 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=24 tick=2307 name=KatanaIdle args=1/1/0/-1.
+11-28 10:25:31.616 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=25 sourceTick=2457 localTick=2350 name=KatanaIdle.
+11-28 10:25:32.866 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=25 tick=2425 name=KatanaIdle args=1/1/0/-1.
+11-28 10:25:33.566 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=26 sourceTick=2575 localTick=2467 name=KatanaIdle.
+11-28 10:25:34.833 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=26 tick=2543 name=KatanaIdle args=1/1/0/-1.
+11-28 10:25:35.582 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=27 sourceTick=2693 localTick=2588 name=KatanaIdle.
+11-28 10:25:36.799 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=27 tick=2661 name=KatanaIdle args=1/1/0/-1.
+11-28 10:25:37.534 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=28 sourceTick=2811 localTick=2705 name=KatanaIdle.
+11-28 10:25:38.766 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=28 tick=2779 name=KatanaIdle args=1/1/0/-1.
+11-28 10:25:39.484 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=29 sourceTick=2929 localTick=2822 name=KatanaIdle.
+11-28 10:25:40.734 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=29 tick=2897 name=KatanaIdle args=1/1/0/-1.
+11-28 10:25:41.434 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=30 sourceTick=3047 localTick=2939 name=KatanaIdle.
+11-28 10:25:42.699 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=30 tick=3015 name=KatanaIdle args=1/1/0/-1.
+11-28 10:25:43.431 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=31 sourceTick=3165 localTick=3059 name=KatanaIdle.
+11-28 10:25:44.663 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=31 tick=3133 name=KatanaIdle args=1/1/0/-1.
+11-28 10:25:45.381 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=32 sourceTick=3283 localTick=3176 name=KatanaIdle.
+11-28 10:25:46.630 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=32 tick=3251 name=KatanaIdle args=1/1/0/-1.
+11-28 10:25:47.049 18694 18719 I SF2LAN-NATIVE: Fight input source #38: remote=0 pressed=1 control=9 index=0 input=0x7e585cc36f80 fight=0x7e55fe46e900.
+11-28 10:25:47.049 18694 18719 I SF2LAN-NATIVE: Input route #38: control=9 index=0 fighter=0x7e55ca283a80 stage=2 enabled=1 controller=0x7e5856646780 active=-1.
+11-28 10:25:47.049 18694 18719 I SF2LAN-NATIVE: Fighter action event #7: fighter=0x7e55ca283a80 lado=esquerdo action=0x7e58569bbac0 listas=1/1/0 state=0x7e58564e4d00 dispatcher=0x7e562d7e7d80.
+11-28 10:25:47.066 18694 18719 I SF2LAN-NATIVE: Fight input source #39: remote=0 pressed=0 control=9 index=0 input=0x7e585cc36860 fight=0x7e55fe46e900.
+11-28 10:25:47.066 18694 18719 I SF2LAN-NATIVE: Input route #39: control=9 index=0 fighter=0x7e55ca283a80 stage=2 enabled=1 controller=0x7e5856646780 active=-1.
+11-28 10:25:47.080 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=33 tick=3278 name=KatanaSlash args=1/1/0/-1.
+11-28 10:25:47.083 18694 18719 I SF2LAN-NATIVE: LAN action selected: role=1 player=1 seq=10 tick=3278 name=KatanaSlash animation=katana_slash.bytes.
+11-28 10:25:47.347 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=33 sourceTick=3401 localTick=3294 name=KatanaIdle.
+11-28 10:25:48.297 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=34 tick=3351 name=KatanaIdle args=1/1/0/-1.
+11-28 10:25:48.298 18694 18719 I SF2LAN-NATIVE: LAN action selected: role=1 player=1 seq=11 tick=3351 name=KatanaIdle animation=katana_idle.bytes.
+11-28 10:25:49.215 18694 18719 I SF2LAN-NATIVE: Fight input source #40: remote=0 pressed=1 control=9 index=0 input=0x7e585c892d20 fight=0x7e55fe46e900.
+11-28 10:25:49.215 18694 18719 I SF2LAN-NATIVE: Input route #40: control=9 index=0 fighter=0x7e55ca283a80 stage=2 enabled=1 controller=0x7e5856646780 active=-1.
+11-28 10:25:49.215 18694 18719 I SF2LAN-NATIVE: Fighter action event #8: fighter=0x7e55ca283a80 lado=esquerdo action=0x7e58569bbac0 listas=1/1/0 state=0x7e58564e4d00 dispatcher=0x7e562d7e7d80.
+11-28 10:25:49.232 18694 18719 I SF2LAN-NATIVE: Fight input source #41: remote=0 pressed=0 control=9 index=0 input=0x7e585c892500 fight=0x7e55fe46e900.
+11-28 10:25:49.232 18694 18719 I SF2LAN-NATIVE: Input route: limite diagnostico de 40 eventos atingido.
+11-28 10:25:49.247 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=35 tick=3408 name=KatanaSlash args=1/1/0/-1.
+11-28 10:25:49.248 18694 18719 I SF2LAN-NATIVE: LAN action selected: role=1 player=1 seq=12 tick=3408 name=KatanaSlash animation=katana_slash.bytes.
+11-28 10:25:49.347 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=34 sourceTick=3519 localTick=3414 name=KatanaIdle.
+11-28 10:25:50.464 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=36 tick=3481 name=KatanaIdle args=1/1/0/-1.
+11-28 10:25:50.465 18694 18719 I SF2LAN-NATIVE: LAN action selected: role=1 player=1 seq=13 tick=3481 name=KatanaIdle animation=katana_idle.bytes.
+11-28 10:25:51.280 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=35 sourceTick=3637 localTick=3530 name=KatanaIdle.
+11-28 10:25:51.330 18694 18719 I SF2LAN-NATIVE: Fight input source #42: remote=1 pressed=1 control=9 index=1 input=0x7e585c9a8700 fight=0x7e55fe46e900.
+11-28 10:25:51.330 18694 18719 I SF2LAN-NATIVE: Controller activate enter #32: control=9 controller=0x7e58537b8c30 local=0 remote=1 active=0 queue=0x7e58564e4980.
+11-28 10:25:51.330 18694 18719 I SF2LAN-NATIVE: Fighter action event #9: fighter=0x7e562d6e3540 lado=direito action=0x7e58564e4980 listas=1/1/0 state=0x7e58564fb240 dispatcher=0x7e5605e052d0.
+11-28 10:25:51.330 18694 18719 I SF2LAN-NATIVE: Controller activate #32: control=9 controller=0x7e58537b8c30 local=0 remote=1 active=0->1 queue=0x7e58564e4980->0x7e58564e4980.
+11-28 10:25:51.330 18694 18719 I SF2LAN-NATIVE: Comando LAN #7: control=9 pressed=1 index=1 input=0x7e585c9a8700 fight=0x7e55fe46e900.
+11-28 10:25:51.363 18694 18719 I SF2LAN-NATIVE: Fight input source #43: remote=1 pressed=0 control=9 index=1 input=0x7e585c9e2f40 fight=0x7e55fe46e900.
+11-28 10:25:51.363 18694 18719 I SF2LAN-NATIVE: Comando LAN #8: control=9 pressed=0 index=1 input=0x7e585c9e2f40 fight=0x7e55fe46e900.
+11-28 10:25:51.380 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=36 sourceTick=3642 localTick=3536 name=KatanaSlash.
+11-28 10:25:51.382 18694 18719 I SF2LAN-NATIVE: LAN action selected: role=1 player=2 seq=10 tick=3536 name=KatanaSlash animation=katana_slash.bytes.
+11-28 10:25:51.864 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=37 tick=3565 name=HighBlockHeavy args=1/1/0/-1.
+11-28 10:25:51.864 18694 18719 I SF2LAN-NATIVE: Autoridade de combate #1: fighter=0x7e562d6e3540 acao=damage= dano=0.0000 rounds=0.
+11-28 10:25:51.866 18694 18719 I SF2LAN-NATIVE: LAN action selected: role=1 player=1 seq=14 tick=3565 name=HighBlockHeavy animation=high_block_heavy.bytes.
+11-28 10:25:52.597 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=37 sourceTick=3715 localTick=3609 name=KatanaIdle.
+11-28 10:25:52.598 18694 18719 I SF2LAN-NATIVE: LAN action selected: role=1 player=2 seq=11 tick=3609 name=KatanaIdle animation=katana_idle.bytes.
+11-28 10:25:53.230 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=38 tick=3647 name=KatanaTransition args=1/1/0/-1.
+11-28 10:25:53.233 18694 18719 I SF2LAN-NATIVE: LAN action selected: role=1 player=1 seq=15 tick=3647 name=KatanaTransition animation=katana_transition.bytes.
+11-28 10:25:53.397 18694 18719 I SF2LAN-NATIVE: Fight input source #44: remote=1 pressed=1 control=9 index=1 input=0x7e585cafddc0 fight=0x7e55fe46e900.
+11-28 10:25:53.397 18694 18719 I SF2LAN-NATIVE: Controller activate enter #33: control=9 controller=0x7e58537b8c30 local=0 remote=1 active=0 queue=0x7e58564e4980.
+11-28 10:25:53.397 18694 18719 I SF2LAN-NATIVE: Fighter action event #10: fighter=0x7e562d6e3540 lado=direito action=0x7e58564e4980 listas=1/1/0 state=0x7e58564fb240 dispatcher=0x7e5605e052d0.
+11-28 10:25:53.397 18694 18719 I SF2LAN-NATIVE: Controller activate #33: control=9 controller=0x7e58537b8c30 local=0 remote=1 active=0->1 queue=0x7e58564e4980->0x7e58564e4980.
+11-28 10:25:53.397 18694 18719 I SF2LAN-NATIVE: Comando LAN #9: control=9 pressed=1 index=1 input=0x7e585cafddc0 fight=0x7e55fe46e900.
+11-28 10:25:53.430 18694 18719 I SF2LAN-NATIVE: Fight input source #45: remote=1 pressed=0 control=9 index=1 input=0x7e585cafd360 fight=0x7e55fe46e900.
+11-28 10:25:53.430 18694 18719 I SF2LAN-NATIVE: Comando LAN #10: control=9 pressed=0 index=1 input=0x7e585cafd360 fight=0x7e55fe46e900.
+11-28 10:25:53.430 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=38 sourceTick=3767 localTick=3659 name=KatanaSlash.
+11-28 10:25:53.432 18694 18719 I SF2LAN-NATIVE: LAN action selected: role=1 player=2 seq=12 tick=3659 name=KatanaSlash animation=katana_slash.bytes.
+11-28 10:25:53.497 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=39 tick=3663 name=KatanaIdle args=1/1/0/-1.
+11-28 10:25:53.497 18694 18719 I SF2LAN-NATIVE: LAN action selected: role=1 player=1 seq=16 tick=3663 name=KatanaIdle animation=katana_idle.bytes.
+11-28 10:25:54.697 18694 18719 I SF2LAN-NATIVE: LAN action applied: player=2 seq=39 sourceTick=3840 localTick=3735 name=KatanaIdle.
+11-28 10:25:54.698 18694 18719 I SF2LAN-NATIVE: LAN action selected: role=1 player=2 seq=13 tick=3735 name=KatanaIdle animation=katana_idle.bytes.
+11-28 10:25:55.464 18694 18719 I SF2LAN-NATIVE: LAN action publish: player=1 seq=40 tick=3781 name=KatanaIdle args=1/1/0/-1.

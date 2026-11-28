@@ -252,6 +252,15 @@ public final class LanNativeBridge {
 
     private static native boolean nativeInstall();
 
+    static String readAction() { return installed ? nativeReadAction() : ""; }
+    static void receiveAction(String record) { if (installed) nativeReceiveAction(record); }
+    static void ackAction(int sequence) { if (installed) nativeAckAction(sequence); }
+    static int appliedAction() { return installed ? nativeAppliedAction() : 0; }
+    private static native String nativeReadAction();
+    private static native void nativeReceiveAction(String record);
+    private static native void nativeAckAction(int sequence);
+    private static native int nativeAppliedAction();
+
     private static native void nativeSetSessionReady(boolean ready);
 
     private static native void nativeSetPlayerRole(int role);

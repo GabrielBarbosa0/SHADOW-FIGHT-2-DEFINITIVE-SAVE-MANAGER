@@ -14,6 +14,10 @@ marco funcional.
 
 Atualizações verificadas:
 
+- p148: [seleção autoritativa de ações](ACTION-AUTHORITY-P148.md). P1 publicou
+  40 eventos e P2 publicou 39; cada sequência foi aplicada uma vez no peer.
+  Recuo, salto e golpes repetidos testados nos dois MuMu. Checkpoint parcial:
+  fase da animação, recuperação de atraso e deriva ainda não estão resolvidas.
 - Equipamentos canônicos: `77a710f`, p146; ver
   [relatório de equipamentos](EQUIPMENT-CANONICALIZATION-P146.md).
 - p147: [observação das ações reais](ACTION-OBSERVATION-P147.md). Recuo, salto

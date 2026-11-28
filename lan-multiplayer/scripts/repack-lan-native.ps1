@@ -2,6 +2,7 @@ param(
     [Parameter(Mandatory)] [string]$BaseApk,
     [Parameter(Mandatory)] [string]$WorkingDirectory,
     [Parameter(Mandatory)] [string]$OutputApk,
+    [switch]$RebuildBridge,
     [switch]$AllowRemoteAiForDiagnostics,
     [switch]$TraceAllFighterFloats
 )
@@ -71,6 +72,30 @@ if ($TraceAllFighterFloats) {
     Copy-Item -LiteralPath $basePath -Destination $unsignedApk
     & jar --update --file $unsignedApk -C $stage 'lib/arm64-v8a/libsf2lanhook.so'
     if ($LASTEXITCODE -ne 0) { throw 'A atualizacao incremental do APK falhou.' }
+
+    if ($RebuildBridge) {
+        # Only these known bases isolate com.sf2.lan in classes8.dex.
+        if ($baseHash -notin @(
+            'F1848F599F188984CBA9F0760CF91908DE54DAF631341EE9A76A145DCD140727',
+            'C9C9C7AF1235BB5BF2B42A16B376946D75655016EE32DB53F7EBEE74594CEE5C'
+        )) { throw 'RebuildBridge exige base p141 ou p146 verificada.' }
+        $androidJar = Join-Path $env:LOCALAPPDATA 'Android\Sdk\platforms\android-36.1\android.jar'
+        $classes = Join-Path $workPath 'classes'
+        $dex = Join-Path $workPath 'dex'
+        $bridgeJar = Join-Path $workPath 'bridge.jar'
+        New-Item -ItemType Directory -Path $classes, $dex | Out-Null
+        $sources = Get-ChildItem (Join-Path $componentRoot 'lan_bridge\android\src') -Recurse -Filter '*.java' |
+            ForEach-Object FullName
+        & javac --release 8 -encoding UTF-8 -classpath $androidJar -d $classes $sources
+        if ($LASTEXITCODE -ne 0) { throw 'javac falhou.' }
+        & jar --create --file $bridgeJar -C $classes .
+        if ($LASTEXITCODE -ne 0) { throw 'jar falhou.' }
+        & (Join-Path $buildTools 'd8.bat') --release --min-api 24 --lib $androidJar --output $dex $bridgeJar
+        if ($LASTEXITCODE -ne 0) { throw 'd8 falhou.' }
+        Copy-Item -LiteralPath (Join-Path $dex 'classes.dex') -Destination (Join-Path $stage 'classes8.dex')
+        & jar --update --file $unsignedApk -C $stage classes8.dex
+        if ($LASTEXITCODE -ne 0) { throw 'Atualizacao de classes8.dex falhou.' }
+    }
 
     & $zipalign -p -f 4 $unsignedApk $alignedApk
     if ($LASTEXITCODE -ne 0) { throw 'zipalign falhou.' }

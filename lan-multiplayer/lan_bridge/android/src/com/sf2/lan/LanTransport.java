@@ -45,6 +45,8 @@ public final class LanTransport implements Runnable {
     private static final int TYPE_FIGHT_AUTHORITY = 15;
     private static final int TYPE_MATCH_CONFIG = 16;
     private static final int TYPE_MATCH_CONFIG_ACK = 17;
+    private static final int TYPE_ACTION = 18;
+    private static final int TYPE_ACTION_ACK = 19;
     private static final int HEADER_SIZE = 36;
     private static final int INPUT_SIZE = 10;
     private static final int START_SIZE = 8;
@@ -358,6 +360,8 @@ public final class LanTransport implements Runnable {
             handleMatchConfig(payload);
         } else if (type == TYPE_MATCH_CONFIG_ACK) {
             handleMatchConfigAck(payload);
+        } else if (type == TYPE_ACTION || type == TYPE_ACTION_ACK) {
+            handleAction(payload, type == TYPE_ACTION_ACK);
         } else if (type == TYPE_DISCONNECT) {
             connected = false;
             resetSession();
@@ -767,6 +771,19 @@ public final class LanTransport implements Runnable {
             payload.putFloat(value);
         }
         send(TYPE_STATE, payload.array(), peer);
+        String actionRecord = LanNativeBridge.readAction();
+        if (!actionRecord.isEmpty()) {
+            byte[] action = actionRecord.getBytes(java.nio.charset.StandardCharsets.US_ASCII);
+            if (action.length <= 256) {
+                send(TYPE_ACTION, ByteBuffer.allocate(4 + action.length).order(ByteOrder.BIG_ENDIAN)
+                    .putInt(activeRoundId).put(action).array(), peer);
+            }
+        }
+        int appliedAction = LanNativeBridge.appliedAction();
+        if (appliedAction > 0) {
+            send(TYPE_ACTION_ACK, ByteBuffer.allocate(8).order(ByteOrder.BIG_ENDIAN)
+                .putInt(activeRoundId).putInt(appliedAction).array(), peer);
+        }
         localFightAuthority = LanNativeBridge.readLocalFightAuthority(
             activeRoundId & 0xffffffffL
         );
@@ -789,6 +806,19 @@ public final class LanTransport implements Runnable {
                 .putFloat(localFightAuthority.opponentY)
                 .putFloat(localFightAuthority.opponentZ);
             send(TYPE_FIGHT_AUTHORITY, authority.array(), peer);
+        }
+    }
+
+    private void handleAction(byte[] payload, boolean acknowledgement) {
+        if (controllerMode || !isSessionReady() || activeRoundId == 0
+            || payload.length < 5 || payload.length > 260) return;
+        ByteBuffer record = ByteBuffer.wrap(payload).order(ByteOrder.BIG_ENDIAN);
+        if (record.getInt() != activeRoundId) return;
+        if (acknowledgement) {
+            if (payload.length == 8) LanNativeBridge.ackAction(record.getInt());
+        } else {
+            LanNativeBridge.receiveAction(new String(payload, 4, payload.length - 4,
+                java.nio.charset.StandardCharsets.US_ASCII));
         }
     }
 

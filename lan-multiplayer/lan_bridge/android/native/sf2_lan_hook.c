@@ -66,6 +66,7 @@
 #define RVA_AI_PLANNER_CANCEL 0x302EC50u
 #define RVA_AI_PLANNER_SELECT_ACTION 0x302C034u
 #define RVA_FIGHTER_CTOR 0x33987C0u
+#define RVA_ANIMATION_SELECT_ACTION 0x347E334u
 #define RVA_FIGHTER_BUILD_MODEL 0x3398108u
 #define RVA_RANDOM_FIGHTER_PROFILE_CREATE 0x33C1AF0u
 #define RVA_CREATE_FIGHT_PROFILES 0x33C289Cu
@@ -176,6 +177,8 @@ typedef void (*PreFightCreateVSMethod)(
 typedef void (*FightInputMethod)(void *, void *, const void *);
 typedef void (*FighterInputControllerMethod)(void *, int32_t, const void *);
 typedef bool (*FighterHumanInputMethod)(void *, const void *);
+typedef bool (*SelectAnimationMethod)(void *, void *, int32_t, bool, bool, int32_t, const void *);
+static SelectAnimationMethod original_select_animation;
 typedef void *(*PlannerSelectActionMethod)(
     void *, void *, int32_t, const void *);
 typedef void *(*GetSingletonMethod)(const void *);
@@ -1770,6 +1773,8 @@ static struct attack_inventory_audit audit_fighter_equipment(
     return result;
 }
 
+#include "sf2_lan_actions.h"
+
 static void hooked_fight_scene_create_fight(
     void *self,
     void *fight_config,
@@ -1814,6 +1819,7 @@ static void hooked_fight_scene_create_fight(
     }
 
     constructing_lan_fight = lan_configured;
+    reset_lan_actions();
     original_fight_scene_create_fight(
         self, effective_config, effective_player_profile, opponents, method);
     constructing_lan_fight = false;
@@ -2645,6 +2651,7 @@ static void hooked_fight_scene_fixed_update(void *self, const void *method) {
         // autoridade espacial e aplicada no getter fisico do lutador.
         sample_local_fight_state(self);
         inject_remote_input(fight);
+        apply_received_lan_action();
     }
 
     original_fight_scene_fixed_update(self, method);
@@ -3109,6 +3116,8 @@ Java_com_sf2_lan_LanNativeBridge_nativeInstall(JNIEnv *env, jclass type) {
             (void **)&original_fighter_apply_equipment_item},
         {RVA_FIGHTER_CTOR, hooked_fighter_ctor,
             (void **)&original_fighter_ctor},
+        {RVA_ANIMATION_SELECT_ACTION, hooked_select_animation,
+            (void **)&original_select_animation},
         {RVA_FIGHTER_BUILD_MODEL, hooked_fighter_build_model,
             (void **)&original_fighter_build_model},
         {RVA_PRE_FIGHT_VIEWER_INIT, hooked_pre_fight_viewer_init,

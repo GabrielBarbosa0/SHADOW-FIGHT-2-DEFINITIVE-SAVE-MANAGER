@@ -52,6 +52,8 @@ class PacketType(IntEnum):
     FIGHT_AUTHORITY = 15
     MATCH_CONFIG = 16
     MATCH_CONFIG_ACK = 17
+    ACTION = 18
+    ACTION_ACK = 19
 
 
 class PlayerRole(IntEnum):
