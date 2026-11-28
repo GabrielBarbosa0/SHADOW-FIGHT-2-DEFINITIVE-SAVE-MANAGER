@@ -4,6 +4,7 @@ import socket
 import select
 import secrets
 import time
+from collections import deque
 from dataclasses import dataclass
 
 from .equipment import EQUIPMENT_PRESET_NAMES, select_match_presets
@@ -52,6 +53,7 @@ class LanRoomRelay:
         second_port: int | None = None,
         name: str = "sf2-lan-relay",
         fight_start_delay_ms: int | None = None,
+        action_delay_ms: int = 0,
     ) -> None:
         if not 1 <= port <= 65535:
             raise ValueError("Porta UDP invalida.")
@@ -59,6 +61,10 @@ class LanRoomRelay:
             raise ValueError("A segunda porta UDP deve ser valida e diferente da primeira.")
         if fight_start_delay_ms is not None and not 500 <= fight_start_delay_ms <= 10_000:
             raise ValueError("fight_start_delay_ms deve ficar entre 500 e 10000.")
+        if not 0 <= action_delay_ms <= 2000:
+            raise ValueError("action_delay_ms deve ficar entre 0 e 2000")
+        self.action_delay_ms = action_delay_ms
+        self._delayed_actions = deque()
         encoded_name = name.encode("utf-8")
         if not encoded_name or len(encoded_name) > 64:
             raise ValueError("name deve ter entre 1 e 64 bytes.")
@@ -106,6 +112,7 @@ class LanRoomRelay:
             except OSError:
                 pass
         self._participants.clear()
+        self._delayed_actions.clear()
         self._reset_fight()
         self._reset_match()
         for listener in self.sockets:
@@ -191,6 +198,11 @@ class LanRoomRelay:
             self._reset_fight()
             self._reset_match()
             events.append(RelayEvent("timeout", endpoint[1]))
+        while self._delayed_actions and self._delayed_actions[0][0] <= now:
+            _, data, sender, recipient = self._delayed_actions.popleft()
+            if sender in self._participants and recipient in self._participants:
+                socket_index, address = recipient
+                self.sockets[socket_index].sendto(data, address)
         if (
             self._match_config is not None
             and len(self._match_config_acked) < len(self._participants)
@@ -391,6 +403,7 @@ class LanRoomRelay:
         )
 
     def _reset_fight(self) -> None:
+        self._delayed_actions.clear()
         self._fight_ready.clear()
         self._fight_configs.clear()
         self._start_acked.clear()
@@ -406,9 +419,16 @@ class LanRoomRelay:
 
     def _forward(self, data: bytes, sender: tuple[int, tuple[str, int]]) -> bool:
         forwarded = False
+        delayed = self.action_delay_ms and decode_packet(data, self.token).kind is PacketType.ACTION
         for socket_index, address in self._participants:
             if (socket_index, address) != sender:
-                self.sockets[socket_index].sendto(data, address)
+                if delayed:
+                    if len(self._delayed_actions) >= 4096:
+                        continue # bounded diagnostic queue; sender will retry
+                    self._delayed_actions.append((time.monotonic() + self.action_delay_ms / 1000,
+                                                  data, sender, (socket_index, address)))
+                else:
+                    self.sockets[socket_index].sendto(data, address)
                 forwarded = True
         return forwarded
 

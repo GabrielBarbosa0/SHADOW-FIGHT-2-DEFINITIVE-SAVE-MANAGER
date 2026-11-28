@@ -2,9 +2,12 @@
 // Network threads exchange value records only. Each accepted event is replayed
 // once and acknowledged only after the native selector succeeds.
 #define LAN_ACTION_CAPACITY 128u
+#include "sf2_action_timing.h"
 struct lan_action_event {
     uint32_t sequence, tick;
     int32_t parameter, last_parameter;
+    float source_clock;
+    int32_t start_frame, frame_period;
     bool flag_one, flag_two;
     char name[128];
 };
@@ -77,6 +80,13 @@ static bool hooked_select_animation(void *controller, void *action, int32_t para
     event.last_parameter = last_parameter;
     event.flag_one = flag_one;
     event.flag_two = flag_two;
+    event.source_clock = bits_float(atomic_load(&fight_state_bits[6]));
+    event.start_frame = *(void **)((uint8_t *)controller + 0x158u) == action
+        ? animation_current_frame(controller, NULL) : -1;
+    // Measured for this canonical fixture only. +0x144 is interpolation, NOT
+    // simulation ticks per action frame. Unknown moves must not be extrapolated.
+    event.frame_period = (!strcmp(event.name, "KatanaSlash") ||
+        !strcmp(event.name, "KatanaStepBack") || !strcmp(event.name, "JumpUp")) ? 3 : 0;
     pthread_mutex_lock(&lan_action_mutex);
     if (action_count < LAN_ACTION_CAPACITY) {
         event.sequence = ++action_sequence;
@@ -116,11 +126,27 @@ static void apply_received_lan_action(void) {
         if (!strcmp(name, event.name)) { action = candidate; break; }
     }
     if (!action) return; // no foreign pointers or guessed action substitution
+    // Both clocks below belong to the OWNER's simulation, never compare local
+    // wall clocks or unrelated fight_state_tick counters. Only the three measured
+    // actions are eligible; relative starts and stale clocks retain old behavior.
+    int32_t start_frame = event.last_parameter;
+    float remote_clock = bits_float(atomic_load(&remote_time_passed_bits));
+    float age = remote_clock - event.source_clock;
+    int64_t received_at = atomic_load(&remote_fight_state_received_at_ms);
+    int64_t freshness = now_ms() - received_at;
+    bool measured = !strcmp(event.name, "KatanaSlash") ||
+        !strcmp(event.name, "KatanaStepBack") || !strcmp(event.name, "JumpUp");
+    start_frame = lan_action_start_frame(start_frame, event.start_frame,
+        event.frame_period, age, freshness, measured && !event.flag_two && received_at > 0);
     replaying_lan_action = true;
     bool success = original_select_animation(controller, action, event.parameter,
-        event.flag_one, event.flag_two, event.last_parameter, NULL);
+        event.flag_one, event.flag_two, start_frame, NULL);
     replaying_lan_action = false;
     if (!success) return;
+    if (measured) LOGI("LAN action timing: player=%d seq=%u name=%s age=%.0f period=%d start=%d requested=%d actual=%d fresh=%lld relative=%d.",
+        3 - role, event.sequence, event.name, age, event.frame_period,
+        event.start_frame, start_frame, animation_current_frame(controller, NULL),
+        (long long)freshness, event.flag_two);
     atomic_store(&remote_action_authority, true);
     pthread_mutex_lock(&lan_action_mutex);
     applied_action_sequence = event.sequence;
@@ -136,8 +162,9 @@ JNIEXPORT jstring JNICALL Java_com_sf2_lan_LanNativeBridge_nativeReadAction(JNIE
     pthread_mutex_lock(&lan_action_mutex);
     if (action_count) {
         struct lan_action_event *e = &outgoing_actions[action_head];
-        snprintf(record, sizeof(record), "%u,%u,%d,%d,%d,%d,%s", e->sequence,
-            e->tick, e->parameter, e->flag_one, e->flag_two, e->last_parameter, e->name);
+        snprintf(record, sizeof(record), "%u,%u,%d,%d,%d,%d,%s,%.0f,%d,%d", e->sequence,
+            e->tick, e->parameter, e->flag_one, e->flag_two, e->last_parameter, e->name,
+            e->source_clock, e->start_frame, e->frame_period);
     }
     pthread_mutex_unlock(&lan_action_mutex);
     return (*env)->NewStringUTF(env, record);
@@ -168,15 +195,24 @@ JNIEXPORT void JNICALL Java_com_sf2_lan_LanNativeBridge_nativeReceiveAction(JNIE
     if (!text) return;
     struct lan_action_event event = {0};
     int one, two, consumed = 0;
-    int fields = sscanf(text, "%u,%u,%d,%d,%d,%d,%127[A-Za-z0-9_-]%n",
+    int fields = sscanf(text, "%u,%u,%d,%d,%d,%d,%127[A-Za-z0-9_-],%f,%d,%d%n",
         &event.sequence, &event.tick, &event.parameter, &one, &two,
-        &event.last_parameter, event.name, &consumed);
-    bool valid = fields == 7 && text[consumed] == '\0' && event.sequence > 0 &&
+        &event.last_parameter, event.name, &event.source_clock, &event.start_frame,
+        &event.frame_period, &consumed);
+    bool valid = fields == 10 && text[consumed] == '\0' && event.sequence > 0 &&
+        isfinite(event.source_clock) && event.source_clock >= 0 && event.source_clock <= 1000000 &&
+        event.start_frame >= -1 && event.start_frame <= 100000 &&
+        event.frame_period >= 0 && event.frame_period <= 10000 &&
         (one == 0 || one == 1) && (two == 0 || two == 1) &&
         event.parameter >= -1 && event.parameter <= 100000 &&
         event.last_parameter >= -1 && event.last_parameter <= 100000;
     (*env)->ReleaseStringUTFChars(env, record, text);
-    if (!valid) return;
+    if (!valid) {
+        static _Atomic bool warned_bad_action;
+        if (!atomic_exchange(&warned_bad_action, true))
+            LOGE("LAN action payload rejected: both peers require the p150 timed-action format.");
+        return;
+    }
     event.flag_one = one; event.flag_two = two;
     pthread_mutex_lock(&lan_action_mutex);
     if (!incoming_action_valid && event.sequence == applied_action_sequence + 1) {

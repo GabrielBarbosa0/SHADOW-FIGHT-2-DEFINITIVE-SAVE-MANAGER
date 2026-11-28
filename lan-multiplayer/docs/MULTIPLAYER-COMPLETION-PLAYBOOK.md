@@ -14,6 +14,11 @@ marco funcional.
 
 Atualizações verificadas:
 
+- p150: [compensação do início atrasado](ACTION-START-CATCHUP-P150.md).
+  Injeção seletiva de 600 ms reproduziu o problema; espada, recuo e salto agora
+  entram no frame calculado usando o relógio de origem. Controle normal validado
+  nos dois MuMu, 31 eventos iguais. Ainda há espera no fim da ação; não declarar
+  reconciliação completa. P150 exige a mesma versão nos dois peers.
 - p149: [medição do frame real](ACTION-PHASE-P149.md), opcional e somente leitura.
   Tick da simulação não é frame de animação. Ensaio com pausa do processo não
   reproduziu grande deriva; correção de fase continua pendente. Runtime p148

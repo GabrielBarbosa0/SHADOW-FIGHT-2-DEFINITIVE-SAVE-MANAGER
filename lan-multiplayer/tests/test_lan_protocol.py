@@ -380,6 +380,35 @@ class RelayTests(unittest.TestCase):
         self.assertEqual(self.relay.poll(1.0)[0].detail, "ACTION_ACK")
         self.assertEqual(self.player_one.poll(1.0)[0].packet.payload, ack)
 
+    def test_action_delay_does_not_block_state_or_ack(self) -> None:
+        self.connect(self.player_one)
+        self.connect(self.player_two)
+        self.relay.action_delay_ms = 600
+        self.player_one._send(PacketType.ACTION, b"delayed", self.player_one.peer_address)
+        self.relay.poll(1.0)
+        self.assertEqual(self.player_two.poll(0.0), [])
+        due = self.relay._delayed_actions[0][0]
+        for kind in (PacketType.ACTION_ACK, PacketType.STATE):
+            self.player_one._send(kind, b"immediate", self.player_one.peer_address)
+            self.relay.poll(1.0)
+            # STATE decoding belongs to LanPeer, so inspect wire packet directly.
+            data, _ = self.player_two.socket.recvfrom(2048)
+            self.assertEqual(decode_packet(data, "sala-relay").kind, kind)
+        self.relay.tick(due - 0.01)
+        self.assertEqual(self.player_two.poll(0.0), [])
+        self.relay.tick(due + 0.01)
+        self.assertEqual(self.player_two.poll(1.0)[0].packet.payload, b"delayed")
+
+    def test_round_reset_discards_delayed_actions(self) -> None:
+        self.connect(self.player_one)
+        self.connect(self.player_two)
+        self.relay.action_delay_ms = 600
+        self.player_one._send(PacketType.ACTION, b"old round", self.player_one.peer_address)
+        self.relay.poll(1.0)
+        self.assertEqual(len(self.relay._delayed_actions), 1)
+        self.relay._reset_fight()
+        self.assertFalse(self.relay._delayed_actions)
+
     def test_forwards_profiles_ready_and_input_between_two_clients(self) -> None:
         self.connect(self.player_one)
         self.connect(self.player_two)

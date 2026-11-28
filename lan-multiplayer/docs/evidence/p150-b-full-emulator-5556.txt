@@ -1,0 +1,171 @@
+﻿11-28 10:50:29.101 19964 20003 I SF2LAN-NATIVE: IA LAN suprimida #1: lado=remoto fighter=0x759f6358a540 profile=0x759f6f1f4960 animation=0x759f940abd80.
+11-28 10:50:29.103 19964 20003 I SF2LAN-NATIVE: IA LAN suprimida #2: lado=local fighter=0x759f64214a80 profile=0x759f6f1f4c80 animation=0x759f940abc00.
+11-28 10:50:29.103 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=1 tick=102 name=KatanaStartStance-Right args=-1/0/0/-1.
+11-28 10:50:29.717 19964 20003 I SF2LAN-NATIVE: IA LAN suprimida #3: lado=remoto fighter=0x759f6358a540 profile=0x759f6f1f4960 animation=0x759f940abd80.
+11-28 10:50:29.717 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=1 sourceTick=102 localTick=139 name=KatanaStartStance-Left.
+11-28 10:50:30.517 19964 20003 I SF2LAN-NATIVE: IA LAN suprimida #4: lado=local fighter=0x759f64214a80 profile=0x759f6f1f4c80 animation=0x759f93c7a180.
+11-28 10:50:30.517 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=2 tick=187 name=KatanaStartStanceIdle args=-1/1/0/-1.
+11-28 10:50:31.250 19964 20003 I SF2LAN-NATIVE: IA LAN suprimida #5: lado=remoto fighter=0x759f6358a540 profile=0x759f6f1f4960 animation=0x759f93c7a180.
+11-28 10:50:31.250 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=2 sourceTick=193 localTick=231 name=KatanaStartStanceIdle.
+11-28 10:50:32.434 19964 20003 I SF2LAN-NATIVE: IA LAN suprimida #6: lado=local fighter=0x759f64214a80 profile=0x759f6f1f4c80 animation=0x759f93c7a180.
+11-28 10:50:32.434 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=3 tick=302 name=KatanaStartStanceIdle args=-1/1/0/-1.
+11-28 10:50:33.117 19964 20003 I SF2LAN-NATIVE: IA LAN suprimida #7: lado=remoto fighter=0x759f6358a540 profile=0x759f6f1f4960 animation=0x759f93c7a180.
+11-28 10:50:33.117 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=3 sourceTick=308 localTick=343 name=KatanaStartStanceIdle.
+11-28 10:50:34.350 19964 20003 I SF2LAN-NATIVE: IA LAN suprimida #8: lado=local fighter=0x759f64214a80 profile=0x759f6f1f4c80 animation=0x759f93c7a180.
+11-28 10:50:34.350 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=4 tick=417 name=KatanaStartStanceIdle args=-1/1/0/-1.
+11-28 10:50:35.034 19964 20003 I SF2LAN-NATIVE: IA LAN suprimida #9: lado=remoto fighter=0x759f6358a540 profile=0x759f6f1f4960 animation=0x759f93c7a180.
+11-28 10:50:35.034 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=4 sourceTick=423 localTick=458 name=KatanaStartStanceIdle.
+11-28 10:50:36.267 19964 20003 I SF2LAN-NATIVE: IA LAN suprimida #10: lado=local fighter=0x759f64214a80 profile=0x759f6f1f4c80 animation=0x759f93c7a180.
+11-28 10:50:36.267 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=5 tick=532 name=KatanaStartStanceIdle args=-1/1/0/-1.
+11-28 10:50:36.750 19964 20003 I SF2LAN-NATIVE: IA LAN suprimida #11: lado=remoto fighter=0x759f6358a540 profile=0x759f6f1f4960 animation=0x759f94aa4a80.
+11-28 10:50:36.750 19964 20003 I SF2LAN-NATIVE: LAN action timing: player=1 seq=5 name=KatanaSlash age=38 period=3 start=2 requested=14 actual=14 fresh=9 relative=0.
+11-28 10:50:36.750 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=5 sourceTick=524 localTick=561 name=KatanaSlash.
+11-28 10:50:36.802 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=1 seq=5 tick=564 frame=14 name=KatanaSlash.
+11-28 10:50:36.903 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=1 seq=5 tick=570 frame=16 name=KatanaSlash.
+11-28 10:50:37.002 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=1 seq=5 tick=576 frame=18 name=KatanaSlash.
+11-28 10:50:37.103 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=1 seq=5 tick=582 frame=20 name=KatanaSlash.
+11-28 10:50:37.203 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=1 seq=5 tick=588 frame=22 name=KatanaSlash.
+11-28 10:50:37.303 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=1 seq=5 tick=594 frame=24 name=KatanaSlash.
+11-28 10:50:37.402 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=1 seq=5 tick=600 frame=27 name=KatanaSlash.
+11-28 10:50:37.501 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=1 seq=5 tick=606 frame=27 name=KatanaSlash.
+11-28 10:50:37.603 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=1 seq=5 tick=612 frame=27 name=KatanaSlash.
+11-28 10:50:37.702 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=1 seq=5 tick=618 frame=27 name=KatanaSlash.
+11-28 10:50:37.802 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=1 seq=5 tick=624 frame=27 name=KatanaSlash.
+11-28 10:50:37.907 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=1 seq=5 tick=630 frame=27 name=KatanaSlash.
+11-28 10:50:37.967 19964 20003 I SF2LAN-NATIVE: IA LAN suprimida #12: lado=remoto fighter=0x759f6358a540 profile=0x759f6f1f4960 animation=0x759f950c1c00.
+11-28 10:50:37.967 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=6 sourceTick=597 localTick=634 name=KatanaIdle.
+11-28 10:50:38.185 19964 20003 I SF2LAN-NATIVE: IA LAN suprimida #13: lado=local fighter=0x759f64214a80 profile=0x759f6f1f4c80 animation=0x759f93c7a180.
+11-28 10:50:38.185 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=6 tick=647 name=KatanaStartStanceIdle args=-1/1/0/-1.
+11-28 10:50:39.184 19964 20003 I SF2LAN-NATIVE: IA LAN suprimida #14: lado=local fighter=0x759f64214a80 profile=0x759f6f1f4c80 animation=0x759f94aa4a80.
+11-28 10:50:39.184 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=7 tick=707 name=KatanaSlash args=-1/1/0/-1.
+11-28 10:50:39.201 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=2 seq=7 tick=708 frame=2 name=KatanaSlash.
+11-28 10:50:39.301 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=2 seq=7 tick=714 frame=3 name=KatanaSlash.
+11-28 10:50:39.401 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=2 seq=7 tick=720 frame=5 name=KatanaSlash.
+11-28 10:50:39.501 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=2 seq=7 tick=726 frame=7 name=KatanaSlash.
+11-28 10:50:39.603 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=2 seq=7 tick=732 frame=9 name=KatanaSlash.
+11-28 10:50:39.702 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=2 seq=7 tick=738 frame=11 name=KatanaSlash.
+11-28 10:50:39.803 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=2 seq=7 tick=744 frame=13 name=KatanaSlash.
+11-28 10:50:39.904 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=2 seq=7 tick=750 frame=15 name=KatanaSlash.
+11-28 10:50:39.950 19964 20003 I SF2LAN-NATIVE: IA LAN suprimida #15: lado=remoto fighter=0x759f6358a540 profile=0x759f6f1f4960 animation=0x759f950c1c00.
+11-28 10:50:39.950 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=7 sourceTick=715 localTick=753 name=KatanaIdle.
+11-28 10:50:40.002 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=2 seq=7 tick=756 frame=17 name=KatanaSlash.
+11-28 10:50:40.102 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=2 seq=7 tick=762 frame=19 name=KatanaSlash.
+11-28 10:50:40.202 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=2 seq=7 tick=768 frame=21 name=KatanaSlash.
+11-28 10:50:40.302 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=2 seq=7 tick=774 frame=23 name=KatanaSlash.
+11-28 10:50:40.401 19964 20003 I SF2LAN-NATIVE: IA LAN suprimida #16: lado=local fighter=0x759f64214a80 profile=0x759f6f1f4c80 animation=0x759f950c1c00.
+11-28 10:50:40.401 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=8 tick=780 name=KatanaIdle args=-1/1/0/-1.
+11-28 10:50:41.916 19964 20003 I SF2LAN-NATIVE: IA LAN suprimida #17: lado=remoto fighter=0x759f6358a540 profile=0x759f6f1f4960 animation=0x759f950c1c00.
+11-28 10:50:41.916 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=8 sourceTick=833 localTick=871 name=KatanaIdle.
+11-28 10:50:42.367 19964 20003 I SF2LAN-NATIVE: IA LAN suprimida #18: lado=local fighter=0x759f64214a80 profile=0x759f6f1f4c80 animation=0x759f950c1c00.
+11-28 10:50:42.367 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=9 tick=898 name=KatanaIdle args=-1/1/0/-1.
+11-28 10:50:43.850 19964 20003 I SF2LAN-NATIVE: IA LAN suprimida #19: lado=remoto fighter=0x759f6358a540 profile=0x759f6f1f4960 animation=0x759f950c1c00.
+11-28 10:50:43.850 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=9 sourceTick=951 localTick=987 name=KatanaIdle.
+11-28 10:50:44.334 19964 20003 I SF2LAN-NATIVE: IA LAN suprimida #20: lado=local fighter=0x759f64214a80 profile=0x759f6f1f4c80 animation=0x759f950c1c00.
+11-28 10:50:44.334 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=10 tick=1016 name=KatanaIdle args=-1/1/0/-1.
+11-28 10:50:45.852 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=10 sourceTick=1069 localTick=1107 name=KatanaIdle.
+11-28 10:50:46.301 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=11 tick=1134 name=KatanaIdle args=-1/1/0/-1.
+11-28 10:50:47.784 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=11 sourceTick=1187 localTick=1223 name=KatanaIdle.
+11-28 10:50:48.267 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=12 tick=1252 name=KatanaIdle args=-1/1/0/-1.
+11-28 10:50:49.752 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=12 sourceTick=1305 localTick=1341 name=KatanaIdle.
+11-28 10:50:50.234 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=13 tick=1370 name=KatanaIdle args=-1/1/0/-1.
+11-28 10:50:51.704 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=13 sourceTick=1423 localTick=1458 name=KatanaIdle.
+11-28 10:50:52.202 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=14 tick=1488 name=KatanaIdle args=-1/1/0/-1.
+11-28 10:50:53.667 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=14 sourceTick=1541 localTick=1576 name=KatanaIdle.
+11-28 10:50:54.167 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=15 tick=1606 name=KatanaIdle args=-1/1/0/-1.
+11-28 10:50:55.667 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=15 sourceTick=1659 localTick=1696 name=KatanaIdle.
+11-28 10:50:56.134 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=16 tick=1724 name=KatanaIdle args=-1/1/0/-1.
+11-28 10:50:57.651 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=16 sourceTick=1777 localTick=1815 name=KatanaIdle.
+11-28 10:50:58.100 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=17 tick=1842 name=KatanaIdle args=-1/1/0/-1.
+11-28 10:50:59.600 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=17 sourceTick=1895 localTick=1932 name=KatanaIdle.
+11-28 10:51:00.067 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=18 tick=1960 name=KatanaIdle args=-1/1/0/-1.
+11-28 10:51:01.550 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=18 sourceTick=2013 localTick=2049 name=KatanaIdle.
+11-28 10:51:02.034 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=19 tick=2078 name=KatanaIdle args=-1/1/0/-1.
+11-28 10:51:03.533 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=19 sourceTick=2131 localTick=2168 name=KatanaIdle.
+11-28 10:51:04.003 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=20 tick=2196 name=KatanaIdle args=-1/1/0/-1.
+11-28 10:51:05.467 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=20 sourceTick=2249 localTick=2284 name=KatanaIdle.
+11-28 10:51:05.967 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=21 tick=2314 name=KatanaIdle args=-1/1/0/-1.
+11-28 10:51:07.450 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=21 sourceTick=2367 localTick=2403 name=KatanaIdle.
+11-28 10:51:07.934 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=22 tick=2432 name=KatanaIdle args=-1/1/0/-1.
+11-28 10:51:09.450 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=22 sourceTick=2485 localTick=2523 name=KatanaIdle.
+11-28 10:51:09.900 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=23 tick=2550 name=KatanaIdle args=-1/1/0/-1.
+11-28 10:51:11.433 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=23 sourceTick=2603 localTick=2642 name=KatanaIdle.
+11-28 10:51:11.867 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=24 tick=2668 name=KatanaIdle args=-1/1/0/-1.
+11-28 10:51:13.333 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=24 sourceTick=2721 localTick=2756 name=KatanaIdle.
+11-28 10:51:13.834 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=25 tick=2786 name=KatanaIdle args=-1/1/0/-1.
+11-28 10:51:15.317 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=25 sourceTick=2839 localTick=2875 name=KatanaIdle.
+11-28 10:51:15.800 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=26 tick=2904 name=KatanaIdle args=-1/1/0/-1.
+11-28 10:51:17.300 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=26 sourceTick=2957 localTick=2994 name=KatanaIdle.
+11-28 10:51:17.767 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=27 tick=3022 name=KatanaIdle args=-1/1/0/-1.
+11-28 10:51:19.283 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=27 sourceTick=3075 localTick=3113 name=KatanaIdle.
+11-28 10:51:19.739 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=28 tick=3140 name=KatanaIdle args=-1/1/0/-1.
+11-28 10:51:21.307 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=28 sourceTick=3193 localTick=3234 name=KatanaIdle.
+11-28 10:51:21.704 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=29 tick=3258 name=KatanaIdle args=-1/1/0/-1.
+11-28 10:51:23.236 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=29 sourceTick=3311 localTick=3350 name=KatanaIdle.
+11-28 10:51:23.670 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=30 tick=3376 name=KatanaIdle args=-1/1/0/-1.
+11-28 10:51:25.202 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=30 sourceTick=3429 localTick=3468 name=KatanaIdle.
+11-28 10:51:25.636 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=31 tick=3494 name=KatanaIdle args=-1/1/0/-1.
+11-28 10:51:25.937 19964 20003 I SF2LAN-NATIVE: LAN action timing: player=1 seq=31 name=KatanaStepBack age=43 period=3 start=3 requested=17 actual=16 fresh=43 relative=0.
+11-28 10:51:25.937 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=31 sourceTick=3465 localTick=3512 name=KatanaStepBack.
+11-28 10:51:26.007 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=1 seq=31 tick=3516 frame=18 name=KatanaStepBack.
+11-28 10:51:26.107 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=1 seq=31 tick=3522 frame=18 name=KatanaStepBack.
+11-28 10:51:26.204 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=1 seq=31 tick=3528 frame=18 name=KatanaStepBack.
+11-28 10:51:26.310 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=1 seq=31 tick=3534 frame=18 name=KatanaStepBack.
+11-28 10:51:26.410 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=1 seq=31 tick=3540 frame=18 name=KatanaStepBack.
+11-28 10:51:26.508 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=1 seq=31 tick=3546 frame=18 name=KatanaStepBack.
+11-28 10:51:26.605 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=1 seq=31 tick=3552 frame=18 name=KatanaStepBack.
+11-28 10:51:26.622 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=32 sourceTick=3511 localTick=3553 name=KatanaIdle.
+11-28 10:51:27.613 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=32 tick=3612 name=KatanaIdle args=-1/1/0/-1.
+11-28 10:51:28.581 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=33 sourceTick=3629 localTick=3670 name=KatanaIdle.
+11-28 10:51:29.399 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=33 tick=3718 name=KatanaStepBack args=-1/1/0/-1.
+11-28 10:51:29.430 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=2 seq=33 tick=3720 frame=3 name=KatanaStepBack.
+11-28 10:51:29.505 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=2 seq=33 tick=3726 frame=4 name=KatanaStepBack.
+11-28 10:51:29.618 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=2 seq=33 tick=3732 frame=6 name=KatanaStepBack.
+11-28 10:51:29.707 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=2 seq=33 tick=3738 frame=8 name=KatanaStepBack.
+11-28 10:51:29.809 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=2 seq=33 tick=3744 frame=10 name=KatanaStepBack.
+11-28 10:51:29.907 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=2 seq=33 tick=3750 frame=12 name=KatanaStepBack.
+11-28 10:51:30.019 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=2 seq=33 tick=3756 frame=14 name=KatanaStepBack.
+11-28 10:51:30.103 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=2 seq=33 tick=3762 frame=16 name=KatanaStepBack.
+11-28 10:51:30.138 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=34 tick=3764 name=KatanaIdle args=-1/1/0/-1.
+11-28 10:51:30.504 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=34 sourceTick=3747 localTick=3786 name=KatanaIdle.
+11-28 10:51:32.101 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=35 tick=3882 name=KatanaIdle args=-1/1/0/-1.
+11-28 10:51:32.468 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=35 sourceTick=3865 localTick=3904 name=KatanaIdle.
+11-28 10:51:33.773 19964 20003 I SF2LAN-NATIVE: LAN action timing: player=1 seq=36 name=JumpUp age=36 period=3 start=2 requested=14 actual=14 fresh=21 relative=0.
+11-28 10:51:33.773 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=36 sourceTick=3942 localTick=3982 name=JumpUp.
+11-28 10:51:33.814 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=1 seq=36 tick=3984 frame=14 name=JumpUp.
+11-28 10:51:33.905 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=1 seq=36 tick=3990 frame=15 name=JumpUp.
+11-28 10:51:34.005 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=1 seq=36 tick=3996 frame=17 name=JumpUp.
+11-28 10:51:34.072 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=36 tick=4000 name=KatanaIdle args=-1/1/0/-1.
+11-28 10:51:34.106 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=1 seq=36 tick=4002 frame=19 name=JumpUp.
+11-28 10:51:34.201 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=1 seq=36 tick=4008 frame=21 name=JumpUp.
+11-28 10:51:34.301 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=1 seq=36 tick=4014 frame=23 name=JumpUp.
+11-28 10:51:34.401 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=1 seq=36 tick=4020 frame=25 name=JumpUp.
+11-28 10:51:34.501 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=1 seq=36 tick=4026 frame=27 name=JumpUp.
+11-28 10:51:34.601 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=1 seq=36 tick=4032 frame=30 name=JumpUp.
+11-28 10:51:34.701 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=1 seq=36 tick=4038 frame=30 name=JumpUp.
+11-28 10:51:34.801 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=1 seq=36 tick=4044 frame=30 name=JumpUp.
+11-28 10:51:34.902 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=1 seq=36 tick=4050 frame=30 name=JumpUp.
+11-28 10:51:35.000 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=1 seq=36 tick=4056 frame=30 name=JumpUp.
+11-28 10:51:35.101 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=1 seq=36 tick=4062 frame=30 name=JumpUp.
+11-28 10:51:35.200 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=37 sourceTick=4024 localTick=4068 name=KatanaTransition.
+11-28 10:51:35.917 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=38 sourceTick=4040 localTick=4111 name=KatanaIdle.
+11-28 10:51:36.033 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=37 tick=4118 name=KatanaIdle args=-1/1/0/-1.
+11-28 10:51:36.667 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=38 tick=4156 name=JumpUp args=-1/1/0/-1.
+11-28 10:51:36.701 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=2 seq=38 tick=4158 frame=2 name=JumpUp.
+11-28 10:51:36.801 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=2 seq=38 tick=4164 frame=3 name=JumpUp.
+11-28 10:51:36.900 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=2 seq=38 tick=4170 frame=5 name=JumpUp.
+11-28 10:51:37.001 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=2 seq=38 tick=4176 frame=7 name=JumpUp.
+11-28 10:51:37.101 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=2 seq=38 tick=4182 frame=9 name=JumpUp.
+11-28 10:51:37.201 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=2 seq=38 tick=4188 frame=11 name=JumpUp.
+11-28 10:51:37.303 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=2 seq=38 tick=4194 frame=13 name=JumpUp.
+11-28 10:51:37.390 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=39 sourceTick=4158 localTick=4199 name=KatanaIdle.
+11-28 10:51:37.404 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=2 seq=38 tick=4200 frame=15 name=JumpUp.
+11-28 10:51:37.501 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=2 seq=38 tick=4206 frame=17 name=JumpUp.
+11-28 10:51:37.603 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=2 seq=38 tick=4212 frame=19 name=JumpUp.
+11-28 10:51:37.701 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=2 seq=38 tick=4218 frame=21 name=JumpUp.
+11-28 10:51:37.801 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=2 seq=38 tick=4224 frame=23 name=JumpUp.
+11-28 10:51:37.901 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=2 seq=38 tick=4230 frame=25 name=JumpUp.
+11-28 10:51:38.001 19964 20003 I SF2LAN-NATIVE: LAN action phase: role=2 player=2 seq=38 tick=4236 frame=27 name=JumpUp.
+11-28 10:51:38.033 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=39 tick=4238 name=KatanaTransition args=-1/1/0/-1.
+11-28 10:51:38.300 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=40 tick=4254 name=KatanaIdle args=-1/1/0/-1.
+11-28 10:51:39.366 19964 20003 I SF2LAN-NATIVE: LAN action applied: player=1 seq=40 sourceTick=4276 localTick=4318 name=KatanaIdle.
+11-28 10:51:40.270 19964 20003 I SF2LAN-NATIVE: LAN action publish: player=2 seq=41 tick=4372 name=KatanaIdle args=-1/1/0/-1.

@@ -94,7 +94,11 @@ def main() -> int:
         action="store_true",
         help="devolve STATE na composicao canonica para testar a comparacao com um Android",
     )
+    parser.add_argument("--action-delay-ms", type=int, default=0,
+                        help="diagnostico relay: atrasa somente ACTION em 0..2000 ms")
     args = parser.parse_args()
+    if not 0 <= args.action_delay_ms <= 2000 or (args.action_delay_ms and args.mode != "relay"):
+        parser.error("--action-delay-ms exige relay e valor entre 0 e 2000")
 
     if args.mirror_equipment and not args.mirror_profile:
         parser.error("--mirror-equipment exige --mirror-profile")
@@ -117,6 +121,7 @@ def main() -> int:
             second_port=args.second_port,
             name=args.name,
             fight_start_delay_ms=args.auto_start_delay_ms or None,
+            action_delay_ms=args.action_delay_ms,
         )
         listeners = ", ".join(f"{host}:{port}" for host, port in relay.local_addresses)
         print(f"SF2 LAN relay ouvindo em {listeners}")
