@@ -277,6 +277,9 @@ static IntInstanceMethod fighter_rounds_lost_get;
 static ObjectGetterMethod fighter_position_get;
 static VectorSetMethod fighter_position_set;
 static NodePositionCopyMethod original_node_position_copy;
+#ifdef SF2LAN_EXPERIMENT_MODEL_TRANSLATION
+static NodePositionCopyMethod model_translate;
+#endif
 #if SF2_LAN_DIAGNOSTIC_TRACE_ALL_FLOATS
 static FighterFloatMethod diagnostic_fighter_float_readers[DIAGNOSTIC_FIGHTER_FLOAT_COUNT];
 static uint32_t diagnostic_previous_float_bits[2][DIAGNOSTIC_FIGHTER_FLOAT_COUNT];
@@ -2296,6 +2299,20 @@ static void sample_local_fight_state(void *scene) {
             }
         }
     }
+#ifdef SF2LAN_TRACE_SPATIAL
+    uint32_t spatial_tick = atomic_load_explicit(&fight_state_tick, memory_order_acquire);
+    if (spatial_tick % 30u == 0u) {
+        Vector3Value p1, p2;
+        if (read_fighter_position(fighters[0], &p1) &&
+            read_fighter_position(fighters[1], &p2)) {
+            LOGI("LAN spatial sample: role=%d generation=%u tick=%u clock=%.0f p1=(%.3f,%.3f,%.3f) p2=(%.3f,%.3f,%.3f) separation=%.3f",
+                atomic_load_explicit(&lan_player_role, memory_order_acquire),
+                atomic_load_explicit(&lan_fight_generation, memory_order_acquire),
+                spatial_tick, values[6], p1.x, p1.y, p1.z, p2.x, p2.y, p2.z,
+                p2.x - p1.x);
+        }
+    }
+#endif
 }
 
 static bool remote_authority_is_fresh(void) {
@@ -2395,6 +2412,21 @@ static bool prepare_remote_fight_authority(
         spatial_anchor_local[base + 2] +
             (remote_position.z - spatial_anchor_remote[base + 2]),
     };
+#ifdef SF2LAN_TRACE_SPATIAL
+    static uint32_t last_spatial_trace_tick;
+    uint32_t trace_tick = atomic_load_explicit(&fight_state_tick, memory_order_acquire);
+    if (trace_tick % 30u == 0u && trace_tick != last_spatial_trace_tick) {
+        last_spatial_trace_tick = trace_tick;
+        LOGI("LAN spatial target: role=%d generation=%u tick=%u player=%u age=%lld local=(%.3f,%.3f,%.3f) received=(%.3f,%.3f,%.3f) target=(%.3f,%.3f,%.3f) offset=(%.3f,%.3f,%.3f)",
+            role, generation, trace_tick, (unsigned)remote_index + 1, (long long)age,
+            local_position.x, local_position.y, local_position.z,
+            remote_position.x, remote_position.y, remote_position.z,
+            targets[remote_index].x, targets[remote_index].y, targets[remote_index].z,
+            spatial_anchor_local[base] - spatial_anchor_remote[base],
+            spatial_anchor_local[base + 1] - spatial_anchor_remote[base + 1],
+            spatial_anchor_local[base + 2] - spatial_anchor_remote[base + 2]);
+    }
+#endif
     return true;
 }
 
@@ -2463,6 +2495,11 @@ static void hooked_node_position_copy(
     const void *method
 ) {
     original_node_position_copy(node, source_position, method);
+#ifdef SF2LAN_EXPERIMENT_MODEL_TRANSLATION
+    // Experimental path corrects the complete skeleton after simulation,
+    // rather than replacing only root+0x38 while children are still updating.
+    return;
+#endif
     if (node == NULL || !atomic_load_explicit(
         &lan_fight_active, memory_order_acquire)) return;
 
@@ -2639,6 +2676,31 @@ static void trace_hud_state(void *scene) {
 
 static void trace_selected_fighter_actions(void);
 
+#ifdef SF2LAN_EXPERIMENT_MODEL_TRANSLATION
+static void reconcile_remote_model(void *fight) {
+    void *fighters[2] = {NULL, NULL};
+    Vector3Value targets[2];
+    if (model_translate == NULL || !prepare_remote_fight_authority(fight, fighters, targets)) return;
+    for (size_t i = 0; i < 2; i++) {
+        Vector3Value current;
+        if (!read_fighter_position(fighters[i], &current)) continue;
+        void *model = *(void **)((uint8_t *)fighters[i] + FIGHTER_POSITION_MODEL_OFFSET);
+        void *position = fighter_position_get(fighters[i], NULL);
+        // MDLFPNCAJIK (0x32B7FD8) synchronously adds this vector to both
+        // +0x38/+0x40 of every model node, then refreshes model bounds.
+        // Its vector argument does not escape (verified ARM64 call path).
+        struct { void *klass; void *monitor; float x, y, z; } delta;
+        memcpy(&delta, position, 2 * sizeof(void *));
+        delta.x = targets[i].x - current.x;
+        delta.y = targets[i].y - current.y;
+        delta.z = targets[i].z - current.z;
+        if (!isfinite(delta.x) || !isfinite(delta.y) || !isfinite(delta.z) ||
+            fabsf(delta.x) > 1000.0f || fabsf(delta.y) > 1000.0f || fabsf(delta.z) > 1000.0f) continue;
+        model_translate(model, &delta, NULL);
+    }
+}
+#endif
+
 static void hooked_fight_scene_fixed_update(void *self, const void *method) {
     void *fight = self == NULL ? NULL
         : *(void **)((uint8_t *)self + FIGHT_SCENE_FIGHT_OFFSET);
@@ -2658,6 +2720,9 @@ static void hooked_fight_scene_fixed_update(void *self, const void *method) {
     }
 
     original_fight_scene_fixed_update(self, method);
+#ifdef SF2LAN_EXPERIMENT_MODEL_TRANSLATION
+    if (lan_active) reconcile_remote_model(fight);
+#endif
     if (lan_active) trace_selected_fighter_actions();
 #ifdef SF2LAN_TRACE_ACTION_PHASE
     if (lan_active) trace_lan_action_phase();
@@ -2984,6 +3049,9 @@ Java_com_sf2_lan_LanNativeBridge_nativeInstall(JNIEnv *env, jclass type) {
         location.base + RVA_FIGHTER_ROUNDS_LOST_GET);
     fighter_position_get = (ObjectGetterMethod)(
         location.base + RVA_FIGHTER_POSITION_GET);
+#ifdef SF2LAN_EXPERIMENT_MODEL_TRANSLATION
+    model_translate = (NodePositionCopyMethod)(location.base + 0x32B7FD8u);
+#endif
     fighter_position_set = (VectorSetMethod)(
         location.base + RVA_VECTOR3_POSITION_SET);
     ai_planner_initialize = (ConfigProfileMethod)(
