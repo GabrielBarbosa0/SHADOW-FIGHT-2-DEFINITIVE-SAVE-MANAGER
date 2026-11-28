@@ -66,6 +66,7 @@
 #define RVA_AI_PLANNER_CANCEL 0x302EC50u
 #define RVA_AI_PLANNER_SELECT_ACTION 0x302C034u
 #define RVA_FIGHTER_CTOR 0x33987C0u
+#define RVA_FIGHTER_BUILD_MODEL 0x3398108u
 #define RVA_RANDOM_FIGHTER_PROFILE_CREATE 0x33C1AF0u
 #define RVA_CREATE_FIGHT_PROFILES 0x33C289Cu
 #define RVA_FIGHTER_APPLY_CONFIG_ITEM 0x3397218u
@@ -92,6 +93,7 @@
 #define RVA_PLAYER_PROFILE_ITEM_BY_SLOT 0x316F390u
 #define RVA_PLAYER_PROFILE_ITEM_GET 0x316F674u
 #define RVA_PLAYER_PROFILE_SET_ITEM 0x316F7E8u
+#define RVA_PLAYER_PROFILE_REBUILD_MODEL_RESOURCES 0x316FFA8u
 #define RVA_ITEM_BY_NAME 0x32AC484u
 #define RVA_ITEM_MANAGER_CURRENT 0x32A917Cu
 #define RVA_ITEM_MANAGER_BY_NAME 0x3216890u
@@ -221,6 +223,7 @@ static ConfigProfileMethod ai_planner_initialize;
 static InstanceMethod ai_planner_cancel;
 static PlannerSelectActionMethod original_ai_planner_select_action;
 static ConfigProfileMethod original_fighter_ctor;
+static ConfigProfileMethod original_fighter_build_model;
 static FighterApplyConfigItemMethod original_fighter_apply_config_item;
 static RandomFighterProfileCreateMethod original_random_fighter_profile_create;
 static CreateFightProfilesMethod original_create_fight_profiles;
@@ -252,6 +255,7 @@ static ProfileCopyCtorMethod player_profile_copy_ctor;
 static ProfileItemBySlotMethod original_player_profile_item_by_slot;
 static ProfileItemGetMethod original_player_profile_item_get;
 static ProfileSetItemMethod player_profile_set_item;
+static InstanceMethod player_profile_rebuild_model_resources;
 static ItemByNameMethod item_by_name;
 static GetSingletonMethod item_manager_current;
 static ItemManagerByNameMethod item_manager_by_name;
@@ -699,6 +703,12 @@ static bool apply_profile_equipment(
     applied += equip_remote_item(profile, "Weapon", snapshot.weapon) ? 1u : 0u;
     applied += equip_remote_item(profile, "Ranged", snapshot.ranged) ? 1u : 0u;
     applied += equip_remote_item(profile, "Magic", snapshot.magic) ? 1u : 0u;
+    // Slot setters do not invalidate NLNHPPKKGMM (+0x28). The native builder
+    // consumes this resource list for the physical skeleton/weapon graph,
+    // not just for rendering. Rebuild it before any Fighter/Viewer uses it.
+    if (applied == 6 && player_profile_rebuild_model_resources != NULL) {
+        player_profile_rebuild_model_resources(profile, NULL);
+    }
     LOGI(
         "Perfil %s: avatar=%d itens=%u/6 nivel=%d.",
         label, appearance_applied ? 1 : 0, applied, snapshot.level);
@@ -1145,6 +1155,26 @@ static void hooked_fighter_apply_config_item(
 // construtor. Alterar somente o PlayerProfile usado por FightScene e suficiente
 // para o HUD, mas nao para o modelo visual. Reaplique o preset canonico no
 // ultimo ponto anterior a essa copia, limitado a janela de criacao da luta LAN.
+static void audit_string_list(const char *label, void *list) {
+    if (list == NULL) return;
+    int32_t count = *(int32_t *)((uint8_t *)list + 0x18u);
+    void *items = *(void **)((uint8_t *)list + 0x10u);
+    LOGI("Model audit list: %s count=%d.", label, count);
+    if (items == NULL || count < 0 || count > 128) return;
+    for (int32_t i = 0; i < count; ++i) {
+        char value[192];
+        managed_string_to_ascii(*(void **)((uint8_t *)items + 0x20u + i * sizeof(void *)), value, sizeof(value));
+        LOGI("Model audit: %s[%d]=%s.", label, i, value);
+    }
+}
+
+static void hooked_fighter_build_model(void *fighter, void *resources, const void *method) {
+    LOGI("Model audit build: fighter=%p profile=%p resources=%p.", fighter,
+        *(void **)((uint8_t *)fighter + FIGHTER_PROFILE_OFFSET), resources);
+    audit_string_list("physical-resources", resources);
+    original_fighter_build_model(fighter, resources, method);
+}
+
 static void hooked_fighter_ctor(
     void *fighter,
     void *profile,
@@ -1161,6 +1191,7 @@ static void hooked_fighter_ctor(
             fighter, profile, applied ? 1 : 0, role);
     }
     original_fighter_ctor(fighter, profile, method);
+    audit_string_list("ctor-profile+28", *(void **)((uint8_t *)profile + 0x28u));
 }
 
 // O ViewerFight cria e pode reter o modelo do jogador antes de
@@ -1648,33 +1679,95 @@ static void log_player_two_input_once(void) {
     }
 }
 
-// O perfil canonico e o controlador de animacao ja podem estar corretos e,
-// ainda assim, o modelo manter a geometria da arma sorteada pelo Duel. Essa
-// geometria e materializada num cache do Fighter que so existe depois de
-// CreateFight. Reaplique exclusivamente a arma canonica nesse ponto tardio;
-// nao toque em armadura/capacete nem recrie os perfis independentes.
-static bool refresh_fighter_weapon_visual(
+// Audite os caches materializados depois de CreateFight. A correcao ocorre
+// antes, reconstruindo PlayerProfile.NLNHPPKKGMM (+0x28); este ponto apenas
+// prova que modelo, moveset e configuracoes de ataque chegaram coerentes.
+static void audit_equipment_list(const char *label, void *list) {
+    if (list == NULL) return;
+    int32_t count = *(int32_t *)((uint8_t *)list + 0x18u);
+    void *items = *(void **)((uint8_t *)list + 0x10u);
+    if (items == NULL || count < 0 || count > 64) return;
+    for (int32_t i = 0; i < count; ++i) {
+        void *item = *(void **)((uint8_t *)items + 0x20u + i * sizeof(void *));
+        if (item == NULL) continue;
+        char id[96], slot[32];
+        managed_string_to_ascii(*(void **)((uint8_t *)item + 0x18u), id, sizeof(id));
+        managed_string_to_ascii(*(void **)((uint8_t *)item + 0x30u), slot, sizeof(slot));
+        LOGI("Equipment audit: %s[%d] slot=%s id=%s item=%p.", label, i, slot, id, item);
+    }
+}
+
+struct attack_inventory_audit {
+    int32_t total;
+    int32_t ninja_sword;
+    int32_t forbidden_weapon;
+    uint64_t name_signature;
+    uint64_t config_signature;
+};
+
+static uint64_t fnv1a_ascii(uint64_t hash, const char *value) {
+    if (hash == 0) hash = UINT64_C(1469598103934665603);
+    if (value == NULL) return hash;
+    while (*value != '\0') {
+        hash ^= (uint8_t)*value++;
+        hash *= UINT64_C(1099511628211);
+    }
+    return hash;
+}
+
+static struct attack_inventory_audit audit_fighter_equipment(
     void *fighter,
     void *profile,
     const char *label
 ) {
-    if (fighter == NULL || profile == NULL ||
-        original_fighter_apply_equipment_item == NULL) return false;
+    struct attack_inventory_audit result = {0};
+    if (fighter == NULL || profile == NULL) return result;
 
-    void *weapon = *(void **)((uint8_t *)profile + PROFILE_WEAPON_OFFSET);
-    if (weapon == NULL) return false;
+    LOGI("Equipment audit fighter: side=%s fighter=%p profile=%p.", label, fighter, profile);
+    audit_equipment_list("profile+30", *(void **)((uint8_t *)profile + 0x30u));
+    audit_equipment_list("profile+38", *(void **)((uint8_t *)profile + 0x38u));
+    void *cache = *(void **)((uint8_t *)fighter + 0x248u);
+    if (cache != NULL) audit_equipment_list("cache+20", *(void **)((uint8_t *)cache + 0x20u));
 
-    original_fighter_apply_equipment_item(
-        fighter,
-        weapon,
-        true,
-        true,
-        false,
-        NULL);
-    LOGI(
-        "Malha de arma LAN reaplicada: lado=%s fighter=%p profile=%p weapon=%p.",
-        label == NULL ? "?" : label, fighter, profile, weapon);
-    return true;
+    // EFEBLAILCLI returns without rebuilding when the weapon ID is already
+    // equal. Do not report this no-op as a successful mesh refresh.
+    void *list = *(void **)((uint8_t *)fighter + 0x3a0u);
+    if (list == NULL) return result;
+    int32_t count = *(int32_t *)((uint8_t *)list + 0x18u);
+    void *items = *(void **)((uint8_t *)list + 0x10u);
+    result.total = count;
+    if (items == NULL || count < 0 || count > 2048) return result;
+    for (int32_t i = 0; i < count; ++i) {
+        void *action = *(void **)((uint8_t *)items + 0x20u + i * sizeof(void *));
+        if (action == NULL) continue;
+        char name[128], animation[128];
+        managed_string_to_ascii(*(void **)((uint8_t *)action + 0x68u), name, sizeof(name));
+        managed_string_to_ascii(*(void **)((uint8_t *)action + 0x70u), animation, sizeof(animation));
+        int32_t type = *(int32_t *)((uint8_t *)action + 0x20u);
+        if (type != 2) continue;
+        bool canonical = strstr(name, "Katana") != NULL ||
+            strstr(name, "NinjaSword") != NULL;
+        bool forbidden = strstr(name, "Dagger") != NULL ||
+            strstr(name, "Sai") != NULL || strstr(name, "Fists") != NULL ||
+            strstr(name, "Cleaver") != NULL || strstr(name, "Butcher") != NULL ||
+            strstr(name, "Knuckle") != NULL;
+        if (canonical) {
+            void *config = *(void **)((uint8_t *)action + 0x18u);
+            result.ninja_sword++;
+            result.name_signature = fnv1a_ascii(result.name_signature, name);
+            result.name_signature = fnv1a_ascii(result.name_signature, animation);
+            result.config_signature ^= (uint64_t)(uintptr_t)config +
+                UINT64_C(0x9e3779b97f4a7c15) +
+                (result.config_signature << 6) + (result.config_signature >> 2);
+            LOGI("Ninja Sword action: side=%s i=%d name=%s animation=%s config=%p.",
+                label, i, name, animation, config);
+        }
+        if (forbidden) result.forbidden_weapon++;
+    }
+    LOGI("Action audit: side=%s total=%d ninjaSword=%d forbidden=%d names=%" PRIx64 " configs=%" PRIx64 ".",
+        label, result.total, result.ninja_sword, result.forbidden_weapon,
+        result.name_signature, result.config_signature);
+    return result;
 }
 
 static void hooked_fight_scene_create_fight(
@@ -1748,14 +1841,18 @@ static void hooked_fight_scene_create_fight(
             *(uint8_t *)((uint8_t *)fight_opponent_profile + PROFILE_AI_CONTROLLED_OFFSET) = 0;
         }
         LOGI("Perfis da luta LAN: controle de IA desativado nos dois lados; entrada humana nativa habilitada.");
-        bool player_weapon_refreshed = refresh_fighter_weapon_visual(
+        struct attack_inventory_audit player_actions = audit_fighter_equipment(
             player, fight_player_profile, "esquerdo");
-        bool opponent_weapon_refreshed = refresh_fighter_weapon_visual(
+        struct attack_inventory_audit opponent_actions = audit_fighter_equipment(
             opponent, fight_opponent_profile, "direito");
-        LOGI(
-            "Atualizacao visual das armas LAN: esquerdo=%d direito=%d.",
-            player_weapon_refreshed ? 1 : 0,
-            opponent_weapon_refreshed ? 1 : 0);
+        bool actions_match = player_actions.ninja_sword > 0 &&
+            player_actions.forbidden_weapon == 0 &&
+            opponent_actions.forbidden_weapon == 0 &&
+            player_actions.ninja_sword == opponent_actions.ninja_sword &&
+            player_actions.name_signature == opponent_actions.name_signature &&
+            player_actions.config_signature == opponent_actions.config_signature;
+        LOGI("Action audit LAN: match=%d left=%d right=%d.", actions_match ? 1 : 0,
+            player_actions.ninja_sword, opponent_actions.ninja_sword);
     }
     uint32_t count = atomic_fetch_add_explicit(
         &fight_create_count, 1, memory_order_relaxed) + 1;
@@ -2893,6 +2990,8 @@ Java_com_sf2_lan_LanNativeBridge_nativeInstall(JNIEnv *env, jclass type) {
         location.base + RVA_PLAYER_PROFILE_COPY_CTOR);
     player_profile_set_item = (ProfileSetItemMethod)(
         location.base + RVA_PLAYER_PROFILE_SET_ITEM);
+    player_profile_rebuild_model_resources = (InstanceMethod)(
+        location.base + RVA_PLAYER_PROFILE_REBUILD_MODEL_RESOURCES);
     item_by_name = (ItemByNameMethod)(location.base + RVA_ITEM_BY_NAME);
     item_manager_current = (GetSingletonMethod)(
         location.base + RVA_ITEM_MANAGER_CURRENT);
@@ -2971,6 +3070,8 @@ Java_com_sf2_lan_LanNativeBridge_nativeInstall(JNIEnv *env, jclass type) {
             (void **)&original_fighter_apply_equipment_item},
         {RVA_FIGHTER_CTOR, hooked_fighter_ctor,
             (void **)&original_fighter_ctor},
+        {RVA_FIGHTER_BUILD_MODEL, hooked_fighter_build_model,
+            (void **)&original_fighter_build_model},
         {RVA_PRE_FIGHT_VIEWER_INIT, hooked_pre_fight_viewer_init,
             (void **)&original_pre_fight_viewer_init},
         {RVA_PRE_FIGHT_CREATE_VS, hooked_pre_fight_create_vs,
