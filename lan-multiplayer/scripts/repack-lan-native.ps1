@@ -4,7 +4,8 @@ param(
     [Parameter(Mandatory)] [string]$OutputApk,
     [switch]$RebuildBridge,
     [switch]$AllowRemoteAiForDiagnostics,
-    [switch]$TraceAllFighterFloats
+    [switch]$TraceAllFighterFloats,
+    [switch]$TraceActionPhase
 )
 
 $ErrorActionPreference = 'Stop'
@@ -52,6 +53,10 @@ try {
 
     Write-Output 'Compilando somente a instrumentacao ARM64 atualizada...'
 $diagnosticDefines = @()
+if ($TraceActionPhase) {
+    $diagnosticDefines += '-DSF2LAN_TRACE_ACTION_PHASE'
+    Write-Warning 'Diagnostico de fase: leitura do frame real a cada seis ticks, sem correcao de estado.'
+}
 if ($AllowRemoteAiForDiagnostics) {
     $diagnosticDefines += '-DSF2_LAN_DIAGNOSTIC_ALLOW_REMOTE_AI=1'
     Write-Warning 'Build de diagnostico: a IA do adversario LAN ficara ativa.'

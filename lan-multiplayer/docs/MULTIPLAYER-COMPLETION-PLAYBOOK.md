@@ -14,6 +14,10 @@ marco funcional.
 
 Atualizações verificadas:
 
+- p149: [medição do frame real](ACTION-PHASE-P149.md), opcional e somente leitura.
+  Tick da simulação não é frame de animação. Ensaio com pausa do processo não
+  reproduziu grande deriva; correção de fase continua pendente. Runtime p148
+  restaurado após a medição, sem novo APK completo.
 - p148: [seleção autoritativa de ações](ACTION-AUTHORITY-P148.md). P1 publicou
   40 eventos e P2 publicou 39; cada sequência foi aplicada uma vez no peer.
   Recuo, salto e golpes repetidos testados nos dois MuMu. Checkpoint parcial:

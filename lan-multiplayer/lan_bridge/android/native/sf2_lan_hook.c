@@ -67,6 +67,10 @@
 #define RVA_AI_PLANNER_SELECT_ACTION 0x302C034u
 #define RVA_FIGHTER_CTOR 0x33987C0u
 #define RVA_ANIMATION_SELECT_ACTION 0x347E334u
+#ifdef SF2LAN_TRACE_ACTION_PHASE
+// FOEDLNHCMNF: computes the active action frame, including interpolation state.
+static int32_t (*animation_current_frame)(void *, const void *);
+#endif
 #define RVA_FIGHTER_BUILD_MODEL 0x3398108u
 #define RVA_RANDOM_FIGHTER_PROFILE_CREATE 0x33C1AF0u
 #define RVA_CREATE_FIGHT_PROFILES 0x33C289Cu
@@ -2656,6 +2660,9 @@ static void hooked_fight_scene_fixed_update(void *self, const void *method) {
 
     original_fight_scene_fixed_update(self, method);
     if (lan_active) trace_selected_fighter_actions();
+#ifdef SF2LAN_TRACE_ACTION_PHASE
+    if (lan_active) trace_lan_action_phase();
+#endif
 }
 
 static void hooked_fight_fixed_update(void *fight, const void *method) {
@@ -3020,6 +3027,9 @@ Java_com_sf2_lan_LanNativeBridge_nativeInstall(JNIEnv *env, jclass type) {
             location.base + RVA_IL2CPP_CLASS_FROM_NAME);
     }
     touch_input_ctor = (TouchInputCtorMethod)(location.base + RVA_TOUCH_INPUT_CTOR);
+#ifdef SF2LAN_TRACE_ACTION_PHASE
+    animation_current_frame = (int32_t (*)(void *, const void *))(location.base + 0x347EABCu);
+#endif
     fight_config_manager_current = (GetSingletonMethod)(
         location.base + RVA_FIGHT_CONFIG_MANAGER_CURRENT);
     fight_config_by_name = (GetFightConfigByNameMethod)(

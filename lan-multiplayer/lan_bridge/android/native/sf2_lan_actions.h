@@ -17,6 +17,30 @@ static bool action_overflow_logged;
 static _Thread_local bool replaying_lan_action;
 static _Atomic bool remote_action_authority;
 
+#ifdef SF2LAN_TRACE_ACTION_PHASE
+static void trace_lan_action_phase(void) {
+    uint32_t tick = atomic_load(&fight_state_tick);
+    if (tick % 6 || !animation_current_frame) return;
+    uintptr_t fighters[2] = {atomic_load(&lan_local_fighter), atomic_load(&lan_remote_fighter)};
+    for (int side = 0; side < 2; ++side) {
+        if (!fighters[side]) continue;
+        void *controller = *(void **)((uint8_t *)fighters[side] + 0x290u);
+        if (!controller) continue;
+        void *action = *(void **)((uint8_t *)controller + 0x158u);
+        if (!action) continue; // getter dereferences the active action
+        char name[128];
+        managed_string_to_ascii(*(void **)((uint8_t *)action + 0x68u), name, sizeof(name));
+        pthread_mutex_lock(&lan_action_mutex);
+        uint32_t sequence = side + 1 == atomic_load(&lan_player_role)
+            ? action_sequence : applied_action_sequence;
+        pthread_mutex_unlock(&lan_action_mutex);
+        LOGI("LAN action phase: role=%d player=%d seq=%u tick=%u frame=%d name=%s.",
+            atomic_load(&lan_player_role), side + 1, sequence, tick,
+            animation_current_frame(controller, NULL), name);
+    }
+}
+#endif
+
 static void reset_lan_actions(void) {
     pthread_mutex_lock(&lan_action_mutex);
     action_head = action_count = action_sequence = applied_action_sequence = 0;
